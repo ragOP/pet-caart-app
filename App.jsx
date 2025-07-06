@@ -1,21 +1,11 @@
+import React from 'react'
+import BottomTabNavigation from './src/navigation/BottomTabNavigation'
 
-import { StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
-
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
+const App = () => {
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Text>Pet Caart</Text>
-    </View>
-  );
+    <BottomTabNavigation/>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+export default App
 
-export default App;
