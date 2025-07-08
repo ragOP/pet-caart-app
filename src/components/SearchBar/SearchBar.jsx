@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   shadowWrapper: {
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: '#4040400D',
         shadowOffset: { width: 0, height: 3 }, 
         shadowOpacity: 0.2, 
         shadowRadius: 6, 

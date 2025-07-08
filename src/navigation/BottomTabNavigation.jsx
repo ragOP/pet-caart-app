@@ -5,11 +5,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path } from 'react-native-svg';
 import * as LucideIcons from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
+import CategoryScreen from '../screens/CategoryScreen/CategoryScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
 
-const CategoriesScreen = () => <View style={styles.screen}><Text>Categories</Text></View>;
 const BreedShopScreen = () => <View style={styles.screen}><Text>Breed Shop</Text></View>;
 const CartScreen = () => <View style={styles.screen}><Text>Cart</Text></View>;
 const ProfileScreen = () => <View style={styles.screen}><Text>Profile</Text></View>;
@@ -112,7 +112,7 @@ export default function BottomTabNavigation() {
         tabBar={(props) => <CustomTabBar {...props} />}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Categories" component={CategoriesScreen} />
+        <Tab.Screen name="Categories" component={CategoryScreen} />
         <Tab.Screen name="BreedShop" component={BreedShopScreen} />
         <Tab.Screen name="Cart" component={CartScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />

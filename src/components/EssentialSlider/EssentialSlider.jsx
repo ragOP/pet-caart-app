@@ -26,27 +26,30 @@ const EssentialsSlider = ({ products, headingIcon, headingTextOrange, headingTex
   showsHorizontalScrollIndicator={false}
   data={products}
   keyExtractor={(item) => item.id}
-  ItemSeparatorComponent={() => <View style={{ width: 12 }} />}  // yeh gap add karega items ke beech
-  contentContainerStyle={{ paddingHorizontal: 15 }}  // container ke sides me padding
-  renderItem={({ item }) => (
-    <TouchableOpacity style={styles.card} activeOpacity={1} onPress={() => {}}>
+  contentContainerStyle={{ paddingLeft: 15, paddingRight: 15 }} 
+  renderItem={({ item, index }) => (
+    <TouchableOpacity
+      style={[
+        styles.card,
+        { marginRight: index === products.length - 1 ? 0 : 12 }, 
+      ]}
+      activeOpacity={1}
+      onPress={() => {}}
+    >
       <ImageBackground
         source={require('../../assets/images/productbg.png')}
         style={styles.cardBackground}
         imageStyle={styles.cardBgImage}
       >
         <Image source={item.image} style={styles.image} resizeMode="contain" />
-        <Text
-          style={styles.label}
-          numberOfLines={2}
-          ellipsizeMode="tail"
-        >
+        <Text style={styles.label} numberOfLines={2} ellipsizeMode="tail">
           {item.label}
         </Text>
       </ImageBackground>
     </TouchableOpacity>
   )}
 />
+
 
     </View>
   );
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 5,
     paddingHorizontal: 15,
-    backgroundColor: 'white',
+    backgroundColor: '#FDF4E6',
     height: 220, 
   },
   headingContainer: {
@@ -73,13 +76,15 @@ const styles = StyleSheet.create({
   },
   headingText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   orange: {
     color: '#f39c12',
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   blue: {
     color: '#3498db',
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   card: {
     width: ITEM_WIDTH,
@@ -88,7 +93,7 @@ const styles = StyleSheet.create({
   
   label: {
     marginTop: 6,
-    fontWeight: 'bold',
+  fontFamily:'Gotham-Rounded-Bold',
     fontSize: 14,
     color: '#000',
     textAlign: 'center',

@@ -32,7 +32,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -49,5 +49,15 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>assets/fonts/Gotham-Rounded-Bold.ttf</string>
+		<string>assets/fonts/Gotham-Rounded-Book_.ttf</string>
+		<string>assets/fonts/Gotham-Rounded-Light.ttf</string>
+		<string>Gotham-Rounded-Bold.ttf</string>
+		<string>Gotham-Rounded-Book_.ttf</string>
+		<string>Gotham-Rounded-Light.ttf</string>
+		<string>Gotham-Rounded-Medium.ttf</string>
+	</array>
 </dict>
 </plist>

@@ -20,47 +20,25 @@ import BannerShimmer from '../../ui/Shimmer/BannerShimmer';
 import { getProducts } from '../../apis/getProducts';
 import BannerSliderShimmer from '../../ui/Shimmer/BannerSliderShimmer';
 import EssentialsSliderShimmer from '../../ui/Shimmer/EssentialsSliderShimmer';
-
-const products = [
-  {
-    id: '1',
-    label: 'Dry Food',
-    image: require('../../assets/images/catProduct.png'),
-  },
-  {
-    id: '2',
-    label: 'Wet Food',
-    image: require('../../assets/images/catProduct.png'),
-  },
-  {
-    id: '3',
-    label: 'Chicken Gravy',
-    image: require('../../assets/images/catProduct.png'),
-  },
-  {
-    id: '4',
-    label: 'Dry Food',
-    image: require('../../assets/images/catProduct.png'),
-  },
-  {
-    id: '5',
-    label: 'Chicken Gravy',
-    image: require('../../assets/images/catProduct.png'),
-  },
-];
+import ProductSlider from '../../components/ProductSlider/ProductSlider';
+import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
+import NewlyLaunchedSlider from '../../components/NewlyLaunchedSlider/NewlyLaunchedSlider';
+import CatLifeScreen from '../../components/CatLife/CatLifeScreen';
+import BakedProduct from '../../components/BakedProduct/BakedProduct';
 
 const HomeScreen = () => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
   const [sliderData, setSliderData] = useState([]);
-  const [productsData, setProductsData] = useState([]);
   const [loadingBanner, setLoadingBanner] = useState(true);
   const [essentialsData, setEssentialsData] = useState([]);
   const [addToCartData, setAddToCartData] = useState([]);
+  const [bestSellerData, setBestSellerData] = useState([]);
+  const [newlyLaunchedData, setNewlyLaunchedData] = useState([]);
+
   useEffect(() => {
     const fetchBanner = async () => {
       try {
         const response = await getAdBanner();
-        console.log('Banner API response:', response);
         const url = response?.data?.data?.[0]?.image;
         if (url) {
           setBannerImageUrl(url);
@@ -77,7 +55,6 @@ const HomeScreen = () => {
     const fetchSliders = async () => {
       try {
         const response = await getSliders();
-        console.log('Sliders API response:', response);
         const sliders = response?.data?.data;
         if (sliders && sliders.length > 0) {
           const sliderImages = sliders.map(slider => ({
@@ -99,7 +76,6 @@ const HomeScreen = () => {
       try {
         const response = await getProducts();
         const allProducts = response?.data?.data;
-    
         if (Array.isArray(allProducts)) {
           const essentials = allProducts
             .filter(item => item.isEverydayEssential)
@@ -108,7 +84,6 @@ const HomeScreen = () => {
               label: item.title,
               image: { uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '' },
             }));
-    
           const addToCart = allProducts
             .filter(item => item.isAddToCart)
             .map(item => ({
@@ -116,14 +91,46 @@ const HomeScreen = () => {
               label: item.title,
               image: { uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '' },
             }));
+          const bestSellers = allProducts
+            .filter(item => item.isBestSeller && Number(item.salePrice) < 599)
+            .map(item => {
+              const discountPercent = item.salePrice
+                ? Math.round(((item.price - item.salePrice) / item.price) * 100)
+                : 0;
     
+              return {
+                title: item.title,
+                rating: item.ratings?.average || 0,
+                price: item.price,
+                discount: discountPercent > 0 ? discountPercent + '%' : '0%',
+                images: item.images || (item.variants?.[0]?.images || []), 
+                isVeg: item.isVeg || false,
+              };
+            });
+    
+            const newlyLaunched = allProducts
+            .filter(item => item.newleyLaunched === true)
+            .map(item => {
+              return {
+                id: item._id,
+                label: item.title,
+                image: { uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '' },
+                isBestSeller: item.isBestSeller || false, 
+              };
+            });
+          
+          
+    
+          setBestSellerData(bestSellers);
           setEssentialsData(essentials);
           setAddToCartData(addToCart);
+          setNewlyLaunchedData(newlyLaunched);  
         }
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     };
+    
     
     fetchProducts();
     fetchBanner();
@@ -137,7 +144,7 @@ const HomeScreen = () => {
         <SafeAreaView>
           <View style={styles.headerRow}>
             <Image
-              source={require('../../assets/images/logo.png')}
+              source={require('../../assets/images/logo1.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -168,8 +175,9 @@ const HomeScreen = () => {
   <EssentialsSlider
     products={essentialsData}
     headingIcon={require('../../assets/icons/paw2.png')}
-    headingTextOrange="Everyday"
+      headingTextOrange="Everyday"
     headingTextBlue="Essentials"
+ 
   />
 )}
 
@@ -183,7 +191,34 @@ const HomeScreen = () => {
     headingTextBlue="Add-To-Carts"
   />
 )}
-      </ScrollView>
+{newlyLaunchedData.length === 0 ? (
+          <ProductSliderShimmer /> 
+        ) : (
+    <NewlyLaunchedSlider
+      products={newlyLaunchedData}
+      headingIcon={require('../../assets/icons/paw2.png')}
+      headingTextOrange="Newly"
+      headingTextBlue="Launched"
+    />
+  )}
+ {bestSellerData.length === 0 ? (
+          <ProductSliderShimmer /> 
+        ) : (
+          <ProductSlider
+            headingIcon={require('../../assets/icons/paw2.png')}
+            headingTextOrange="Bestsellers"
+            headingTextBlue="Under ₹599"
+            products={bestSellerData}
+          />
+        )}
+       
+  <CatLifeScreen
+  headingIcon={require('../../assets/icons/paw2.png')}
+  headingTextOrange="A Day in Your"
+        headingTextBlue="Cat’s Life..."
+  />
+<BakedProduct style={styles.baked} />
+</ScrollView>
     </View>
   );
 };
@@ -191,14 +226,16 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   headerWrapper: {
+    paddingVertical: 20,
     backgroundColor: '#FEF5E7',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+
   },
   logo: {
     width: 50,
@@ -217,8 +254,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
-    backgroundColor: '#F2F2F2',
+    backgroundColor: '#FDF4E6',
     marginBottom: 16,
+
+  },
+  baked: {
+    width: '93%',             
+    alignSelf: 'center',         
+    paddingTop: 20,  
   },
 });
 

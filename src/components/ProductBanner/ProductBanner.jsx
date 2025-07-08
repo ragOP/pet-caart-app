@@ -1,9 +1,11 @@
-import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+// components/ProductBanner/ProductBanner.js
 
-const Banner = ({ source }) => {
+import React from 'react';
+import { Image, Text, StyleSheet, View } from 'react-native';
+
+const ProductBanner = ({ source, style }) => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Image
         source={source}
         style={styles.bannerImage}
@@ -15,11 +17,12 @@ const Banner = ({ source }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 10,
+
     borderRadius: 12,
     overflow: 'hidden',
-    height: 180,
+    height: 130, 
     marginBottom: 16,
+    backgroundColor: '#fff',
   },
   bannerImage: {
     width: '100%',
@@ -28,4 +31,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Banner;
+export default ProductBanner;
