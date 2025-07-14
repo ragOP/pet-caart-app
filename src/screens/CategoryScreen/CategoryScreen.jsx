@@ -6,6 +6,7 @@ import Banner from '../../components/Banner/Banner';
 import { getProductBanner } from '../../apis/getProductBanner';
 import ProductBanner from '../../components/ProductBanner/ProductBanner';
 import CategoryCard from '../../components/CategoryCard/CategoryCard';
+import BannerShimmer from '../../ui/Shimmer/BannerShimmer';
 
 const CategoryScreen = ({ navigation }) => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -47,7 +48,7 @@ const CategoryScreen = ({ navigation }) => {
 
       <View style={styles.content}>
         {loadingBanner ? (
-          <Text>Loading banner...</Text>
+          <BannerShimmer/>
         ) : bannerImageUrl ? (
          <ProductBanner source={{ uri: bannerImageUrl }}  style={{ paddingLeft: 20, paddingRight: 20 }} />
 

@@ -1,18 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions,Image } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path } from 'react-native-svg';
 import * as LucideIcons from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import CategoryScreen from '../screens/CategoryScreen/CategoryScreen';
+import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
 
 const BreedShopScreen = () => <View style={styles.screen}><Text>Breed Shop</Text></View>;
 const CartScreen = () => <View style={styles.screen}><Text>Cart</Text></View>;
-const ProfileScreen = () => <View style={styles.screen}><Text>Profile</Text></View>;
 
 const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;
@@ -106,7 +105,6 @@ const CustomTabBar = ({ state, navigation }) => {
 
 export default function BottomTabNavigation() {
   return (
-    <NavigationContainer>
       <Tab.Navigator
         screenOptions={{ headerShown: false }}
         tabBar={(props) => <CustomTabBar {...props} />}
@@ -117,7 +115,6 @@ export default function BottomTabNavigation() {
         <Tab.Screen name="Cart" component={CartScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
-    </NavigationContainer>
   );
 }
 

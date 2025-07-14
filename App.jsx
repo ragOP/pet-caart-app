@@ -1,11 +1,12 @@
-import React from 'react'
-import BottomTabNavigation from './src/navigation/BottomTabNavigation'
+import React from 'react';
+import { Provider } from 'react-redux';
+import { store } from './src/redux/store';
+import NavigationPage from './src/navigation/NavigationPage';
 
-const App = () => {
+export default function App() {
   return (
-    <BottomTabNavigation/>
-  )
+    <Provider store={store}>
+      <NavigationPage />
+    </Provider>
+  );
 }
-
-export default App
-

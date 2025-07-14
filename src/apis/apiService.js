@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { TOKEN } from '../constants/AUTH';
 import { BACKEND_URL } from './backendUrl';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TOKEN } from '../constants/AUTH';
 
 export const apiService = async ({
   endpoint,
@@ -15,7 +15,9 @@ export const apiService = async ({
   signal,
 }) => {
   try {
+    // Retrieving token from AsyncStorage
     const token = await AsyncStorage.getItem(TOKEN);
+    console.log('Token from AsyncStorage:', token);
 
     const requestObj = {
       url: `${customUrl ? customUrl : BACKEND_URL}/${endpoint}`,
@@ -25,18 +27,23 @@ export const apiService = async ({
       signal,
     };
 
+    // If token exists, add it to headers
     if (token || _token) {
       requestObj.headers = {
         ...headers,
-        'ngrok-skip-browser-warning': 'xyz',
-        ...(!removeToken ? {Authorization: `Bearer ${_token || token}`} : {}),
+        'ngrok-skip-browser-warning': 'xyz',  // If needed, adjust or remove this header
+        ...(!removeToken ? { Authorization: `Bearer ${_token || token}` } : {}),
       };
     }
+    const { data: res } = await axios(requestObj);
+    if (res?.token) {
+      await AsyncStorage.setItem(TOKEN, res.token);
+      console.log('Token saved to AsyncStorage:', res.token);
+    }
 
-    const {data: res} = await axios(requestObj);
-    return {response: res};
+    return { response: res };
   } catch (error) {
-    console.error(error, 'backend endpoint error');
-    return {success: false, error: true, ...(error || {})};
+    console.error('backend endpoint error:', error);  // Debugging log
+    return { success: false, error: true, ...(error.response || error) };
   }
 };

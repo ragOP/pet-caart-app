@@ -112,11 +112,11 @@ const styles = StyleSheet.create({
     height: 22,  
     marginRight: 8,
     ...(Platform.OS === 'ios' && {
-      width: "63%",  
+      width: "auto",  
       height: 19,
     }),
     ...(Platform.OS === 'android' && {
-      width: "53%",  
+      width: "auto",  
       height: 16.5,
     }),
   },

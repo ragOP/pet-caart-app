@@ -10,42 +10,49 @@ const windowWidth = Dimensions.get('window').width;
 const CategoryCard = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [loading, setLoading] = useState(true); 
+  const [categoriesLoading, setCategoriesLoading] = useState(true); 
   const [products, setProducts] = useState([]);
-
+  const [productsLoading, setProductsLoading] = useState(true); 
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedBreed, setSelectedBreed] = useState(null);
   const fetchSubCategories = async () => {
+    setCategoriesLoading(true);
     try {
       const subCategoriesData = await getSubCategories();
-      if (subCategoriesData && subCategoriesData.data && subCategoriesData.data.data && subCategoriesData.data.data.length > 0) {
+      if (subCategoriesData && subCategoriesData.data && subCategoriesData.data.data.length > 0) {
         setCategories(subCategoriesData.data.data);  
-        setSelectedCategory(subCategoriesData.data.data[0]);  
+        setSelectedCategory(subCategoriesData.data.data[0]); 
       } else {
-        console.error('No categories in the response data');
+        console.error('No categories available');
       }
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     } finally {
-      setLoading(false);  
+      setCategoriesLoading(false);
     }
   };
 
-  const fetchProducts = async (subCategorySlug) => {
-    setLoading(true);   
+  const fetchProducts = async (subCategorySlug, brand, breed) => {
+    setProductsLoading(true);
     try {
-      const productsData = await getProducts({ subCategorySlug });
-      if (productsData && productsData.data && productsData.data.data.length > 0) {
-        setProducts(productsData.data.data); 
+      const response = await getProducts({ 
+        subCategorySlug, 
+        brand, 
+        breed 
+      });
+
+      if (response && response.data && response.data.data.length > 0) {
+        setProducts(response.data.data); 
       } else {
         setProducts([]);  
-        console.log('No products found for this subcategory.');
+        console.log('No products found for the selected filters.');
       }
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
-      setLoading(false); 
+      setProductsLoading(false); 
     }
   };
-  
 
   useEffect(() => {
     fetchSubCategories(); 
@@ -53,47 +60,53 @@ const CategoryCard = () => {
 
   useEffect(() => {
     if (selectedCategory) {
-      fetchProducts(selectedCategory.slug); 
+      fetchProducts(selectedCategory.slug, selectedBrand, selectedBreed);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedBrand, selectedBreed]);
 
   return (
     <View style={styles.container}>
-      <FilterBar />
+      <FilterBar
+       selectedBrand={selectedBrand}
+       selectedBreed={selectedBreed}
+       onBrandChange={setSelectedBrand}
+       onBreedChange={setSelectedBreed}
+      />
+
       <ScrollView style={styles.mainContainer}>
         <View style={styles.mainContent}>
           <View style={styles.sidebar}>
-            {loading ? (
+            {categoriesLoading ? (
               <ActivityIndicator size="large" color="#F59A11" style={styles.centeredIndicator}/>
             ) : (
               <FlatList
                 data={categories}
-                renderItem={({ item }) => {
-                  return (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => setSelectedCategory(item)}  
-                      style={[
-                        styles.categoryItem,
-                        item._id === selectedCategory?._id && styles.selectedCategory,
-                      ]}
-                    >
-                      <Image source={{ uri: item.image }} style={styles.categoryImage} />
-                      <Text style={styles.categoryName}>{item.name}</Text>
-                      {item._id === selectedCategory?._id && <View style={styles.selectedLine} />}
-                    </TouchableOpacity>
-                  );
-                }}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => setSelectedCategory(item)}  
+                    style={[
+                      styles.categoryItem,
+                      item._id === selectedCategory?._id && styles.selectedCategory,
+                    ]}
+                  >
+                    <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                    <Text style={styles.categoryName}>{item.name}</Text>
+                    {item._id === selectedCategory?._id && <View style={styles.selectedLine} />}
+                  </TouchableOpacity>
+                )}
                 showsVerticalScrollIndicator={false}
                 keyExtractor={(item) => item._id}
                 ListEmptyComponent={<Text>No categories available</Text>} 
               />
             )}
           </View>
+
           <View style={styles.content}>
             <Text style={styles.sectionTitle}>{selectedCategory?.name}</Text>
-            {loading ? (
-              <ActivityIndicator size="large" color="#F59A11" style={styles.centeredIndicator}/>
+
+            {productsLoading ? (
+              <ActivityIndicator/>
             ) : (
               <FlatList
                 data={products}
@@ -105,7 +118,7 @@ const CategoryCard = () => {
                     discount={item.discount}
                     rating={item.rating}
                     isVeg={item.isVeg}
-                    cardWidth={windowWidth * 0.33}
+                    cardWidth={windowWidth * 0.36}
                   />
                 )}
                 showsVerticalScrollIndicator={false}
@@ -137,7 +150,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sidebar: {
-    width: 115,
+    width: 100,
     backgroundColor: '#FFFBF6',
     paddingVertical: 20,
     borderRightWidth: 1,
@@ -182,7 +195,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 20,
     backgroundColor: '#FFFBF6',
-   
   },
   sectionTitle: {
     fontSize: 18,
@@ -195,7 +207,6 @@ const styles = StyleSheet.create({
   centeredIndicator: {
     flex: 1,
   },
-  
 });
 
 export default CategoryCard;
