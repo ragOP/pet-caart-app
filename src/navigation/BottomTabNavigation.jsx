@@ -6,12 +6,13 @@ import * as LucideIcons from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import CategoryScreen from '../screens/CategoryScreen/CategoryScreen';
 import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
+import CartScreen from '../screens/CartScreen/CartScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
 
 const BreedShopScreen = () => <View style={styles.screen}><Text>Breed Shop</Text></View>;
-const CartScreen = () => <View style={styles.screen}><Text>Cart</Text></View>;
+// const CartScreen = () => <View style={styles.screen}><Text>Cart</Text></View>;
 
 const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;

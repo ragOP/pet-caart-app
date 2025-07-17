@@ -15,10 +15,7 @@ export const apiService = async ({
   signal,
 }) => {
   try {
-    // Retrieving token from AsyncStorage
     const token = await AsyncStorage.getItem(TOKEN);
-    console.log('Token from AsyncStorage:', token);
-
     const requestObj = {
       url: `${customUrl ? customUrl : BACKEND_URL}/${endpoint}`,
       params,
@@ -26,12 +23,10 @@ export const apiService = async ({
       data,
       signal,
     };
-
-    // If token exists, add it to headers
     if (token || _token) {
       requestObj.headers = {
         ...headers,
-        'ngrok-skip-browser-warning': 'xyz',  // If needed, adjust or remove this header
+        'ngrok-skip-browser-warning': 'xyz',  
         ...(!removeToken ? { Authorization: `Bearer ${_token || token}` } : {}),
       };
     }
@@ -43,7 +38,7 @@ export const apiService = async ({
 
     return { response: res };
   } catch (error) {
-    console.error('backend endpoint error:', error);  // Debugging log
+    console.error('backend endpoint error:', error);  
     return { success: false, error: true, ...(error.response || error) };
   }
 };

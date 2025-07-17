@@ -42,7 +42,7 @@ const ProfileScreen = ({ navigation }) => {
     { label: 'Edit Profile', icon: <UserRound size={26} color="#004E6A" />, navigateTo: 'ProfileDetailScreen' },
     { label: 'Address Information', icon: <MapPinHouse size={26} color="#004E6A" />, navigateTo: 'AddressInfoScreen' },
     { label: 'My Orders', icon: <PackageOpen size={26} color="#004E6A" />, navigateTo: 'MyOrderScreen' },
-    { label: 'Invite Friends', icon: <UserRoundPlus size={26} color="#004E6A" /> },
+    { label: 'Invite Friends', icon: <UserRoundPlus size={26} color="#004E6A" />,navigateTo: 'InviteScreen' },
     { label: 'Contact Us', icon: <Headset size={26} color="#004E6A" /> },
     { label: 'Log Out', icon: <LogOut size={26} color="#004E6A" />, action: () => dispatch(logout()) },
   ];

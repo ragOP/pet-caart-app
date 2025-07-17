@@ -13,6 +13,8 @@ const AddAddressScreen = ({ route, navigation }) => {
   const [postalCode, setPostalCode] = useState('');
   const [addressType, setAddressType] = useState('');
   const [state, setState] = useState('');
+  const [country, setCountry] = useState('');
+
 
   useEffect(() => {
     if (addressData) {
@@ -24,7 +26,8 @@ const AddAddressScreen = ({ route, navigation }) => {
       setAddress(addressData.address); 
       setCity(addressData.city);
       setPostalCode(addressData.zip);  
-      setAddressType(''); 
+      setAddressType(addressData.type.charAt(0).toUpperCase() + addressData.type.slice(1)); 
+      setCountry(addressData.country); 
       setState(addressData.state.charAt(0).toUpperCase() + addressData.state.slice(1));
     }
   }, [addressData]);
@@ -127,6 +130,14 @@ const AddAddressScreen = ({ route, navigation }) => {
           placeholder="Enter your state"
           value={state}
           onChangeText={setState}
+          placeholderTextColor="#6A6868"
+        />
+        <Text style={styles.label}>Country</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your country"
+          value={country}
+          onChangeText={setCountry}
           placeholderTextColor="#6A6868"
         />
       </ScrollView>

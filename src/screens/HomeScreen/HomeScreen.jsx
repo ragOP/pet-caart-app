@@ -109,7 +109,7 @@ const HomeScreen = () => {
             });
     
             const newlyLaunched = allProducts
-            .filter(item => item.newleyLaunched === true)
+            .filter(item => item.newleyLaunced=true)
             .map(item => {
               return {
                 id: item._id,
@@ -218,6 +218,7 @@ const HomeScreen = () => {
         headingTextBlue="Cat’s Life..."
   />
 <BakedProduct style={styles.baked} />
+
 </ScrollView>
     </View>
   );

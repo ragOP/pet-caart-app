@@ -5,7 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const ProductCard = ({ images, title, rating, price, discount, isVeg, cardWidth = 110 }) => {
+const ProductCard = ({ images, title, rating, price, discount, isVeg, stock, cardWidth = 110 }) => {
   const originalPrice = Number(price);
   const discountPercent = parseInt(discount);
   const hasDiscount = !isNaN(discountPercent) && discountPercent > 0;
@@ -13,6 +13,8 @@ const ProductCard = ({ images, title, rating, price, discount, isVeg, cardWidth 
   const discountedPrice = hasDiscount
     ? Math.round(originalPrice * (1 - discountPercent / 100))
     : originalPrice;
+
+  const isOutOfStock = stock <= 0;
 
   return (
     <TouchableOpacity activeOpacity={1} style={[styles.card, { width: cardWidth }]}>
@@ -76,9 +78,15 @@ const ProductCard = ({ images, title, rating, price, discount, isVeg, cardWidth 
       </View>
 
       <View style={styles.cartButtonRow}>
-        <TouchableOpacity activeOpacity={0.6} style={styles.cartButton}>
-          <Text style={styles.cartButtonText}>ADD TO CART</Text>
-        </TouchableOpacity>
+        {isOutOfStock ? (
+          <View style={styles.outOfStockButton}>
+            <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
+          </View>
+        ) : (
+          <TouchableOpacity activeOpacity={0.6} style={styles.cartButton}>
+            <Text style={styles.cartButtonText}>ADD TO CART</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -126,7 +134,7 @@ const styles = StyleSheet.create({
     fontFamily:'Gotham-Rounded-Bold',
   },
   swiper: {
-    height: screenHeight * 0.12,  
+    height: screenHeight * 0.10,  
     width: '100%',
   },
   productImage: {
@@ -207,10 +215,10 @@ const styles = StyleSheet.create({
   },
   discountContainer: {
     backgroundColor: '#004E6A',
-    borderRadius: 4,
+    borderRadius: 3,
     paddingHorizontal: 5,
     paddingVertical: 2,
-    marginLeft: 6,  
+    marginLeft: 'auto',  
   },
   discountText: {
     color: '#fff',
@@ -230,6 +238,19 @@ const styles = StyleSheet.create({
   cartButtonText: {
     color: '#fff',
     fontWeight: '600',
+    fontSize: 9,  
+    textAlign: 'center',
+    fontFamily: "Gotham-Rounded-Bold",
+  },
+  outOfStockButton: {
+    backgroundColor: '#99a1ad',
+    paddingVertical: 6,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  outOfStockButtonText: {
+    color: '#ffffff',
     fontSize: 9,  
     textAlign: 'center',
     fontFamily: "Gotham-Rounded-Bold",

@@ -39,6 +39,17 @@ const AddressShimmer = () => {
         <View style={styles.shimmerItem}></View>
         <View style={styles.shimmerItem}></View>
       </View>
+      <View style={styles.addressCard}>
+        <View style={styles.shimmerItem}></View>
+        <View style={styles.shimmerItem}></View>
+        <View style={styles.shimmerItem}></View>
+      </View>
+      <View style={styles.addressCard}>
+        <View style={styles.shimmerItem}></View>
+        <View style={styles.shimmerItem}></View>
+        <View style={styles.shimmerItem}></View>
+      </View>
+    
     </View>
   );
 };

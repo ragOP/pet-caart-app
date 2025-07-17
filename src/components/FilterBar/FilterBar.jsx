@@ -9,14 +9,13 @@ const windowWidth = Dimensions.get('window').width;
 
 const FilterBar = () => {
   const [brands, setBrands] = useState([]);
-  const [breeds, setBreeds] = useState([]); // State for storing breeds
-  const [selectedBrand, setSelectedBrand] = useState(null); // State for selected brand
-  const [selectedBreed, setSelectedBreed] = useState(null); // State for selected breed
+  const [breeds, setBreeds] = useState([]); 
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedBreed, setSelectedBreed] = useState(null); 
   const bottomSheetRef = useRef();
 
   useEffect(() => {
     const fetchBrands = async () => {
-      console.log('Fetching brands...');
       try {
         const response = await getBrands();
         setBrands(response.data.data);  
@@ -26,7 +25,6 @@ const FilterBar = () => {
     };
 
     const fetchBreeds = async () => {
-      console.log('Fetching breeds...');
       try {
         const response = await getBreeds();
         setBreeds(response.data.data);
@@ -40,9 +38,9 @@ const FilterBar = () => {
   }, []);
 
   const filterOptions = [
-    { label: 'Brand', isActive: true },
-    { label: 'Breed', isActive: true },
-    { label: 'Rating', isActive: true },
+    { label: 'BRAND', isActive: true },
+    { label: 'BREED', isActive: true },
+    { label: 'RATING', isActive: true },
   ];
 
   const openBottomSheet = () => {
@@ -88,8 +86,6 @@ const FilterBar = () => {
           <SlidersHorizontal size={20} color="#333" />
           <Text style={[styles.buttonText, styles.activeText]}>FILTERS</Text>
         </TouchableOpacity>
-
-        {/* Display selected filters as chips next to "FILTERS" */}
         {selectedFilters.map((filter, index) => (
           <View key={index} style={styles.chip}>
             <Text style={styles.chipText}>{filter.label}</Text>
@@ -101,8 +97,6 @@ const FilterBar = () => {
             </TouchableOpacity>
           </View>
         ))}
-
-        {/* Displaying filter options (Brand, Breed, Rating) */}
         {filterOptions.map((option, index) => (
           <TouchableOpacity
             key={index}
@@ -113,8 +107,6 @@ const FilterBar = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      {/* Bottom Sheet for applying filters */}
       <RBSheet
         ref={bottomSheetRef}
         height={'auto'}
@@ -214,8 +206,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   activeButton: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 15,
+    backgroundColor: '#6A68681A',
+    borderRadius: 8,
   },
   buttonText: {
     fontSize: 14,
@@ -229,11 +221,13 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 15,
+    backgroundColor: 'transparent',
+    borderRadius: 9,
     marginRight: 12,
     paddingHorizontal: 12,
     paddingVertical: 2,
+    borderColor:'black',
+    borderWidth:0.5
   },
   chipText: {
     color: '#000',
@@ -243,7 +237,7 @@ const styles = StyleSheet.create({
   },
   chipRemoveText: {
     color: '#000',
-    marginLeft: 6,
+    marginLeft: 8,
     fontWeight: 'bold',
   },
   bottomSheetContent: {

@@ -11,7 +11,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { ArrowLeft, MoreVertical, CheckCircle } from 'lucide-react-native';
+import { ArrowLeft, MoreVertical, CheckCircle, Edit } from 'lucide-react-native';
 import { getAddresses } from '../../apis/getAddresses';
 import { deleteAddress } from '../../apis/deleteAddress';
 import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
@@ -38,6 +38,7 @@ const AddressInfoScreen = ({ navigation }) => {
             state:item.state,
             zip:item.zip,
             isDefault: item.isDefault,
+            type: item.type
           }));
           setAddresses(formattedAddresses);
         } else {
@@ -59,7 +60,6 @@ const AddressInfoScreen = ({ navigation }) => {
 
   const handleEdit = (id) => {
     const selectedAddress = addresses.find(address => address.id === id); 
-    console.log("Selected Address Data:", selectedAddress);
     navigation.navigate('AddAddressScreen', { addressData: selectedAddress }); 
   };
   const handleDelete = (id) => {
@@ -99,7 +99,7 @@ const AddressInfoScreen = ({ navigation }) => {
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.backButton}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <Text style={styles.header}>Address Information</Text>
@@ -136,6 +136,7 @@ const AddressInfoScreen = ({ navigation }) => {
                 <Text style={styles.boldText}>{item.name}, </Text>
                 {item.address},{item.city},{item.state.charAt(0).toUpperCase() + item.state.slice(1)}-{item.zip},{item.country}
               </Text>
+  
               <View style={styles.mobileRow}>
                 <Text style={styles.phoneText}>
                   Mobile No. : <Text style={styles.boldText}>{item.phone}</Text>
@@ -152,7 +153,7 @@ const AddressInfoScreen = ({ navigation }) => {
         </ScrollView>
       ) : (
         <View style={styles.content}>
-          <Image source={require('../../assets/images/Address.png')} style={styles.image} />
+          <Image source={require('../../assets/images/add.png')} style={styles.image} />
         </View>
       )}
 
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  image: { resizeMode: 'contain', width: 350, height: 350 },
+  image: { resizeMode: 'contain', width: 300, height: 300 },
   saveButton: {
     backgroundColor: 'transparent',
     paddingVertical: 12,

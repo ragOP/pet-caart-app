@@ -6,6 +6,7 @@ import { getSubCategories } from '../../apis/getSubCategories';
 import { getProducts } from '../../apis/getProducts'; 
 
 const windowWidth = Dimensions.get('window').width;
+const CARD_WIDTH = windowWidth * 0.36;
 
 const CategoryCard = () => {
   const [categories, setCategories] = useState([]);
@@ -15,6 +16,13 @@ const CategoryCard = () => {
   const [productsLoading, setProductsLoading] = useState(true); 
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState(null);
+
+  const calculateDiscount = (item) => {
+    if (!item.salePrice) return 0; 
+    let discountPercent = Math.round(((item.price - item.salePrice) / item.price) * 100);
+    return discountPercent;
+  };
+
   const fetchSubCategories = async () => {
     setCategoriesLoading(true);
     try {
@@ -32,6 +40,7 @@ const CategoryCard = () => {
     }
   };
 
+  // Fetch products based on filters (category, brand, breed)
   const fetchProducts = async (subCategorySlug, brand, breed) => {
     setProductsLoading(true);
     try {
@@ -40,7 +49,6 @@ const CategoryCard = () => {
         brand, 
         breed 
       });
-
       if (response && response.data && response.data.data.length > 0) {
         setProducts(response.data.data); 
       } else {
@@ -67,10 +75,10 @@ const CategoryCard = () => {
   return (
     <View style={styles.container}>
       <FilterBar
-       selectedBrand={selectedBrand}
-       selectedBreed={selectedBreed}
-       onBrandChange={setSelectedBrand}
-       onBreedChange={setSelectedBreed}
+        selectedBrand={selectedBrand}
+        selectedBreed={selectedBreed}
+        onBrandChange={setSelectedBrand}
+        onBreedChange={setSelectedBreed}
       />
 
       <ScrollView style={styles.mainContainer}>
@@ -106,23 +114,29 @@ const CategoryCard = () => {
             <Text style={styles.sectionTitle}>{selectedCategory?.name}</Text>
 
             {productsLoading ? (
-              <ActivityIndicator/>
+              <ActivityIndicator size="large" color="#F59A11" />
             ) : (
               <FlatList
                 data={products}
-                renderItem={({ item }) => (
-                  <ProductCard
-                    images={item.images}
-                    title={item.title}
-                    price={item.price}
-                    discount={item.discount}
-                    rating={item.rating}
-                    isVeg={item.isVeg}
-                    cardWidth={windowWidth * 0.36}
-                  />
-                )}
+                renderItem={({ item }) => {
+                  console.log('sayem',item)
+                  const discountPercent = calculateDiscount(item);
+
+                  return (
+                    <ProductCard
+                      images={item.images}  
+                      title={item.title}
+                      rating={item.rating}
+                      price={item.price}
+                      discount={discountPercent > 0 ? `${discountPercent}%` : '0%'} 
+                      isVeg={item.isVeg}
+                      stock={item.stock}
+                      cardWidth={CARD_WIDTH}
+                    />
+                  );
+                }}
                 showsVerticalScrollIndicator={false}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => item.id ? item.id.toString() : `fallback-${index}`}
                 numColumns={2}
                 columnWrapperStyle={styles.columnWrapper}
                 ListEmptyComponent={<Text>No products available</Text>}

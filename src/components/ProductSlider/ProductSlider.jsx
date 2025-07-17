@@ -21,7 +21,6 @@ const ProductSlider = ({
 }) => {
   return (
     <View style={styles.container}>
-      {/* Styled Heading */}
       {(headingIcon || headingTextOrange || headingTextBlue) && (
         <View style={styles.headingContainer}>
           {headingIcon && (
@@ -53,6 +52,7 @@ const ProductSlider = ({
         price={item.price}
         discount={item.discount}
         isVeg={item.isVeg}
+        stock={item.stock}
         cardWidth={CARD_WIDTH}
       />
     </View>

@@ -31,8 +31,7 @@ const EssentialsSlider = ({ products, headingIcon, headingTextOrange, headingTex
     <TouchableOpacity
       style={[
         styles.card,
-        { marginRight: index === products.length - 1 ? 0 : 12 }, 
-      ]}
+ { marginRight: index === products.length - 1 ? 0 : 28 },      ]}
       activeOpacity={1}
       onPress={() => {}}
     >
@@ -113,7 +112,7 @@ const styles = StyleSheet.create({
   },
   cardBgImage: {
     borderRadius: 10,
-    resizeMode: 'cover',
+    resizeMode: 'contain',
   },
   image: {
     width: 120,   
