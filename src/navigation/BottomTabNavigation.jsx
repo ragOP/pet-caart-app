@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions,Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Svg, { Path } from 'react-native-svg';
 import * as LucideIcons from 'lucide-react-native';
@@ -17,7 +17,7 @@ const BreedShopScreen = () => <View style={styles.screen}><Text>Breed Shop</Text
 const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;
   const tabWidth = width / state.routes.length;
-  const curveHeight = 32; 
+  const curveHeight = 32;
   const curveSpread = tabWidth * 1.1;
 
   const startX = tabWidth * selectedIndex;
@@ -49,8 +49,8 @@ const CustomTabBar = ({ state, navigation }) => {
   return (
     <View style={styles.tabBarContainer}>
       <Svg width={width} height={80} style={styles.svg}>
-      <Path d={curvePath} fill="#0888B1" />
-            </Svg>
+        <Path d={curvePath} fill="#0888B1" />
+      </Svg>
 
       {state.routes.map((route, index) => {
         const isFocused = selectedIndex === index;
@@ -69,7 +69,7 @@ const CustomTabBar = ({ state, navigation }) => {
         const LucideIcon = LucideIcons[iconName];
 
         return (
-            <TouchableOpacity
+          <TouchableOpacity
             key={route.key}
             onPress={onPress}
             activeOpacity={1}
@@ -80,13 +80,13 @@ const CustomTabBar = ({ state, navigation }) => {
           >
             <View style={[styles.iconWrapper, { paddingTop: isFocused ? 10 : 0 }]}>
               {isFocused && (
-               <View style={styles.pawWrapper}>
-               <Image
-                 source={require('../assets/icons/paw.png')} 
-                 style={{ width: 26, height: 26 }}
-                 resizeMode="contain"
-               />
-             </View>
+                <View style={styles.pawWrapper}>
+                  <Image
+                    source={require('../assets/icons/paw.png')}
+                    style={{ width: 26, height: 26 }}
+                    resizeMode="contain"
+                  />
+                </View>
               )}
               {LucideIcon && (
                 <LucideIcon
@@ -106,16 +106,16 @@ const CustomTabBar = ({ state, navigation }) => {
 
 export default function BottomTabNavigation() {
   return (
-      <Tab.Navigator
-        screenOptions={{ headerShown: false }}
-        tabBar={(props) => <CustomTabBar {...props} />}
-      >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Categories" component={CategoryScreen} />
-        <Tab.Screen name="BreedShop" component={BreedShopScreen} />
-        <Tab.Screen name="Cart" component={CartScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
-      </Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{ headerShown: false }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Categories" component={CategoryScreen} />
+      <Tab.Screen name="BreedShop" component={BreedShopScreen} />
+      <Tab.Screen name="Cart" component={CartScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
   );
 }
 
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   },
   pawWrapper: {
     position: 'absolute',
-    top: -30, 
+    top: -30,
     padding: 6,
     borderRadius: 50,
     zIndex: 10,

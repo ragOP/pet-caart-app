@@ -49,8 +49,8 @@ const InviteScreen = ({ navigation }) => {
         </Text>
 
         <TouchableOpacity activeOpacity={1} onPress={() => navigation.navigate('Terms')}>
-  <Text style={styles.termsText}>Terms and Conditions</Text>
-</TouchableOpacity>
+          <Text style={styles.termsText}>Terms and Conditions</Text>
+        </TouchableOpacity>
 
         <View style={styles.inputContainer}>
           <TextInput

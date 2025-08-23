@@ -1,11 +1,10 @@
 
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Platform } from 'react-native';
 import { loginFailure, loginRequest, loginSuccess } from '../../redux/authSlice';
 import { loginUser } from '../../apis/loginUser';
 import { ArrowLeft, MapPin } from 'lucide-react-native';
-import SearchBar from '../../components/SearchBar/SearchBar';
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -60,10 +59,8 @@ const LoginScreen = ({ navigation }) => {
             <TouchableOpacity activeOpacity={1} onPress={() => navigation.goBack()} style={styles.backButton}>
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
-            <SearchBar />
-            <TouchableOpacity style={styles.locationButton} activeOpacity={1}>
-              <MapPin color="#FFA500" size={24} />
-            </TouchableOpacity>
+            <View style={styles.headerCenter} />
+         
           </View>
         </SafeAreaView>
       </View>
@@ -111,7 +108,7 @@ const LoginScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <View style={styles.signupRow}>
-          <Text style={styles.signupText}>Don’t have an account? </Text>
+          <Text style={styles.signupText}>Don't have an account? </Text>
           <TouchableOpacity activeOpacity={1} onPress={handleSignUpPress}>
             <Text style={styles.signupLink}>Sign up</Text>
           </TouchableOpacity>
@@ -139,17 +136,20 @@ padding:20 },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 5,
   },
   backButton: {
     paddingRight: 15,
   },
+  headerCenter: {
+    flex: 1,
+  },
   locationButton: {
     backgroundColor: '#fff',
     padding: 10,
     borderRadius: 10,
-    marginLeft: 10,
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.1,

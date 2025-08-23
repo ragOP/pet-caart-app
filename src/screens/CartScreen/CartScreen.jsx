@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +10,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { Trash2, MapPin } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Path, Rect } from 'react-native-svg';
@@ -18,6 +18,7 @@ import { getCart } from '../../apis/getCart';
 import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
 import { getCoupons } from '../../apis/getCoupons';
 import { addProductToCart } from '../../apis/addProductToCart';
+import SafeAreaWrapper from '../../components/SafeAreaWrapper';
 
 const CartScreen = () => {
   const [showAllCoupons, setShowAllCoupons] = useState(false);
@@ -235,8 +236,7 @@ const CartScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+    <SafeAreaWrapper>
 
       <View style={styles.headerWrapper}>
         <View style={styles.headerRow}>
@@ -249,6 +249,7 @@ const CartScreen = () => {
           </Text>
         </View>
       </View>
+
       {loading ? (
         <AddressShimmer />
       ) : cartItems.length === 0 ? (
@@ -458,21 +459,16 @@ const CartScreen = () => {
           </ScrollView>
         </View>
       )}
-    </View>
+    </SafeAreaWrapper>
   );
 };
 
 export default CartScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: 10,
-    backgroundColor: '#FFF8EE',
-  },
   headerWrapper: {
     backgroundColor: '#FEF5E7',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 30,
+    paddingVertical: 10
   },
   headerRow: {
     flexDirection: 'row',

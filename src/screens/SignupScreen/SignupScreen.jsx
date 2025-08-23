@@ -9,24 +9,22 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
+  Platform,
 } from 'react-native';
-import SearchBar from '../../components/SearchBar/SearchBar';
 
 const SignUpScreen = ({navigation}) => {
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
+    name: '',
+    phoneNumber: '',
     otp: '',
   });
 
   const handleChange = (key, value) => {
-    if (key === 'phone') {
+    if (key === 'phoneNumber') {
       const digitsOnly = value.replace(/[^0-9]/g, '');
       if (digitsOnly.length <= 10) {
-        setForm({ ...form, phone: digitsOnly });
+        setForm({ ...form, phoneNumber: digitsOnly });
       }
     } else {
       setForm({ ...form, [key]: value });
@@ -34,18 +32,30 @@ const SignUpScreen = ({navigation}) => {
   };
 
   const handleSendOtp = () => {
-    if (form.phone.length === 10) {
+    if (form.name.trim() === '') {
+      alert('Please enter your name');
+      return;
+    }
+    if (form.phoneNumber.length === 10) {
       setShowOtpInput(true);
+      alert('OTP sent! Use 123456 for testing.');
     } else {
       alert('Please enter a valid 10-digit phone number');
     }
   };
 
   const handleRegister = () => {
-    if (form.otp.length === 6) {
+    if (form.otp === '123456') {
+      const signupData = {
+        name: form.name,
+        phoneNumber: form.phoneNumber,
+        otp: 123456
+      };
+      console.log('Signup Data:', signupData);
       alert('Registered successfully!');
+      navigation.navigate('BottomTabs');
     } else {
-      alert('Please enter a valid OTP');
+      alert('Please enter the correct OTP (123456)');
     }
   };
 
@@ -56,61 +66,44 @@ const SignUpScreen = ({navigation}) => {
 
   const handleLoginPress = () => {
     navigation.navigate('LoginScreen');
-
   };
 
   return (
     <SafeAreaView style={styles.container}>
-           <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
             <TouchableOpacity activeOpacity={1} onPress={() => navigation.goBack()} style={styles.backButton}>
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
-            <SearchBar />
+            <View style={styles.headerCenter} />
             <TouchableOpacity style={styles.locationButton} activeOpacity={1}>
               <MapPin color="#FFA500" size={24} />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
       </View>
-      <ScrollView contentContainerStyle={{     padding: 20, }}>
+      <ScrollView contentContainerStyle={{ padding: 20 }}>
         <Text style={styles.heading}>
           Create your <Text style={styles.brand}>PetCaart </Text>
           <Text>Account</Text>
         </Text>
 
-        <Text style={styles.label}>First Name</Text>
+        <Text style={styles.label}>Full Name</Text>
         <TextInput
           style={styles.input}
-          value={form.firstName}
-          onChangeText={(v) => handleChange('firstName', v)}
-          placeholder="Enter first name"
-        />
-
-        <Text style={styles.label}>Last Name</Text>
-        <TextInput
-          style={styles.input}
-          value={form.lastName}
-          onChangeText={(v) => handleChange('lastName', v)}
-          placeholder="Enter last name"
-        />
-
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          value={form.email}
-          onChangeText={(v) => handleChange('email', v)}
-          placeholder="Enter email"
-          keyboardType="email-address"
+          value={form.name}
+          onChangeText={(v) => handleChange('name', v)}
+          placeholder="Enter your full name"
+          editable={!showOtpInput}
         />
 
         <Text style={styles.label}>Phone Number</Text>
         <TextInput
           style={styles.input}
-          value={form.phone}
-          onChangeText={(v) => handleChange('phone', v)}
+          value={form.phoneNumber}
+          onChangeText={(v) => handleChange('phoneNumber', v)}
           placeholder="Enter 10-digit phone number"
           keyboardType="number-pad"
           editable={!showOtpInput}
@@ -127,10 +120,11 @@ const SignUpScreen = ({navigation}) => {
               style={styles.input}
               value={form.otp}
               onChangeText={(v) => handleChange('otp', v)}
-              placeholder="Enter OTP"
+              placeholder="Enter OTP (123456)"
               keyboardType="number-pad"
               maxLength={6}
             />
+            <Text style={styles.otpHint}>Use 123456 as OTP for testing</Text>
           </>
         )}
 
@@ -159,9 +153,8 @@ export default SignUpScreen;
 
 const styles = StyleSheet.create({
   container: {
-
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFBF6',
   },
   headerWrapper: {
     paddingVertical: 10,
@@ -171,17 +164,20 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 15,
     paddingVertical: 5,
   },
   backButton: {
     paddingRight: 15,
   },
+  headerCenter: {
+    flex: 1,
+  },
   locationButton: {
     backgroundColor: '#fff',
     padding: 10,
     borderRadius: 10,
-    marginLeft: 10,
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -244,5 +240,13 @@ const styles = StyleSheet.create({
     color: '#f79e1b',
     fontFamily: 'Gotham-Rounded-Bold',
     marginBottom: 10,
+  },
+  otpHint: {
+    color: '#666',
+    fontSize: 12,
+    fontFamily: 'Gotham-Rounded-Medium',
+    textAlign: 'center',
+    marginBottom: 20,
+    fontStyle: 'italic',
   },
 });

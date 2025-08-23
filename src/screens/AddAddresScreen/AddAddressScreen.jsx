@@ -87,7 +87,8 @@ const AddAddressScreen = ({ route, navigation }) => {
           keyboardType="phone-pad"
           placeholderTextColor="#6A6868"
         />
-      <Text style={styles.label}>Address</Text>
+      
+        <Text style={styles.label}>Address</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter your address"
