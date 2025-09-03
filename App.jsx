@@ -1,9 +1,10 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import { Platform, Alert, PermissionsAndroid } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { store } from './src/redux/store';
+import { store, persistor } from './src/redux/store';
 import NavigationPage from './src/navigation/NavigationPage';
 
 const App = () => {
@@ -80,7 +81,9 @@ const App = () => {
 
   return (
     <Provider store={store}>
-      <NavigationPage />
+      <PersistGate persistor={persistor}>
+        <NavigationPage />
+      </PersistGate>
     </Provider>
   );
 };

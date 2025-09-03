@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -26,7 +26,7 @@ import {
 import { logout } from '../../redux/authSlice';
 import SearchBar from '../../components/SearchBar/SearchBar';
 
-const formatDateSince = (date) => {
+const formatDateSince = date => {
   const options = { year: 'numeric', month: 'long' };
   const formattedDate = new Date(date).toLocaleDateString('en-US', options);
   return `Petcart member since ${formattedDate}`;
@@ -34,17 +34,37 @@ const formatDateSince = (date) => {
 
 const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { isLoggedIn, user } = useSelector((state) => state.auth);
-  const createdAt = user?.createdAt || '2025-07-02T16:36:26.352Z'; 
+  const { isLoggedIn, user } = useSelector(state => state.auth);
+  const createdAt = user?.createdAt || '2025-07-02T16:36:26.352Z';
   const membershipSince = formatDateSince(createdAt);
 
   const loggedInMenuItems = [
-    { label: 'Edit Profile', icon: <UserRound size={26} color="#004E6A" />, navigateTo: 'ProfileDetailScreen' },
-    { label: 'Address Information', icon: <MapPinHouse size={26} color="#004E6A" />, navigateTo: 'AddressInfoScreen' },
-    { label: 'My Orders', icon: <PackageOpen size={26} color="#004E6A" />, navigateTo: 'MyOrderScreen' },
-    { label: 'Invite Friends', icon: <UserRoundPlus size={26} color="#004E6A" />,navigateTo: 'InviteScreen' },
+    {
+      label: 'Edit Profile',
+      icon: <UserRound size={26} color="#004E6A" />,
+      navigateTo: 'ProfileDetailScreen',
+    },
+    {
+      label: 'Address Information',
+      icon: <MapPinHouse size={26} color="#004E6A" />,
+      navigateTo: 'AddressInfoScreen',
+    },
+    {
+      label: 'My Orders',
+      icon: <PackageOpen size={26} color="#004E6A" />,
+      navigateTo: 'MyOrderScreen',
+    },
+    {
+      label: 'Invite Friends',
+      icon: <UserRoundPlus size={26} color="#004E6A" />,
+      navigateTo: 'InviteScreen',
+    },
     { label: 'Contact Us', icon: <Headset size={26} color="#004E6A" /> },
-    { label: 'Log Out', icon: <LogOut size={26} color="#004E6A" />, action: () => dispatch(logout()) },
+    {
+      label: 'Log Out',
+      icon: <LogOut size={26} color="#004E6A" />,
+      action: () => dispatch(logout()),
+    },
   ];
 
   const menuItems = isLoggedIn ? loggedInMenuItems : [];
@@ -55,7 +75,11 @@ const ProfileScreen = ({ navigation }) => {
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity activeOpacity={1} onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <SearchBar />
@@ -83,14 +107,14 @@ const ProfileScreen = ({ navigation }) => {
         </View>
       ) : (
         <View style={styles.header}>
-         <View style={styles.profileImageWrapper}>
-  <View style={styles.profileImage}> 
-    <UserRound size={30} color="#004E6A" />
-  </View>
-</View>
+          <View style={styles.profileImageWrapper}>
+            <View style={styles.profileImage}>
+              <UserRound size={30} color="#004E6A" />
+            </View>
+          </View>
           <View style={styles.textWrapper}>
-            <Text style={styles.name}>{user?.name || 'User'}</Text> 
-            <Text style={styles.membership}>{membershipSince}</Text> 
+            <Text style={styles.name}>{user?.name || 'User'}</Text>
+            <Text style={styles.membership}>{membershipSince}</Text>
           </View>
         </View>
       )}
@@ -103,7 +127,11 @@ const ProfileScreen = ({ navigation }) => {
               key={index}
               style={styles.menuItem}
               activeOpacity={0.8}
-              onPress={() => item.navigateTo ? navigation.navigate(item.navigateTo) : item.action && item.action()}
+              onPress={() =>
+                item.navigateTo
+                  ? navigation.navigate(item.navigateTo)
+                  : item.action && item.action()
+              }
             >
               {item.icon}
               <Text style={styles.menuText}>{item.label}</Text>
@@ -192,21 +220,21 @@ const styles = StyleSheet.create({
   },
   profileImageWrapper: {
     marginRight: 15,
-    alignItems: 'center',  
-    justifyContent: 'center', 
-    width: 60, 
-    height: 60, 
-    borderRadius: 50, 
-    backgroundColor: '#fff',  
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 60,
+    height: 60,
+    borderRadius: 50,
+    backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#004E6A',
   },
   profileImage: {
-    width: '100%', 
-    height: '100%', 
-    justifyContent: 'center', 
-    alignItems: 'center',  
-    padding: 10, 
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
   },
   textWrapper: {
     flex: 1,
