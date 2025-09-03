@@ -1,161 +1,170 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions,Image } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Platform,
+  ImageBackground,
+} from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Svg, { Path } from 'react-native-svg';
-import * as LucideIcons from 'lucide-react-native';
+import {
+  Home,
+  ShoppingBasket,
+  UserRound,
+  LayoutDashboard,
+  Logs,
+} from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import CategoryScreen from '../screens/CategoryScreen/CategoryScreen';
-import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
 import CartScreen from '../screens/CartScreen/CartScreen';
+import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
-
-const BreedShopScreen = () => <View style={styles.screen}><Text>Breed Shop</Text></View>;
-// const CartScreen = () => <View style={styles.screen}><Text>Cart</Text></View>;
+const TABS = [
+  { label: 'Home', icon: Home, route: 'Home' },
+  { label: 'Categories', icon: Logs, route: 'Categories' },
+  { label: '', icon: LayoutDashboard, route: 'BreedShop' },
+  { label: 'Cart', icon: ShoppingBasket, route: 'Cart' },
+  { label: 'Profile', icon: UserRound, route: 'Profile' },
+];
 
 const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;
-  const tabWidth = width / state.routes.length;
-  const curveHeight = 32; 
-  const curveSpread = tabWidth * 1.1;
-
-  const startX = tabWidth * selectedIndex;
-  const midX = startX + tabWidth / 2;
-  const endX = tabWidth * (selectedIndex + 1);
-
-  const curvePath = `
-    M0 0 
-    H${startX}
-    C${startX + curveSpread * 0.25} 0, ${midX - curveSpread * 0.25} ${curveHeight}, ${midX} ${curveHeight}
-    C${midX + curveSpread * 0.25} ${curveHeight}, ${endX - curveSpread * 0.25} 0, ${endX} 0
-    H${width}
-    V80
-    H0
-    Z
-  `;
-
-  const getIconName = (routeName) => {
-    switch (routeName) {
-      case 'Home': return 'Home';
-      case 'Categories': return 'Logs';
-      case 'BreedShop': return 'Cat';
-      case 'Cart': return 'ShoppingCart';
-      case 'Profile': return 'User';
-      default: return 'Circle';
-    }
-  };
 
   return (
-    <View style={styles.tabBarContainer}>
-      <Svg width={width} height={80} style={styles.svg}>
-      <Path d={curvePath} fill="#0888B1" />
-            </Svg>
+    <SafeAreaView edges={['bottom']} style={styles.wrapper}>
+      <ImageBackground
+        source={require('../assets/images/bar.png')}
+        style={styles.backgroundImage}
+      >
+        {/* Tab Buttons */}
+        <View style={styles.tabBar}>
+          {TABS.map((tab, index) => {
+            const Icon = tab.icon;
+            const isSelected = selectedIndex === index;
+            if (index === 2) {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => navigation.navigate(tab.route)}
+                  style={styles.centerButton}
+                  activeOpacity={0.8}
+                >
+                  <View
+                    style={[
+                      styles.centerCircle,
+                      isSelected && { backgroundColor: '#F59A11' },
+                    ]}
+                  >
+                    <Icon size={26} color={isSelected ? '#fff' : '#fff'} />
+                  </View>
+                </TouchableOpacity>
+              );
+            }
+            const isCategoriesTab = tab.label === 'Categories';
 
-      {state.routes.map((route, index) => {
-        const isFocused = selectedIndex === index;
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-          });
-
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
-
-        const iconName = getIconName(route.name);
-        const LucideIcon = LucideIcons[iconName];
-
-        return (
-            <TouchableOpacity
-            key={route.key}
-            onPress={onPress}
-            activeOpacity={1}
-            style={[
-              styles.tabButton,
-              { width: tabWidth, paddingTop: isFocused ? 12 : 0 }
-            ]}
-          >
-            <View style={[styles.iconWrapper, { paddingTop: isFocused ? 10 : 0 }]}>
-              {isFocused && (
-               <View style={styles.pawWrapper}>
-               <Image
-                 source={require('../assets/icons/paw.png')} 
-                 style={{ width: 26, height: 26 }}
-                 resizeMode="contain"
-               />
-             </View>
-              )}
-              {LucideIcon && (
-                <LucideIcon
-                  size={isFocused ? 25 : 24}
-                  color="white"
-                  style={{ marginTop: isFocused ? 2 : 4, transform: [{ scale: isFocused ? 1.1 : 1 }] }}
-                />
-              )}
-              {!isFocused && <Text style={styles.label}>{route.name}</Text>}
-            </View>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[styles.tab, isCategoriesTab && { marginRight: 30 }]}
+                onPress={() => navigation.navigate(tab.route)}
+                activeOpacity={0.7}
+              >
+                <Icon size={26} color={isSelected ? '#0888B1' : '#4B4B4B'} />
+                <Text
+                  style={[styles.label, isSelected && { color: '#0888B1' }]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 };
 
-export default function BottomTabNavigation() {
+export default function BottomNavigation() {
   return (
-      <Tab.Navigator
-        screenOptions={{ headerShown: false }}
-        tabBar={(props) => <CustomTabBar {...props} />}
-      >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Categories" component={CategoryScreen} />
-        <Tab.Screen name="BreedShop" component={BreedShopScreen} />
-        <Tab.Screen name="Cart" component={CartScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
-      </Tab.Navigator>
+    <Tab.Navigator
+      screenOptions={{ headerShown: false }}
+      tabBar={props => <CustomTabBar {...props} />}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Categories" component={CategoryScreen} />
+      <Tab.Screen name="BreedShop" component={CategoryScreen} />
+      <Tab.Screen name="Cart" component={CartScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  tabBarContainer: {
+  wrapper: {
     position: 'absolute',
     bottom: 0,
     width,
     height: 80,
-    backgroundColor: 'white',
-    flexDirection: 'row',
+    zIndex: 10,
+    backgroundColor: '#fff',
   },
-  svg: {
+  backgroundImage: {
     position: 'absolute',
     bottom: 0,
-  },
-  tabButton: {
+    width,
+    height: 95,
     justifyContent: 'center',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
     height: 80,
+    zIndex: 2,
+    paddingHorizontal: 5,
+    paddingTop: 5,
+    paddingBottom: 8,
   },
-  iconWrapper: {
+  tab: {
     alignItems: 'center',
-    position: 'relative',
-  },
-  pawWrapper: {
-    position: 'absolute',
-    top: -30, 
-    padding: 6,
-    borderRadius: 50,
-    zIndex: 10,
+    justifyContent: 'center',
+    width: (width - 120) / 4,
+    marginTop: 2,
+    paddingTop: 10,
   },
   label: {
     fontSize: 12,
-    color: 'white',
     marginTop: 4,
+    color: '#4B4B4B',
+  },
+  centerButton: {
+    position: 'absolute',
+    bottom: 30,
+    left: width / 2 - 30,
+    zIndex: 99,
+  },
+  centerCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#0888B1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
 });

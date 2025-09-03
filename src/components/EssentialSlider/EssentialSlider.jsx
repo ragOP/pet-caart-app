@@ -1,13 +1,62 @@
+// EssentialSlider.js
 import React from 'react';
-import { View, Text, FlatList, Image, StyleSheet, Dimensions, TouchableOpacity,ImageBackground } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet } from 'react-native';
 
-const windowWidth = Dimensions.get('window').width;
-const ITEM_WIDTH = windowWidth / 4.1;
+const data = [
+  [
+    {
+      id: '1',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+    {
+      id: '2',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+    {
+      id: '3',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+    {
+      id: '4',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+  ],
+  [
+    {
+      id: '5',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+    {
+      id: '6',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+    {
+      id: '7',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+    {
+      id: '8',
+      name: 'Chicken Gravy',
+      image: require('../../assets/images/dog.png'),
+    },
+  ],
+];
 
-const EssentialsSlider = ({ products, headingIcon, headingTextOrange, headingTextBlue, onItemPress }) => {
+const EssentialSlider = ({
+  headingIcon,
+  headingTextOrange = '',
+  headingTextBlue = '',
+}) => {
   return (
     <View style={styles.container}>
-      {headingIcon && ( 
+      {headingIcon && (
         <View style={styles.headingContainer}>
           <Image
             source={headingIcon}
@@ -21,104 +70,56 @@ const EssentialsSlider = ({ products, headingIcon, headingTextOrange, headingTex
         </View>
       )}
 
-<FlatList
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  data={products}
-  keyExtractor={(item) => item.id}
-  contentContainerStyle={{ paddingLeft: 15, paddingRight: 15 }} 
-  renderItem={({ item, index }) => (
-    <TouchableOpacity
-      style={[
-        styles.card,
- { marginRight: index === products.length - 1 ? 0 : 28 },      ]}
-      activeOpacity={1}
-      onPress={() => {}}
-    >
-      <ImageBackground
-        source={require('../../assets/images/productbg.png')}
-        style={styles.cardBackground}
-        imageStyle={styles.cardBgImage}
-      >
-        <Image source={item.image} style={styles.image} resizeMode="contain" />
-        <Text style={styles.label} numberOfLines={2} ellipsizeMode="tail">
-          {item.label}
-        </Text>
-      </ImageBackground>
-    </TouchableOpacity>
-  )}
-/>
-
-
+      {data.map((row, index) => (
+        <FlatList
+          key={index}
+          horizontal
+          data={row}
+          style={styles.sliderRow}
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.itemContainer}>
+              <Image source={item.image} style={styles.image} />
+              <Text style={styles.text}>{item.name}</Text>
+            </View>
+          )}
+          keyExtractor={item => item.id}
+        />
+      ))}
     </View>
   );
 };
-
-export default EssentialsSlider;
 
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 5,
     paddingHorizontal: 15,
-    backgroundColor: '#FDF4E6',
-    height: 220, 
   },
   headingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
   },
-  iconImage: {
-    width: 35,
-    height: 35,
+  iconImage: { width: 35, height: 35, marginRight: 8 },
+  headingText: { fontSize: 20, fontFamily: 'Gotham-Rounded-Bold' },
+  orange: { color: '#f39c12', fontFamily: 'Gotham-Rounded-Bold' },
+  blue: { color: '#3498db', fontFamily: 'Gotham-Rounded-Bold' },
+  sliderRow: {
+    marginVertical: 10,
+  },
+  itemContainer: {
+    alignItems: 'center',
     marginRight: 8,
   },
-  headingText: {
-    fontSize: 20,
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
-  orange: {
-    color: '#f39c12',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
-  blue: {
-    color: '#3498db',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
-  card: {
-    width: ITEM_WIDTH,
-    alignItems: 'center',
-  },
-  
-  label: {
-    marginTop: 6,
-  fontFamily:'Gotham-Rounded-Bold',
-    fontSize: 14,
-    color: '#000',
-    textAlign: 'center',
-    width: '100%',
-  },
-  cardBackground: {
-    width: 100,       
-    height: 100,      
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-  shadowOffset: { width: 2, height: 5 },
-  shadowOpacity: 0.1,
-  shadowRadius: 4,
-  elevation: 5,
-              
-  },
-  cardBgImage: {
-    borderRadius: 10,
+  image: {
+    width: 120,
+    height: 130,
     resizeMode: 'contain',
   },
-  image: {
-    width: 120,   
-    height: 120,  
-    zIndex: 1,
+  text: {
+    marginTop: 8,
+    fontSize: 15,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
-  
-  
 });
+
+export default EssentialSlider;

@@ -25,6 +25,9 @@ import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
 import NewlyLaunchedSlider from '../../components/NewlyLaunchedSlider/NewlyLaunchedSlider';
 import CatLifeScreen from '../../components/CatLife/CatLifeScreen';
 import BakedProduct from '../../components/BakedProduct/BakedProduct';
+import Footer from '../../components/Footer/Footer';
+import AdBannner from '../../components/AdBannner/AdBanner';
+import PetPromosList from '../../components/PetPromos/PetPromos';
 
 const HomeScreen = () => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -82,14 +85,18 @@ const HomeScreen = () => {
             .map(item => ({
               id: item._id,
               label: item.title,
-              image: { uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '' },
+              image: {
+                uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
+              },
             }));
           const addToCart = allProducts
             .filter(item => item.isAddToCart)
             .map(item => ({
               id: item._id,
               label: item.title,
-              image: { uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '' },
+              image: {
+                uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
+              },
             }));
           const bestSellers = allProducts
             .filter(item => item.isBestSeller && Number(item.salePrice) < 599)
@@ -97,41 +104,41 @@ const HomeScreen = () => {
               const discountPercent = item.salePrice
                 ? Math.round(((item.price - item.salePrice) / item.price) * 100)
                 : 0;
-    
+
               return {
                 title: item.title,
                 rating: item.ratings?.average || 0,
                 price: item.price,
                 discount: discountPercent > 0 ? discountPercent + '%' : '0%',
-                images: item.images || (item.variants?.[0]?.images || []), 
+                images: item.images || item.variants?.[0]?.images || [],
                 isVeg: item.isVeg || false,
               };
             });
-    
-            const newlyLaunched = allProducts
-            .filter(item => item.newleyLaunced=true)
+
+          const newlyLaunched = allProducts
+            .filter(item => (item.newleyLaunced = true))
             .map(item => {
               return {
                 id: item._id,
                 label: item.title,
-                image: { uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '' },
-                isBestSeller: item.isBestSeller || false, 
+                image: {
+                  uri:
+                    item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
+                },
+                isBestSeller: item.isBestSeller || false,
               };
             });
-          
-          
-    
+
           setBestSellerData(bestSellers);
           setEssentialsData(essentials);
           setAddToCartData(addToCart);
-          setNewlyLaunchedData(newlyLaunched);  
+          setNewlyLaunchedData(newlyLaunched);
         }
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     };
-    
-    
+
     fetchProducts();
     fetchBanner();
     fetchSliders();
@@ -139,7 +146,11 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" translucent={false} />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFF5E1"
+        translucent={false}
+      />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
@@ -157,19 +168,19 @@ const HomeScreen = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {loadingBanner ? (
+        {/* {loadingBanner ? (
           <BannerShimmer />
         ) : bannerImageUrl ? (
           <Banner source={{ uri: bannerImageUrl }} />
         ) : null}
 
-{sliderData.length === 0 ? (
-  <BannerSliderShimmer />
-) : (
-  <BannerSlider data={sliderData} />
-)}
+        {sliderData.length === 0 ? (
+          <BannerSliderShimmer />
+        ) : (
+          <BannerSlider data={sliderData} />
+        )} */}
 
-{essentialsData.length === 0 ? (
+        {/* {essentialsData.length === 0 ? (
   <EssentialsSliderShimmer />
 ) : (
   <EssentialsSlider
@@ -179,30 +190,36 @@ const HomeScreen = () => {
     headingTextBlue="Essentials"
  
   />
-)}
+)} */}
+        <AdBannner />
+        <EssentialsSlider
+          headingIcon={require('../../assets/icons/paw2.png')}
+          headingTextOrange="Everyday"
+          headingTextBlue="Essentials"
+        />
 
-{addToCartData.length === 0 ? (
-  <EssentialsSliderShimmer />
-) : (
-  <EssentialsSlider
-    products={addToCartData}
-    headingIcon={require('../../assets/icons/paw2.png')}
-    headingTextOrange="Trending"
-    headingTextBlue="Add-To-Carts"
-  />
-)}
-{newlyLaunchedData.length === 0 ? (
-          <ProductSliderShimmer /> 
+        {addToCartData.length === 0 ? (
+          <EssentialsSliderShimmer />
         ) : (
-    <NewlyLaunchedSlider
-      products={newlyLaunchedData}
-      headingIcon={require('../../assets/icons/paw2.png')}
-      headingTextOrange="Newly"
-      headingTextBlue="Launched"
-    />
-  )}
- {bestSellerData.length === 0 ? (
-          <ProductSliderShimmer /> 
+          <EssentialsSlider
+            products={addToCartData}
+            headingIcon={require('../../assets/icons/paw2.png')}
+            headingTextOrange="Trending"
+            headingTextBlue="Add-To-Carts"
+          />
+        )}
+        {newlyLaunchedData.length === 0 ? (
+          <ProductSliderShimmer />
+        ) : (
+          <NewlyLaunchedSlider
+            products={newlyLaunchedData}
+            headingIcon={require('../../assets/icons/paw2.png')}
+            headingTextOrange="Newly"
+            headingTextBlue="Launched"
+          />
+        )}
+        {bestSellerData.length === 0 ? (
+          <ProductSliderShimmer />
         ) : (
           <ProductSlider
             headingIcon={require('../../assets/icons/paw2.png')}
@@ -211,15 +228,16 @@ const HomeScreen = () => {
             products={bestSellerData}
           />
         )}
-       
-  <CatLifeScreen
-  headingIcon={require('../../assets/icons/paw2.png')}
-  headingTextOrange="A Day in Your"
-        headingTextBlue="Cat’s Life..."
-  />
-<BakedProduct style={styles.baked} />
 
-</ScrollView>
+        {/* <CatLifeScreen
+          headingIcon={require('../../assets/icons/paw2.png')}
+          headingTextOrange="A Day in Your"
+          headingTextBlue="Cat’s Life..."
+        />
+        <BakedProduct style={styles.baked} /> */}
+        <PetPromosList />
+        <Footer />
+      </ScrollView>
     </View>
   );
 };
@@ -236,7 +254,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
     paddingVertical: 5,
-
   },
   logo: {
     width: 50,
@@ -255,14 +272,13 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 100,
-    backgroundColor: '#FDF4E6',
-    marginBottom: 16,
-
+    backgroundColor: '#FFFFFF',
+    // marginBottom: 16,
   },
   baked: {
-    width: '93%',             
-    alignSelf: 'center',         
-    paddingTop: 20,  
+    width: '93%',
+    alignSelf: 'center',
+    paddingTop: 20,
   },
 });
 
