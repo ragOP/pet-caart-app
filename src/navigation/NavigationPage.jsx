@@ -15,6 +15,7 @@ import SplashScreen from '../screens/SplashScreen/SplashScreen';
 import InviteScreen from '../screens/InviteScreen/InviteScreen';
 import Terms from '../screens/Terms&Cond/Terms';
 import AllCategoriesScreen from '../screens/AllCategoriesScreen/AllCategoriesScreen';
+import BrandScreen from '../screens/BrandScreen/BrandScreen';
 
 const Stack = createStackNavigator();
 
@@ -93,6 +94,11 @@ export default function NavigationPage() {
         <Stack.Screen
           name="AllCategoriesScreen"
           component={AllCategoriesScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="BrandScreen"
+          component={BrandScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

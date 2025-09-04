@@ -1,5 +1,6 @@
 import {
   Image,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -8,8 +9,8 @@ import {
 } from 'react-native';
 import React from 'react';
 import { ArrowLeft } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
 import SearchBar from '../../components/SearchBar/SearchBar';
+import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
 const banners = [
   {
     label: 'CATEGORIES',
@@ -18,7 +19,7 @@ const banners = [
   },
   {
     label: 'BRANDS',
-    nav: 'BrandsScreen',
+    nav: 'BrandScreen',
     image: require('../../assets/images/Brand.png'),
   },
   {
@@ -32,9 +33,7 @@ const banners = [
     image: require('../../assets/images/Newlaunch.png'),
   },
 ];
-const CollectionScreen = () => {
-  const navigation = useNavigation();
-
+const CollectionScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar
@@ -53,7 +52,7 @@ const CollectionScreen = () => {
           <SearchBar style={styles.searchBar} />
         </View>
       </View>
-      <View>
+      <ScrollView>
         {banners.map((item, idx) => (
           <TouchableOpacity
             key={item.label}
@@ -68,7 +67,12 @@ const CollectionScreen = () => {
             />
           </TouchableOpacity>
         ))}
-      </View>
+        <EssentialSlider
+          headingIcon={require('../../assets/icons/paw2.png')}
+          headingTextOrange="Shop"
+          headingTextBlue="By Store"
+        />
+      </ScrollView>
     </View>
   );
 };
