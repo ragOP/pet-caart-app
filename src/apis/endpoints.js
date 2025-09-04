@@ -53,4 +53,5 @@ export const endpoints = {
   // orders
   orders: 'api/orders',
   sendOtp: 'api/otp/send-otp',
+  collection: 'api/collection',
 };

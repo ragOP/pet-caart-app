@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, StatusBar, SafeAreaView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  StatusBar,
+  SafeAreaView,
+  Platform,
+} from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 
 const AddAddressScreen = ({ route, navigation }) => {
-  const { addressData } = route.params || {}; 
+  const { addressData } = route.params || {};
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -15,24 +26,36 @@ const AddAddressScreen = ({ route, navigation }) => {
   const [state, setState] = useState('');
   const [country, setCountry] = useState('');
 
-
   useEffect(() => {
     if (addressData) {
-      console.log("Filling form with address data: ", addressData);
+      console.log('Filling form with address data: ', addressData);
       const [firstName, lastName] = addressData.name.split(' ');
-      setFirstName(firstName); 
-      setLastName(lastName);   
-      setPhone(addressData.phone); 
-      setAddress(addressData.address); 
+      setFirstName(firstName);
+      setLastName(lastName);
+      setPhone(addressData.phone);
+      setAddress(addressData.address);
       setCity(addressData.city);
-      setPostalCode(addressData.zip);  
-      setAddressType(addressData.type.charAt(0).toUpperCase() + addressData.type.slice(1)); 
-      setCountry(addressData.country); 
-      setState(addressData.state.charAt(0).toUpperCase() + addressData.state.slice(1));
+      setPostalCode(addressData.zip);
+      setAddressType(
+        addressData.type.charAt(0).toUpperCase() + addressData.type.slice(1),
+      );
+      setCountry(addressData.country);
+      setState(
+        addressData.state.charAt(0).toUpperCase() + addressData.state.slice(1),
+      );
     }
   }, [addressData]);
   const handleSave = () => {
-    if (!firstName || !lastName || !phone  || !address || !city || !postalCode || !addressType || !state) {
+    if (
+      !firstName ||
+      !lastName ||
+      !phone ||
+      !address ||
+      !city ||
+      !postalCode ||
+      !addressType ||
+      !state
+    ) {
       Alert.alert('Error', 'Please fill in all fields');
     } else {
       if (addressData) {
@@ -45,19 +68,30 @@ const AddAddressScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" translucent={false} />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFF5E1"
+        translucent={false}
+      />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
-            <Text style={styles.header}>{addressData ? 'Edit Address' : 'Add Address'}</Text>
+            <Text style={styles.header}>
+              {addressData ? 'Edit Address' : 'Add Address'}
+            </Text>
           </View>
         </SafeAreaView>
       </View>
 
-      <Text style={styles.subHeader}>{addressData ? 'Edit Your Address' : 'New Address'}</Text>
+      <Text style={styles.subHeader}>
+        {addressData ? 'Edit Your Address' : 'New Address'}
+      </Text>
 
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.label}>First Name</Text>
@@ -87,7 +121,7 @@ const AddAddressScreen = ({ route, navigation }) => {
           keyboardType="phone-pad"
           placeholderTextColor="#6A6868"
         />
-      <Text style={styles.label}>Address</Text>
+        <Text style={styles.label}>Address</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter your address"
@@ -152,7 +186,7 @@ const AddAddressScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFBF6',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     fontSize: 24,
@@ -200,7 +234,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Light',
   },
   saveButton: {
-    backgroundColor: '#F59A11',
+    backgroundColor: '#004E6A',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

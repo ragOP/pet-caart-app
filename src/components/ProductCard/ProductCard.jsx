@@ -1,11 +1,28 @@
 import React, { useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Dimensions,
+} from 'react-native';
 import Swiper from 'react-native-swiper';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-const ProductCard = ({ images, title, rating, price, discount, isVeg, stock, cardWidth = 110 }) => {
+const ProductCard = ({
+  images,
+  title,
+  rating,
+  price,
+  discount,
+  isVeg,
+  stock,
+  cardWidth = 110,
+}) => {
   const originalPrice = Number(price);
   const discountPercent = parseInt(discount);
   const hasDiscount = !isNaN(discountPercent) && discountPercent > 0;
@@ -17,7 +34,10 @@ const ProductCard = ({ images, title, rating, price, discount, isVeg, stock, car
   const isOutOfStock = stock <= 0;
 
   return (
-    <TouchableOpacity activeOpacity={1} style={[styles.card, { width: cardWidth }]}>
+    <TouchableOpacity
+      activeOpacity={1}
+      style={[styles.card, { width: cardWidth }]}
+    >
       <View style={styles.imageSection}>
         <LinearGradient
           colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
@@ -55,12 +75,14 @@ const ProductCard = ({ images, title, rating, price, discount, isVeg, stock, car
       </View>
 
       <View style={styles.titleRow}>
-        <Text style={styles.titleText} numberOfLines={2}>{title}</Text>
+        <Text style={styles.titleText} numberOfLines={2}>
+          {title}
+        </Text>
         <View style={styles.vegWrapper}>
           <Image
-            source={require('../../assets/images/vegq.png')}
+            source={require('../../assets/images/vegg.png')}
             style={styles.vegIcon}
-            resizeMode='contain'
+            resizeMode="contain"
           />
         </View>
       </View>
@@ -96,51 +118,51 @@ export default ProductCard;
 
 const styles = StyleSheet.create({
   card: {
-    width: screenWidth * 0.64,  
+    width: screenWidth * 0.64,
     alignSelf: 'center',
-    paddingVertical: 9,  
-    paddingHorizontal: 5,  
+    paddingVertical: 9,
+    paddingHorizontal: 5,
   },
   imageSection: {
     alignItems: 'center',
-    marginBottom: 5,  
+    marginBottom: 5,
     position: 'relative',
-    backgroundColor:'#F6F6F6',
+    backgroundColor: '#F6F6F6',
     borderRadius: 6,
-    padding: 3,  
+    padding: 3,
   },
   bestsellerContainer: {
     borderRadius: 5,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
     position: 'absolute',
     top: 0,
     left: 1,
     zIndex: 1,
-    height: 22,  
+    height: 22,
     marginRight: 8,
     ...(Platform.OS === 'ios' && {
-      width: "auto",  
-      height: 19,
+      width: 'auto',
+      height: 'auto',
     }),
     ...(Platform.OS === 'android' && {
-      width: "auto",  
-      height: 16.5,
+      width: 'auto',
+      height: 'auto',
     }),
   },
   bestsellerText: {
     color: '#fff',
-    fontSize: 8,  
-    fontFamily:'Gotham-Rounded-Bold',
+    fontSize: 11,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   swiper: {
-    height: screenHeight * 0.10,  
+    height: screenHeight * 0.17,
     width: '100%',
   },
   productImage: {
-    marginTop: 6,  
+    marginTop: 6,
     width: '100%',
-    height: 64, 
+    height: '100%',
   },
   dot: {
     backgroundColor: '#ccc',
@@ -160,7 +182,7 @@ const styles = StyleSheet.create({
     bottom: -5,
   },
   ratingText: {
-    fontSize: 9,  
+    fontSize: 9,
     color: '#333',
     alignSelf: 'flex-start',
     marginTop: 3,
@@ -169,31 +191,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 3,  
+    marginTop: 3,
   },
   titleText: {
-    fontSize: 14, 
+    fontSize: 14,
     fontWeight: '600',
     color: '̀',
     flex: 1,
     flexWrap: 'wrap',
-    fontFamily:'Gotham-Rounded-Light',
+    fontFamily: 'Gotham-Rounded-Light',
   },
   vegWrapper: {
     alignItems: 'center',
-    marginLeft: 4,  
-    width: 22,  
+    marginLeft: 4,
+    width: 22,
   },
   vegIcon: {
-    width: 14,  
-    height: 16, 
-    marginRight: 3, 
+    width: 14,
+    height: 16,
+    marginRight: 3,
   },
   priceLabel: {
-    fontSize: 10,  
+    fontSize: 10,
     color: '#6A6868',
-    marginTop: 6, 
-    fontFamily: "Gotham-Rounded-Light",
+    marginTop: 6,
+    fontFamily: 'Gotham-Rounded-Light',
   },
   priceDiscountRow: {
     flexDirection: 'row',
@@ -202,45 +224,45 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   priceValue: {
-    fontSize: 12,  
+    fontSize: 12,
     color: '#218032',
-    fontFamily: "Gotham-Rounded-Bold",
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   strikePrice: {
     textDecorationLine: 'line-through',
     color: '#888',
-    fontSize: 10,  
-    marginLeft: 5,  
-    fontFamily: "Gotham-Rounded-Bold",
+    fontSize: 10,
+    marginLeft: 5,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   discountContainer: {
     backgroundColor: '#004E6A',
     borderRadius: 3,
     paddingHorizontal: 5,
     paddingVertical: 2,
-    marginLeft: 'auto',  
+    marginLeft: 'auto',
   },
   discountText: {
     color: '#fff',
-    fontSize: 8,  
+    fontSize: 8,
     fontWeight: '600',
-    fontFamily: "Gotham-Rounded-Bold",
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   cartButtonRow: {
-    marginTop: 6,  
+    marginTop: 6,
   },
   cartButton: {
     backgroundColor: '#F59A11',
-    paddingVertical: 6,  
+    paddingVertical: 6,
     borderRadius: 8,
     width: '100%',
   },
   cartButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 9,  
+    fontSize: 9,
     textAlign: 'center',
-    fontFamily: "Gotham-Rounded-Bold",
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   outOfStockButton: {
     backgroundColor: '#99a1ad',
@@ -251,8 +273,8 @@ const styles = StyleSheet.create({
   },
   outOfStockButtonText: {
     color: '#ffffff',
-    fontSize: 9,  
+    fontSize: 9,
     textAlign: 'center',
-    fontFamily: "Gotham-Rounded-Bold",
+    fontFamily: 'Gotham-Rounded-Bold',
   },
 });

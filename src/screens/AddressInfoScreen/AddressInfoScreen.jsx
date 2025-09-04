@@ -11,7 +11,12 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { ArrowLeft, MoreVertical, CheckCircle, Edit } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  MoreVertical,
+  CheckCircle,
+  Edit,
+} from 'lucide-react-native';
 import { getAddresses } from '../../apis/getAddresses';
 import { deleteAddress } from '../../apis/deleteAddress';
 import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
@@ -26,19 +31,19 @@ const AddressInfoScreen = ({ navigation }) => {
     const fetchAddresses = async () => {
       try {
         const response = await getAddresses();
-        console.log('address',response);
+        console.log('address', response);
         if (response && response.success) {
-          const formattedAddresses = response.data.map((item) => ({
+          const formattedAddresses = response.data.map(item => ({
             id: item._id,
             name: `${item.firstName} ${item.lastName}`,
             address: item.address,
             phone: item.phone,
-            city:item.city,
-            country:item.country,
-            state:item.state,
-            zip:item.zip,
+            city: item.city,
+            country: item.country,
+            state: item.state,
+            zip: item.zip,
             isDefault: item.isDefault,
-            type: item.type
+            type: item.type,
           }));
           setAddresses(formattedAddresses);
         } else {
@@ -54,31 +59,33 @@ const AddressInfoScreen = ({ navigation }) => {
     fetchAddresses();
   }, []);
 
-  const toggleMenu = (id) => {
+  const toggleMenu = id => {
     setMenuVisibleId(menuVisibleId === id ? null : id);
   };
 
-  const handleEdit = (id) => {
-    const selectedAddress = addresses.find(address => address.id === id); 
-    navigation.navigate('AddAddressScreen', { addressData: selectedAddress }); 
+  const handleEdit = id => {
+    const selectedAddress = addresses.find(address => address.id === id);
+    navigation.navigate('AddAddressScreen', { addressData: selectedAddress });
   };
-  const handleDelete = (id) => {
+  const handleDelete = id => {
     Alert.alert(
-      "Delete Address",
-      "Are you sure you want to delete this address?", 
+      'Delete Address',
+      'Are you sure you want to delete this address?',
       [
         {
-          text: "No", 
-          onPress: () => setMenuVisibleId(null), 
-          style: "cancel",
+          text: 'No',
+          onPress: () => setMenuVisibleId(null),
+          style: 'cancel',
         },
         {
-          text: "Yes", 
+          text: 'Yes',
           onPress: async () => {
             try {
               const response = await deleteAddress({ id });
               if (response && response.success) {
-                setAddresses((prevAddresses) => prevAddresses.filter((address) => address.id !== id));
+                setAddresses(prevAddresses =>
+                  prevAddresses.filter(address => address.id !== id),
+                );
               } else {
                 setError('Failed to delete address');
               }
@@ -89,17 +96,24 @@ const AddressInfoScreen = ({ navigation }) => {
           },
         },
       ],
-      { cancelable: true } 
+      { cancelable: true },
     );
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" translucent={false} />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFF5E1"
+        translucent={false}
+      />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <Text style={styles.header}>Address Information</Text>
@@ -113,7 +127,7 @@ const AddressInfoScreen = ({ navigation }) => {
         <AddressShimmer />
       ) : addresses.length > 0 ? (
         <ScrollView contentContainerStyle={styles.addressList}>
-          {addresses.map((item) => (
+          {addresses.map(item => (
             <View key={item.id} style={styles.addressCard}>
               <View style={styles.cardTopRight}>
                 <TouchableOpacity onPress={() => toggleMenu(item.id)}>
@@ -122,10 +136,16 @@ const AddressInfoScreen = ({ navigation }) => {
 
                 {menuVisibleId === item.id && (
                   <View style={styles.dropdownMenu}>
-                    <TouchableOpacity onPress={() => handleEdit(item.id)} style={styles.menuItem}>
+                    <TouchableOpacity
+                      onPress={() => handleEdit(item.id)}
+                      style={styles.menuItem}
+                    >
                       <Text style={styles.menuText}>Edit</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.menuItem}>
+                    <TouchableOpacity
+                      onPress={() => handleDelete(item.id)}
+                      style={styles.menuItem}
+                    >
                       <Text style={styles.menuText}>Delete</Text>
                     </TouchableOpacity>
                   </View>
@@ -134,9 +154,11 @@ const AddressInfoScreen = ({ navigation }) => {
 
               <Text style={styles.addressText}>
                 <Text style={styles.boldText}>{item.name}, </Text>
-                {item.address},{item.city},{item.state.charAt(0).toUpperCase() + item.state.slice(1)}-{item.zip},{item.country}
+                {item.address},{item.city},
+                {item.state.charAt(0).toUpperCase() + item.state.slice(1)}-
+                {item.zip},{item.country}
               </Text>
-  
+
               <View style={styles.mobileRow}>
                 <Text style={styles.phoneText}>
                   Mobile No. : <Text style={styles.boldText}>{item.phone}</Text>
@@ -153,11 +175,17 @@ const AddressInfoScreen = ({ navigation }) => {
         </ScrollView>
       ) : (
         <View style={styles.content}>
-          <Image source={require('../../assets/images/add.png')} style={styles.image} />
+          <Image
+            source={require('../../assets/images/add.png')}
+            style={styles.image}
+          />
         </View>
       )}
 
-      <TouchableOpacity onPress={() => navigation.navigate('AddAddressScreen')} style={styles.saveButton}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('AddAddressScreen')}
+        style={styles.saveButton}
+      >
         <Text style={styles.saveText}>+ ADD NEW ADDRESS</Text>
       </TouchableOpacity>
     </View>
@@ -165,13 +193,17 @@ const AddressInfoScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 20,
     backgroundColor: '#FEF5E7',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
   backButton: { paddingRight: 15 },
   header: {
     fontSize: 24,

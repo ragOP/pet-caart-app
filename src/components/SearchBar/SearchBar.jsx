@@ -8,22 +8,22 @@ const SearchBar = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % data.length);
-    }, 1500); 
+      setPlaceholderIndex(prevIndex => (prevIndex + 1) % data.length);
+    }, 1500);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
     <View style={styles.shadowWrapper}>
-    <View style={styles.searchContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder={data[placeholderIndex]}
-        placeholderTextColor="#999"
-      />
-      <Search color="#004E6A" size={20} />
-    </View>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder={data[placeholderIndex]}
+          placeholderTextColor="#999"
+        />
+        <Search color="#004E6A" size={20} />
+      </View>
     </View>
   );
 };
@@ -33,9 +33,9 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#4040400D',
-        shadowOffset: { width: 0, height: 3 }, 
-        shadowOpacity: 0.2, 
-        shadowRadius: 6, 
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
       },
       android: {
         elevation: 3,
@@ -43,7 +43,6 @@ const styles = StyleSheet.create({
     }),
     borderRadius: 12,
     flex: 1,
-
   },
   searchContainer: {
     flexDirection: 'row',
@@ -57,6 +56,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
+    fontFamily: 'gotham-rounded-book',
   },
 });
 

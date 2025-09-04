@@ -13,34 +13,37 @@ import {
 import { ArrowLeft, CheckCircle, ChevronRight, Box } from 'lucide-react-native';
 
 const orders = [
-    {
-      id: '2548514851',
-      date: '10ᵗʰ MAY 2025',
-      title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
-      image: 'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png', // Replace with actual image
-      quantity: '14x3Kg',
-      offer: '10% OFF',
-      status: 'DELIVERED',
-    },
-    {
-      id: '2548514851',
-      date: '10ᵗʰ MAY 2025',
-      title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
-      image: 'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
-      quantity: '14x3Kg',
-      offer: '10% OFF',
-      status: 'DELIVERED',
-    },
-    {
-      id: '2548514851',
-      date: '10ᵗʰ MAY 2025',
-      title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
-      image: 'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
-      quantity: '14x3Kg',
-      offer: '10% OFF',
-      status: 'DELIVERED',
-    },
-  ];
+  {
+    id: '2548514851',
+    date: '10ᵗʰ MAY 2025',
+    title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
+    image:
+      'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png', // Replace with actual image
+    quantity: '14x3Kg',
+    offer: '10% OFF',
+    status: 'DELIVERED',
+  },
+  {
+    id: '2548514851',
+    date: '10ᵗʰ MAY 2025',
+    title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
+    image:
+      'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
+    quantity: '14x3Kg',
+    offer: '10% OFF',
+    status: 'DELIVERED',
+  },
+  {
+    id: '2548514851',
+    date: '10ᵗʰ MAY 2025',
+    title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
+    image:
+      'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
+    quantity: '14x3Kg',
+    offer: '10% OFF',
+    status: 'DELIVERED',
+  },
+];
 const MyOrderScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
@@ -50,7 +53,10 @@ const MyOrderScreen = ({ navigation }) => {
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <Text style={styles.header}>My Orders</Text>
@@ -65,25 +71,35 @@ const MyOrderScreen = ({ navigation }) => {
           </View>
           <Text style={styles.emptyTitle}>No orders yet</Text>
           <Text style={styles.emptySubtitle}>
-            You haven’t placed any orders yet. Start shopping to see your orders here.
+            You haven’t placed any orders yet. Start shopping to see your orders
+            here.
           </Text>
           <TouchableOpacity
             style={styles.shopButton}
-            onPress={() => navigation.navigate('BottomTabs')}>
+            onPress={() => navigation.navigate('BottomTabs')}
+          >
             <Text style={styles.shopButtonText}>Start Shopping</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <>
-        
           <ScrollView contentContainerStyle={styles.orderList}>
             {orders.map((order, index) => (
-              <TouchableOpacity key={index} style={styles.orderCard} activeOpacity={1}  onPress={() => navigation.navigate('OrderDetailsScreen')} >
-                <Image source={{ uri: order.image }} style={styles.productImage} />
+              <TouchableOpacity
+                key={index}
+                style={styles.orderCard}
+                activeOpacity={1}
+                onPress={() => navigation.navigate('OrderDetailsScreen')}
+              >
+                <Image
+                  source={{ uri: order.image }}
+                  style={styles.productImage}
+                />
                 <View style={styles.orderContent}>
                   <View style={styles.orderHeader}>
                     <Text style={styles.orderId}>
-                      Order ID: <Text style={styles.orderIdBold}>{order.id}</Text>
+                      Order ID:{' '}
+                      <Text style={styles.orderIdBold}>{order.id}</Text>
                     </Text>
                     <Text>|</Text>
                     <Text style={styles.orderDate}>{order.date}</Text>
@@ -114,13 +130,17 @@ const MyOrderScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 20,
     backgroundColor: '#FEF5E7',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
   backButton: { paddingRight: 15 },
   header: {
     fontSize: 24,

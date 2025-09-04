@@ -208,7 +208,9 @@ const HomeScreen = () => {
             headingTextBlue="Add-To-Carts"
           />
         )}
-        {newlyLaunchedData.length === 0 ? (
+        <AdBannner />
+
+        {/* {newlyLaunchedData.length === 0 ? (
           <ProductSliderShimmer />
         ) : (
           <NewlyLaunchedSlider
@@ -217,7 +219,7 @@ const HomeScreen = () => {
             headingTextOrange="Newly"
             headingTextBlue="Launched"
           />
-        )}
+        )} */}
         {bestSellerData.length === 0 ? (
           <ProductSliderShimmer />
         ) : (

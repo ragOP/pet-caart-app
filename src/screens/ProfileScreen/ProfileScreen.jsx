@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Image,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -106,20 +107,23 @@ const ProfileScreen = ({ navigation }) => {
           </View>
         </View>
       ) : (
-        <View style={styles.header}>
+        <ImageBackground
+          source={require('../../assets/images/profilebg.png')}
+          style={styles.header}
+          imageStyle={styles.backgroundImage}
+        >
           <View style={styles.profileImageWrapper}>
             <View style={styles.profileImage}>
               <UserRound size={30} color="#004E6A" />
             </View>
           </View>
           <View style={styles.textWrapper}>
-            <Text style={styles.name}>{user?.name || 'User'}</Text>
+            <Text style={styles.name}>Hi, {user?.name || 'User'}</Text>
             <Text style={styles.membership}>{membershipSince}</Text>
           </View>
-        </View>
+        </ImageBackground>
       )}
 
-      {/* Menu for logged-in users */}
       {isLoggedIn && (
         <View style={styles.menuContainer}>
           {menuItems.map((item, index) => (
@@ -135,7 +139,7 @@ const ProfileScreen = ({ navigation }) => {
             >
               {item.icon}
               <Text style={styles.menuText}>{item.label}</Text>
-              <ChevronRight size={20} color="#004E6A" />
+              <ChevronRight size={24} color="#004E6A" />
             </TouchableOpacity>
           ))}
         </View>
@@ -218,6 +222,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
     borderBottomColor: '#E0E0E0',
   },
+  backgroundImage: {
+    backgroundColor: '#F59A1199',
+  },
   profileImageWrapper: {
     marginRight: 15,
     alignItems: 'center',
@@ -240,14 +247,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: 'Gotham-Rounded-Bold',
-    color: '#333',
+    color: '#2C2D2E',
+    lineHeight: 30,
   },
   membership: {
-    color: '#888',
-    fontSize: 15,
-    fontFamily: 'Gotham-Rounded-Medium',
+    color: 'black',
+    fontSize: 16,
+    fontFamily: 'gotham-rounded-book',
   },
   menuContainer: {
     paddingLeft: 12,
@@ -262,7 +270,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
   },
   menuText: {
-    fontSize: 16,
+    fontSize: 22,
     marginLeft: 20,
     color: '#333',
     flex: 1,

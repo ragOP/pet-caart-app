@@ -21,13 +21,14 @@ import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import CategoryScreen from '../screens/CategoryScreen/CategoryScreen';
 import CartScreen from '../screens/CartScreen/CartScreen';
 import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
+import CollectionScreen from '../screens/CollectionScreen/CollectionScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
 const TABS = [
   { label: 'Home', icon: Home, route: 'Home' },
-  { label: 'Categories', icon: Logs, route: 'Categories' },
-  { label: '', icon: LayoutDashboard, route: 'BreedShop' },
+  { label: 'Breed Shop', icon: Logs, route: 'Breed' },
+  { label: '', icon: LayoutDashboard, route: 'CollectionScreen' },
   { label: 'Cart', icon: ShoppingBasket, route: 'Cart' },
   { label: 'Profile', icon: UserRound, route: 'Profile' },
 ];
@@ -41,7 +42,6 @@ const CustomTabBar = ({ state, navigation }) => {
         source={require('../assets/images/bar.png')}
         style={styles.backgroundImage}
       >
-        {/* Tab Buttons */}
         <View style={styles.tabBar}>
           {TABS.map((tab, index) => {
             const Icon = tab.icon;
@@ -65,12 +65,12 @@ const CustomTabBar = ({ state, navigation }) => {
                 </TouchableOpacity>
               );
             }
-            const isCategoriesTab = tab.label === 'Categories';
+            const isBreedTab = tab.label === 'Breed Shop';
 
             return (
               <TouchableOpacity
                 key={index}
-                style={[styles.tab, isCategoriesTab && { marginRight: 30 }]}
+                style={[styles.tab, isBreedTab && { marginRight: 30 }]}
                 onPress={() => navigation.navigate(tab.route)}
                 activeOpacity={0.7}
               >
@@ -96,8 +96,8 @@ export default function BottomNavigation() {
       tabBar={props => <CustomTabBar {...props} />}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Categories" component={CategoryScreen} />
-      <Tab.Screen name="BreedShop" component={CategoryScreen} />
+      <Tab.Screen name="Breed" component={CategoryScreen} />
+      <Tab.Screen name="CollectionScreen" component={CollectionScreen} />
       <Tab.Screen name="Cart" component={CartScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
