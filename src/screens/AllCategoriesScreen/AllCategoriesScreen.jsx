@@ -1,48 +1,55 @@
-import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react-native';
 import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Image,
+  Animated,
   ScrollView,
-  StyleSheet,
-  StatusBar,
-  Platform,
   ActivityIndicator,
+  StatusBar,
+  StyleSheet,
+  Platform,
+  ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import AdBannner from '../../components/AdBannner/AdBanner';
 import { getSubCategories } from '../../apis/getSubCategories';
 import { getCollection } from '../../apis/getCollection';
 
-// Accordion Section Component
-function AccordionSection({ category, children, onToggle }) {
-  const [open, setOpen] = useState(false);
+function AccordionSection({ category, children, isOpen, onToggle }) {
+  const [heightAnim] = useState(new Animated.Value(0));
 
-  const toggleAccordion = () => {
-    const newState = !open;
-    setOpen(newState);
-    if (newState) {
-      onToggle(category._id); // 👈 jab open hoga tab collection load
-    }
-  };
+  useEffect(() => {
+    Animated.timing(heightAnim, {
+      toValue: isOpen ? 'auto' : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [isOpen]);
 
   return (
     <View style={styles.accordionRoot}>
       <LinearGradient
-        colors={['#f9d923', '#00a19d']}
+        colors={['#F59A11', '#8B9259', '#0888B1']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.accordionBorder}
       >
-        <TouchableOpacity onPress={toggleAccordion} activeOpacity={0.8}>
-          <View style={styles.accordionHeader}>
+        <TouchableOpacity
+          onPress={() => onToggle(category._id)}
+          activeOpacity={1}
+        >
+          <ImageBackground
+            source={require('../../assets/images/profilebg.png')}
+            style={styles.accordionHeader}
+          >
             <View style={styles.headerTextWrapper}>
               <View style={styles.rowWithChevron}>
                 <Text style={styles.accordionTitle}>{category.name}</Text>
-                {open ? (
+                {isOpen ? (
                   <ChevronUp
                     size={24}
                     color="#2D2D2D"
@@ -63,32 +70,31 @@ function AccordionSection({ category, children, onToggle }) {
             {category.image && (
               <Image source={{ uri: category.image }} style={styles.icon} />
             )}
-          </View>
+          </ImageBackground>
         </TouchableOpacity>
       </LinearGradient>
-      {open && <View style={styles.accordionBody}>{children}</View>}
+      <Animated.View style={[styles.accordionBody, { height: heightAnim }]}>
+        {isOpen && children}
+      </Animated.View>
     </View>
   );
 }
 
-// Food Card Component (for collections)
 function FoodCard({ label, image }) {
   return (
     <View style={styles.foodCardOuter}>
-      <View style={styles.foodCardBackground}>
-        <Image source={{ uri: image }} style={styles.foodImg} />
-      </View>
+      <Image source={{ uri: image }} style={styles.foodImg} />
       <Text style={styles.cardLabel}>{label}</Text>
     </View>
   );
 }
 
-// Main Screen
 export default function AllCategoriesScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [collections, setCollections] = useState({});
   const [loadingCollections, setLoadingCollections] = useState({});
+  const [activeAccordionId, setActiveAccordionId] = useState(null);
 
   useEffect(() => {
     fetchSubCategories();
@@ -125,6 +131,15 @@ export default function AllCategoriesScreen({ navigation }) {
     }
   };
 
+  const handleAccordionToggle = subCategoryId => {
+    if (activeAccordionId === subCategoryId) {
+      setActiveAccordionId(null);
+    } else {
+      setActiveAccordionId(subCategoryId);
+      fetchCollections(subCategoryId);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -158,7 +173,8 @@ export default function AllCategoriesScreen({ navigation }) {
             <AccordionSection
               key={category._id}
               category={category}
-              onToggle={fetchCollections}
+              isOpen={activeAccordionId === category._id}
+              onToggle={handleAccordionToggle}
             >
               {loadingCollections[category._id] ? (
                 <ActivityIndicator size="small" color="#F5A500" />
@@ -173,7 +189,14 @@ export default function AllCategoriesScreen({ navigation }) {
                   ))}
                 </View>
               ) : (
-                <Text style={{ textAlign: 'center', color: '#888' }}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    color: '#888',
+                    marginTop: 20,
+                    fontFamily: 'Gotham-Rounded-Medium',
+                  }}
+                >
                   No collections found
                 </Text>
               )}
@@ -205,25 +228,29 @@ const styles = StyleSheet.create({
   accordionHeader: {
     backgroundColor: '#fff',
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 14,
+    paddingVertical: 5,
   },
-  headerTextWrapper: { flex: 1, justifyContent: 'center' },
+  headerTextWrapper: { flex: 1 },
   rowWithChevron: { flexDirection: 'row', alignItems: 'center' },
   accordionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
-    marginRight: 6,
+    fontFamily: 'Gotham-Rounded-Medium',
+    color: '#181818',
+    marginRight: 10,
+    marginTop: 10,
   },
-  chevronIcon: { marginTop: 2 },
-  accordionSubtitle: { fontSize: 12, color: '#666', marginTop: 1 },
-  icon: { width: 90, height: 58, resizeMode: 'contain', marginLeft: 8 },
+  chevronIcon: { marginTop: 10 },
+  accordionSubtitle: {
+    fontSize: 15,
+    color: '#181818',
+    marginTop: 2,
+    fontFamily: 'gotham-rounded-book',
+  },
+  icon: { width: 100, height: 90, resizeMode: 'contain', marginLeft: 8 },
   accordionBody: {
-    padding: 20,
     backgroundColor: '#fff',
     borderRadius: 12,
     marginTop: 0,
@@ -231,31 +258,24 @@ const styles = StyleSheet.create({
   foodCategories: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    marginTop: 12,
+    justifyContent: 'space-between',
+    marginTop: 1,
   },
-  foodCardOuter: { alignItems: 'center', marginVertical: 16, width: 120 },
-  foodCardBackground: {
-    minWidth: 108,
-    borderRadius: 24,
-    justifyContent: 'center',
+  foodCardOuter: {
     alignItems: 'center',
-    marginBottom: 0,
-    alignSelf: 'center',
-    position: 'relative',
+    marginVertical: 10,
+    width: '30%',
   },
   foodImg: {
-    width: 50,
+    width: 100,
     height: 100,
     resizeMode: 'contain',
-    position: 'absolute',
-    top: -40,
+    marginBottom: 8,
   },
   cardLabel: {
-    marginTop: 48,
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#222',
+    fontSize: 16,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#181818',
     textAlign: 'center',
   },
 });
