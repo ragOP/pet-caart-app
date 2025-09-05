@@ -42,22 +42,26 @@ const ProductSlider = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-       {products.map((item, index) => {
-  return (
-    <View key={index} style={[styles.cardWrapper, { width: CARD_WIDTH }]}>
-      <ProductCard
-        images={item.images}  
-        title={item.title}
-        rating={item.rating}
-        price={item.price}
-        discount={item.discount}
-        isVeg={item.isVeg}
-        stock={item.stock}
-        cardWidth={CARD_WIDTH}
-      />
-    </View>
-  );
-})}
+        {products.map((item, index) => {
+          return (
+            <View
+              key={index}
+              style={[styles.cardWrapper, { width: CARD_WIDTH }]}
+            >
+              <ProductCard
+                images={item.images}
+                title={item.title}
+                rating={item.rating}
+                price={item.price}
+                discount={item.discount}
+                isVeg={item.isVeg}
+                stock={item.stock}
+                brandId={item.brandId}
+                cardWidth={CARD_WIDTH}
+              />
+            </View>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -84,18 +88,14 @@ const styles = StyleSheet.create({
   },
   headingText: {
     fontSize: 20,
-    fontWeight: 'bold',
-    
   },
   orange: {
     color: '#f39c12',
     fontFamily: 'Gotham-Rounded-Bold',
-
   },
   blue: {
     color: '#3498db',
     fontFamily: 'Gotham-Rounded-Bold',
-
   },
   scrollContent: {
     paddingRight: 12,

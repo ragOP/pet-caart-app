@@ -139,7 +139,19 @@ export default function AllCategoriesScreen({ navigation }) {
       fetchCollections(subCategoryId);
     }
   };
-
+  const handleCollectionClick = (
+    categorySlug,
+    collectionSlug,
+    collectionName,
+  ) => {
+    console.log('Category Slug:', categorySlug);
+    console.log('Collection Slug:', collectionSlug);
+    navigation.navigate('ProductListScreen', {
+      categorySlug,
+      collectionSlug,
+      collectionName,
+    });
+  };
   return (
     <View style={styles.container}>
       <StatusBar
@@ -181,11 +193,22 @@ export default function AllCategoriesScreen({ navigation }) {
               ) : collections[category._id]?.length > 0 ? (
                 <View style={styles.foodCategories}>
                   {collections[category._id].map(item => (
-                    <FoodCard
+                    <TouchableOpacity
                       key={item._id}
-                      label={item.name}
-                      image={item.image}
-                    />
+                      onPress={() =>
+                        handleCollectionClick(
+                          category.slug,
+                          item.slug,
+                          item.name,
+                        )
+                      }
+                    >
+                      <FoodCard
+                        key={item._id}
+                        label={item.name}
+                        image={item.image}
+                      />
+                    </TouchableOpacity>
                   ))}
                 </View>
               ) : (
@@ -263,8 +286,10 @@ const styles = StyleSheet.create({
   },
   foodCardOuter: {
     alignItems: 'center',
-    marginVertical: 10,
-    width: '30%',
+    marginVertical: 12,
+    marginHorizontal: 10,
+    width: '90%',
+    padding: 5,
   },
   foodImg: {
     width: 100,

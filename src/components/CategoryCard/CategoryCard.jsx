@@ -157,6 +157,7 @@ const CategoryCard = () => {
                       }
                       isVeg={item.isVeg}
                       stock={item.stock}
+                      brandId={item.brandId}
                       cardWidth={CARD_WIDTH}
                     />
                   );

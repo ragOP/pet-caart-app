@@ -22,6 +22,7 @@ const ProductCard = ({
   isVeg,
   stock,
   cardWidth = 110,
+  brandId,
 }) => {
   const originalPrice = Number(price);
   const discountPercent = parseInt(discount);
@@ -63,7 +64,7 @@ const ProductCard = ({
                 key={index}
                 source={{ uri: imgSrc }}
                 style={styles.productImage}
-                resizeMode="cover"
+                resizeMode="contain"
               />
             ))
           ) : (
@@ -86,6 +87,9 @@ const ProductCard = ({
           />
         </View>
       </View>
+      {brandId && brandId.name && (
+        <Text style={styles.brandText}>{brandId.name}</Text>
+      )}
       <Text style={styles.priceLabel}>PRICE</Text>
       <View style={styles.priceDiscountRow}>
         <Text style={styles.priceValue}>₹{discountedPrice}</Text>
@@ -120,7 +124,6 @@ const styles = StyleSheet.create({
   card: {
     width: screenWidth * 0.64,
     alignSelf: 'center',
-    paddingVertical: 9,
     paddingHorizontal: 5,
   },
   imageSection: {
@@ -129,7 +132,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     backgroundColor: '#F6F6F6',
     borderRadius: 6,
-    padding: 3,
+    padding: 1,
   },
   bestsellerContainer: {
     borderRadius: 5,
@@ -156,11 +159,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
   },
   swiper: {
-    height: screenHeight * 0.17,
+    height: screenHeight * 0.22,
     width: '100%',
   },
   productImage: {
-    marginTop: 6,
     width: '100%',
     height: '100%',
   },
@@ -182,10 +184,11 @@ const styles = StyleSheet.create({
     bottom: -5,
   },
   ratingText: {
-    fontSize: 9,
+    fontSize: 10,
     color: '#333',
     alignSelf: 'flex-start',
     marginTop: 3,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   titleRow: {
     flexDirection: 'row',
@@ -194,12 +197,12 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   titleText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: '̀',
     flex: 1,
     flexWrap: 'wrap',
-    fontFamily: 'Gotham-Rounded-Light',
+    fontFamily: 'gotham-rounded-book',
   },
   vegWrapper: {
     alignItems: 'center',
@@ -211,11 +214,17 @@ const styles = StyleSheet.create({
     height: 16,
     marginRight: 3,
   },
+  brandText: {
+    fontSize: 12,
+    color: '#6A6868',
+    marginTop: 5,
+    fontFamily: 'gotham-rounded-book',
+  },
   priceLabel: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#6A6868',
     marginTop: 6,
-    fontFamily: 'Gotham-Rounded-Light',
+    fontFamily: 'Gotham-Rounded-Medium',
   },
   priceDiscountRow: {
     flexDirection: 'row',

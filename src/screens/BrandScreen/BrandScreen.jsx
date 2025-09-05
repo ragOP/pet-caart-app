@@ -25,7 +25,7 @@ const BrandScreen = ({ navigation }) => {
         const response = await getBrands();
         console.log('API response:', response);
         if (response && response.data && Array.isArray(response.data.data)) {
-          console.log('Brands data:', response.data.data);
+          // console.log('Brands data:', response.data.data);
           setBrands(response.data.data);
         } else {
           console.warn('No valid brand data found.');

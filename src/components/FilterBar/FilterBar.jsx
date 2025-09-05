@@ -1,5 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  Image,
+} from 'react-native';
 import { SlidersHorizontal } from 'lucide-react-native';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { getBrands } from '../../apis/getBrands';
@@ -7,35 +15,49 @@ import { getBreeds } from '../../apis/getBreeds';
 
 const windowWidth = Dimensions.get('window').width;
 
-const FilterBar = () => {
-  const [brands, setBrands] = useState([]);
-  const [breeds, setBreeds] = useState([]); 
-  const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedBreed, setSelectedBreed] = useState(null); 
+const FilterBar = ({
+  selectedBrand, // brandSlug | null
+  selectedBreed, // breedSlug | null
+  setSelectedBrand, // (slug|null)=>void
+  setSelectedBreed, // (slug|null)=>void
+  collectionName, // string | undefined
+}) => {
   const bottomSheetRef = useRef();
+
+  // list data
+  const [brands, setBrands] = useState([]);
+  const [breeds, setBreeds] = useState([]);
+
+  // bottom sheet ke liye temp selection
+  const [tempBrandSlug, setTempBrandSlug] = useState(selectedBrand);
+  const [tempBreedSlug, setTempBreedSlug] = useState(selectedBreed);
+
+  // optional: collection chip ko hide/show karne ke liye UI-only flag
+  const [showCollectionChip, setShowCollectionChip] = useState(true);
 
   useEffect(() => {
     const fetchBrands = async () => {
       try {
         const response = await getBrands();
-        setBrands(response.data.data);  
-      } catch (error) {
-        console.error('Error fetching brands:', error);
+        setBrands(response?.data?.data || []);
+      } catch (e) {
+        console.error('Error fetching brands', e);
       }
     };
-
     const fetchBreeds = async () => {
       try {
         const response = await getBreeds();
-        setBreeds(response.data.data);
-      } catch (error) {
-        console.error('Error fetching breeds:', error); 
+        setBreeds(response?.data?.data || []);
+      } catch (e) {
+        console.error('Error fetching breeds', e);
       }
     };
-
     fetchBrands();
     fetchBreeds();
   }, []);
+
+  useEffect(() => setTempBrandSlug(selectedBrand || null), [selectedBrand]);
+  useEffect(() => setTempBreedSlug(selectedBreed || null), [selectedBreed]);
 
   const filterOptions = [
     { label: 'BRAND', isActive: true },
@@ -44,69 +66,104 @@ const FilterBar = () => {
   ];
 
   const openBottomSheet = () => {
-    bottomSheetRef.current.open();
+    setTempBrandSlug(selectedBrand || null);
+    setTempBreedSlug(selectedBreed || null);
+    bottomSheetRef.current?.open();
   };
 
   const handleClearAll = () => {
-    setSelectedBrand(null); 
-    setSelectedBreed(null); 
+    setTempBrandSlug(null);
+    setTempBreedSlug(null);
   };
 
   const handleApplyFilters = () => {
-    bottomSheetRef.current.close();  
+    setSelectedBrand(tempBrandSlug || null);
+    setSelectedBreed(tempBreedSlug || null);
+    bottomSheetRef.current?.close();
   };
 
-  const handleBrandSelect = (brandId, brandName) => {
-    setSelectedBrand(brandId); 
-  };
+  const handleBrandSelect = brandSlug => setTempBrandSlug(brandSlug);
+  const handleBreedSelect = breedSlug =>
+    setTempBreedSlug(prev => (prev === breedSlug ? null : breedSlug));
 
-  const handleBreedSelect = (breedId, breedName) => {
-    if (selectedBreed === breedId) {
-      setSelectedBreed(null); 
-    } else {
-      setSelectedBreed(breedId); 
-    }
-  };
   const selectedFilters = [];
   if (selectedBrand) {
-    const selectedBrandObj = brands.find(brand => brand._id === selectedBrand);
-    selectedFilters.push({ label: `Brand: ${selectedBrandObj?.name}`, type: 'brand' });
+    const b = brands.find(x => x.slug === selectedBrand);
+    selectedFilters.push({
+      label: `Brand: ${b?.name || selectedBrand}`,
+      type: 'brand',
+    });
   }
   if (selectedBreed) {
-    const selectedBreedObj = breeds.find(breed => breed._id === selectedBreed);
-    selectedFilters.push({ label: `Breed: ${selectedBreedObj?.name}`, type: 'breed' });
+    const br = breeds.find(x => x.slug === selectedBreed);
+    selectedFilters.push({
+      label: `Breed: ${br?.name || selectedBreed}`,
+      type: 'breed',
+    });
   }
+
   return (
     <View style={styles.container}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-        <TouchableOpacity
-          style={[styles.button]}
-          onPress={openBottomSheet}
-        >
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollView}
+      >
+        <TouchableOpacity style={[styles.button]} onPress={openBottomSheet}>
           <SlidersHorizontal size={20} color="#333" />
           <Text style={[styles.buttonText, styles.activeText]}>FILTERS</Text>
         </TouchableOpacity>
+
+        {/* Collection chip: "Collection:CatFood x" */}
+        {!!collectionName && showCollectionChip && (
+          <View style={styles.chip}>
+            <Text
+              style={styles.chipText}
+            >{`Collection:${collectionName}`}</Text>
+            <TouchableOpacity
+              onPress={() => {
+                // Pure UI hide:
+                setShowCollectionChip(false);
+
+                // Agar logical collection filter bhi hatana ho:
+                // 1) Parent me collectionSlug ko state bana ke null set karo yahan se
+                // 2) fetchProducts se params.collectionSlug hata do
+              }}
+            >
+              <Text style={styles.chipRemoveText}>x</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {selectedFilters.map((filter, index) => (
           <View key={index} style={styles.chip}>
             <Text style={styles.chipText}>{filter.label}</Text>
-            <TouchableOpacity onPress={() => {
-              if (filter.type === 'brand') setSelectedBrand(null);
-              if (filter.type === 'breed') setSelectedBreed(null);
-            }}>
+            <TouchableOpacity
+              onPress={() => {
+                if (filter.type === 'brand') setSelectedBrand(null);
+                if (filter.type === 'breed') setSelectedBreed(null);
+              }}
+            >
               <Text style={styles.chipRemoveText}>x</Text>
             </TouchableOpacity>
           </View>
         ))}
+
         {filterOptions.map((option, index) => (
           <TouchableOpacity
             key={index}
             style={[styles.button, option.isActive && styles.activeButton]}
             onPress={openBottomSheet}
           >
-            <Text style={[styles.buttonText, option.isActive && styles.activeText]}>{option.label}</Text>
+            <Text
+              style={[styles.buttonText, option.isActive && styles.activeText]}
+            >
+              {option.label}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
+
       <RBSheet
         ref={bottomSheetRef}
         height={'auto'}
@@ -129,20 +186,24 @@ const FilterBar = () => {
             <SlidersHorizontal size={20} color="#333" />
             <Text style={styles.filterTitle}>FILTERS</Text>
           </View>
+
           <View style={styles.filterSection}>
             <Text style={styles.sectionTitle}>Brand</Text>
             <View style={styles.brandContainer}>
               {brands.length > 0 ? (
-                brands.map((brand) => (
+                brands.map(brand => (
                   <TouchableOpacity
                     key={brand._id}
                     style={[
                       styles.brandButton,
-                      selectedBrand === brand._id && styles.selectedBrand, 
+                      tempBrandSlug === brand.slug && styles.selectedBrand,
                     ]}
-                    onPress={() => handleBrandSelect(brand._id, brand.name)} 
+                    onPress={() => handleBrandSelect(brand.slug)}
                   >
-                    <Image source={{ uri: brand.logo }} style={styles.brandLogo} />
+                    <Image
+                      source={{ uri: brand.logo }}
+                      style={styles.brandLogo}
+                    />
                     <Text style={styles.brandText}>{brand.name}</Text>
                   </TouchableOpacity>
                 ))
@@ -151,18 +212,19 @@ const FilterBar = () => {
               )}
             </View>
           </View>
+
           <View style={styles.filterSection}>
             <Text style={styles.sectionTitle}>Breed</Text>
             <View style={styles.optionRow}>
               {breeds.length > 0 ? (
-                breeds.map((breed) => (
+                breeds.map(breed => (
                   <TouchableOpacity
-                    key={breed._id} 
+                    key={breed._id}
                     style={[
                       styles.optionButton,
-                      selectedBreed === breed._id && styles.selectedBreed,  
+                      tempBreedSlug === breed.slug && styles.selectedBreed,
                     ]}
-                    onPress={() => handleBreedSelect(breed._id, breed.name)}  
+                    onPress={() => handleBreedSelect(breed.slug)}
                   >
                     <Text style={styles.optionText}>{breed.name}</Text>
                   </TouchableOpacity>
@@ -172,11 +234,18 @@ const FilterBar = () => {
               )}
             </View>
           </View>
+
           <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.clearButton} onPress={handleClearAll}>
+            <TouchableOpacity
+              style={styles.clearButton}
+              onPress={handleClearAll}
+            >
               <Text style={styles.clearText}>CLEAR ALL</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.applyButton} onPress={handleApplyFilters}>
+            <TouchableOpacity
+              style={styles.applyButton}
+              onPress={handleApplyFilters}
+            >
               <Text style={styles.applyText}>APPLY</Text>
             </TouchableOpacity>
           </View>
@@ -226,14 +295,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
     paddingHorizontal: 12,
     paddingVertical: 2,
-    borderColor:'black',
-    borderWidth:0.5
+    borderColor: 'black',
+    borderWidth: 0.5,
   },
   chipText: {
     color: '#000',
     fontSize: 14,
-    fontFamily: 'Gotham-Rounded-Medium'
-    
+    fontFamily: 'Gotham-Rounded-Medium',
   },
   chipRemoveText: {
     color: '#000',
@@ -255,9 +323,9 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     marginBottom: 20,
-    borderBottomWidth: 1,   
-    borderBottomColor: '#ddd',  
-    paddingBottom: 10, 
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 10,
   },
   sectionTitle: {
     fontSize: 18,
@@ -266,11 +334,11 @@ const styles = StyleSheet.create({
   },
   brandContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',  
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   brandButton: {
-    width: '30%', 
+    width: '30%',
     backgroundColor: '#e6f5f7',
     padding: 10,
     marginRight: 10,
@@ -286,11 +354,10 @@ const styles = StyleSheet.create({
   brandText: {
     fontSize: 14,
     color: '#333',
-    fontFamily: 'Gotham-Rounded-Bold'
-
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   selectedBrand: {
-    backgroundColor: '#0888B1',  
+    backgroundColor: '#0888B1',
   },
   optionRow: {
     flexDirection: 'row',
@@ -304,7 +371,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   selectedBreed: {
-    backgroundColor: '#0888B1',  
+    backgroundColor: '#0888B1',
   },
   optionText: {
     fontSize: 14,

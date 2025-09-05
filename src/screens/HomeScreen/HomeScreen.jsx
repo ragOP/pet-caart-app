@@ -112,6 +112,7 @@ const HomeScreen = () => {
                 discount: discountPercent > 0 ? discountPercent + '%' : '0%',
                 images: item.images || item.variants?.[0]?.images || [],
                 isVeg: item.isVeg || false,
+                brandId: item.brandId,
               };
             });
 
