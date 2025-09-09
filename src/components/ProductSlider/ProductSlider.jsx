@@ -58,6 +58,8 @@ const ProductSlider = ({
                 stock={item.stock}
                 brandId={item.brandId}
                 cardWidth={CARD_WIDTH}
+                productId={item._id}
+                variantId={item.variants?.[0]?._id || null}
               />
             </View>
           );

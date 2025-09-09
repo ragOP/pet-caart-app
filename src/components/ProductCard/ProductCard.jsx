@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,10 @@ import {
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { addProductToCart } from '../../apis/addProductToCart';
+import { addItemToCart } from '../../redux/cartSlice';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -23,21 +27,68 @@ const ProductCard = ({
   stock,
   cardWidth = 110,
   brandId,
+  productId,
+  variantId,
 }) => {
   const originalPrice = Number(price);
   const discountPercent = parseInt(discount);
   const hasDiscount = !isNaN(discountPercent) && discountPercent > 0;
+  const [loading, setLoading] = useState(false);
 
   const discountedPrice = hasDiscount
     ? Math.round(originalPrice * (1 - discountPercent / 100))
     : originalPrice;
 
   const isOutOfStock = stock <= 0;
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+
+  // const handleAddToCart = async () => {
+  //   if (loading) return;
+  //   setLoading(true);
+  //   try {
+  //     await addProductToCart({ productId, variantId, quantity: 1 });
+  //   } catch (error) {
+  //     console.warn('Failed to add to cart:', error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const handleAddToCart = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const productData = {
+        productId,
+        variantId,
+        quantity: 1,
+        title,
+        price,
+        images,
+        discount,
+      };
+      console.log('Product data to be added to the cart:', productData);
+      dispatch(addItemToCart(productData));
+      await addProductToCart({ productId, variantId, quantity: 1 });
+      navigation.navigate('Cart');
+    } catch (error) {
+      console.warn('Failed to add to cart:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCardPress = () => {
+    console.log('Navigating to product with ID: ', productId);
+    navigation.navigate('SingleProductScreen', { productId });
+  };
 
   return (
     <TouchableOpacity
       activeOpacity={1}
       style={[styles.card, { width: cardWidth }]}
+      onPress={handleCardPress}
     >
       <View style={styles.imageSection}>
         <LinearGradient
@@ -109,8 +160,14 @@ const ProductCard = ({
             <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
           </View>
         ) : (
-          <TouchableOpacity activeOpacity={0.6} style={styles.cartButton}>
-            <Text style={styles.cartButtonText}>ADD TO CART</Text>
+          <TouchableOpacity
+            activeOpacity={0.6}
+            style={styles.cartButton}
+            onPress={handleAddToCart}
+          >
+            <Text style={styles.cartButtonText}>
+              {loading ? 'ADDING…' : 'ADD TO CART'}
+            </Text>
           </TouchableOpacity>
         )}
       </View>

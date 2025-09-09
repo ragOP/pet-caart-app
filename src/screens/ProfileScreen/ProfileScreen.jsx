@@ -60,7 +60,11 @@ const ProfileScreen = ({ navigation }) => {
       icon: <UserRoundPlus size={26} color="#004E6A" />,
       navigateTo: 'InviteScreen',
     },
-    { label: 'Contact Us', icon: <Headset size={26} color="#004E6A" /> },
+    {
+      label: 'Contact Us',
+      icon: <Headset size={26} color="#004E6A" />,
+      navigateTo: 'ContactUsScreen',
+    },
     {
       label: 'Log Out',
       icon: <LogOut size={26} color="#004E6A" />,

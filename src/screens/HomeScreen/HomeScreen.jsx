@@ -8,6 +8,7 @@ import {
   StatusBar,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { MapPin } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
@@ -28,6 +29,7 @@ import BakedProduct from '../../components/BakedProduct/BakedProduct';
 import Footer from '../../components/Footer/Footer';
 import AdBannner from '../../components/AdBannner/AdBanner';
 import PetPromosList from '../../components/PetPromos/PetPromos';
+import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
 
 const HomeScreen = () => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -37,8 +39,27 @@ const HomeScreen = () => {
   const [addToCartData, setAddToCartData] = useState([]);
   const [bestSellerData, setBestSellerData] = useState([]);
   const [newlyLaunchedData, setNewlyLaunchedData] = useState([]);
+  const [grids, setGrids] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchGrids = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(
+          'https://pet-caart-be.onrender.com/api/home-config/get-all-grid?keyword=home',
+        );
+        const data = await res.json();
+        if (data?.data) {
+          console.log('sss', data);
+          setGrids(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching home grids:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     const fetchBanner = async () => {
       try {
         const response = await getAdBanner();
@@ -106,6 +127,7 @@ const HomeScreen = () => {
                 : 0;
 
               return {
+                _id: item._id,
                 title: item.title,
                 rating: item.ratings?.average || 0,
                 price: item.price,
@@ -139,7 +161,7 @@ const HomeScreen = () => {
         console.error('Error fetching products:', error);
       }
     };
-
+    fetchGrids();
     fetchProducts();
     fetchBanner();
     fetchSliders();
@@ -193,11 +215,26 @@ const HomeScreen = () => {
   />
 )} */}
         <AdBannner />
-        <EssentialsSlider
+        {/* <EssentialsSlider
           headingIcon={require('../../assets/icons/paw2.png')}
           headingTextOrange="Everyday"
           headingTextBlue="Essentials"
-        />
+        /> */}
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#FF9F00"
+            style={{ marginTop: 40 }}
+          />
+        ) : grids.length > 0 && grids[0] ? (
+          <CustomGridLayout
+            key={grids[0]._id}
+            gridData={grids[0]}
+            isLoading={loading}
+          />
+        ) : (
+          <Text style={styles.errorText}>No grids available</Text>
+        )}
 
         {addToCartData.length === 0 ? (
           <EssentialsSliderShimmer />
@@ -230,6 +267,21 @@ const HomeScreen = () => {
             headingTextBlue="Under ₹599"
             products={bestSellerData}
           />
+        )}
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#FF9F00"
+            style={{ marginTop: 40 }}
+          />
+        ) : grids.length > 0 && grids[1] ? (
+          <CustomGridLayout
+            key={grids[1]._id}
+            gridData={grids[1]}
+            isLoading={loading}
+          />
+        ) : (
+          <Text style={styles.errorText}>No grids available</Text>
         )}
 
         {/* <CatLifeScreen
