@@ -17,6 +17,12 @@ import { addItemToCart } from '../../redux/cartSlice';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
+const getVariantDiscount = (price, salePrice) => {
+  if (!price || !salePrice || price <= salePrice) return 0;
+  return Math.round(((price - salePrice) / price) * 100);
+};
+
+const CARD_HEIGHT = 425;
 const ProductCard = ({
   images,
   title,
@@ -29,6 +35,7 @@ const ProductCard = ({
   brandId,
   productId,
   variantId,
+  variants = [],
 }) => {
   const originalPrice = Number(price);
   const discountPercent = parseInt(discount);
@@ -43,21 +50,9 @@ const ProductCard = ({
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  // const handleAddToCart = async () => {
-  //   if (loading) return;
-  //   setLoading(true);
-  //   try {
-  //     await addProductToCart({ productId, variantId, quantity: 1 });
-  //   } catch (error) {
-  //     console.warn('Failed to add to cart:', error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleAddToCart = async () => {
     if (loading) return;
     setLoading(true);
-
     try {
       const productData = {
         productId,
@@ -68,7 +63,6 @@ const ProductCard = ({
         images,
         discount,
       };
-      console.log('Product data to be added to the cart:', productData);
       dispatch(addItemToCart(productData));
       await addProductToCart({ productId, variantId, quantity: 1 });
       navigation.navigate('Cart');
@@ -80,7 +74,6 @@ const ProductCard = ({
   };
 
   const handleCardPress = () => {
-    console.log('Navigating to product with ID: ', productId);
     navigation.navigate('SingleProductScreen', { productId });
   };
 
@@ -90,70 +83,87 @@ const ProductCard = ({
       style={[styles.card, { width: cardWidth }]}
       onPress={handleCardPress}
     >
-      <View style={styles.imageSection}>
-        <LinearGradient
-          colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
-          style={styles.bestsellerContainer}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.bestsellerText}>BESTSELLER</Text>
-        </LinearGradient>
+      {/* Content wrapper */}
+      <View style={styles.cardInner}>
+        <View style={styles.imageSection}>
+          <LinearGradient
+            colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
+            style={styles.bestsellerContainer}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.bestsellerText}>BESTSELLER</Text>
+          </LinearGradient>
+          <Swiper
+            style={styles.swiper}
+            dotStyle={styles.dot}
+            activeDotStyle={styles.activeDot}
+            paginationStyle={styles.pagination}
+            autoplay={false}
+            loop={false}
+            showsPagination
+          >
+            {images && images.length > 0 ? (
+              images.map((imgSrc, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: imgSrc }}
+                  style={styles.productImage}
+                  resizeMode="contain"
+                />
+              ))
+            ) : (
+              <Text>No images available</Text>
+            )}
+          </Swiper>
+          <Text style={styles.ratingText}>⭐ {rating}</Text>
+        </View>
 
-        <Swiper
-          style={styles.swiper}
-          dotStyle={styles.dot}
-          activeDotStyle={styles.activeDot}
-          paginationStyle={styles.pagination}
-          autoplay={false}
-          loop={false}
-          showsPagination
-        >
-          {images && images.length > 0 ? (
-            images.map((imgSrc, index) => (
-              <Image
-                key={index}
-                source={{ uri: imgSrc }}
-                style={styles.productImage}
-                resizeMode="contain"
-              />
-            ))
-          ) : (
-            <Text>No images available</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.titleText} numberOfLines={2}>
+            {title}
+          </Text>
+          <View style={styles.vegWrapper}>
+            <Image
+              source={require('../../assets/images/vegg.png')}
+              style={styles.vegIcon}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
+        {brandId && brandId.name && (
+          <Text style={styles.brandText}>{brandId.name}</Text>
+        )}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
+          {variants.map((variant, index) => (
+            <View
+              key={variant._id || index}
+              style={[
+                styles.variantChipContainer,
+                { marginRight: 8, marginBottom: 4 },
+              ]}
+            >
+              <Text style={styles.variantChipText}>
+                {variant.weight} |{' '}
+                {getVariantDiscount(variant.price, variant.salePrice)}% OFF
+              </Text>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.priceLabel}>PRICE</Text>
+        <View style={styles.priceDiscountRow}>
+          <Text style={styles.priceValue}>₹{discountedPrice}</Text>
+          {hasDiscount && (
+            <>
+              <Text style={styles.strikePrice}>₹{originalPrice}</Text>
+              <View style={styles.discountContainer}>
+                <Text style={styles.discountText}>{discount} OFF</Text>
+              </View>
+            </>
           )}
-        </Swiper>
-
-        <Text style={styles.ratingText}>⭐ {rating}</Text>
-      </View>
-
-      <View style={styles.titleRow}>
-        <Text style={styles.titleText} numberOfLines={2}>
-          {title}
-        </Text>
-        <View style={styles.vegWrapper}>
-          <Image
-            source={require('../../assets/images/vegg.png')}
-            style={styles.vegIcon}
-            resizeMode="contain"
-          />
         </View>
       </View>
-      {brandId && brandId.name && (
-        <Text style={styles.brandText}>{brandId.name}</Text>
-      )}
-      <Text style={styles.priceLabel}>PRICE</Text>
-      <View style={styles.priceDiscountRow}>
-        <Text style={styles.priceValue}>₹{discountedPrice}</Text>
-        {hasDiscount && (
-          <>
-            <Text style={styles.strikePrice}>₹{originalPrice}</Text>
-            <View style={styles.discountContainer}>
-              <Text style={styles.discountText}>{discount} OFF</Text>
-            </View>
-          </>
-        )}
-      </View>
-
+      {/* Button wrapper */}
       <View style={styles.cartButtonRow}>
         {isOutOfStock ? (
           <View style={styles.outOfStockButton}>
@@ -182,6 +192,12 @@ const styles = StyleSheet.create({
     width: screenWidth * 0.64,
     alignSelf: 'center',
     paddingHorizontal: 5,
+    height: CARD_HEIGHT,
+    backgroundColor: '#fff',
+  },
+  cardInner: {
+    flex: 1,
+    justifyContent: 'flex-start',
   },
   imageSection: {
     alignItems: 'center',
@@ -200,15 +216,6 @@ const styles = StyleSheet.create({
     left: 1,
     zIndex: 1,
     height: 22,
-    marginRight: 8,
-    ...(Platform.OS === 'ios' && {
-      width: 'auto',
-      height: 'auto',
-    }),
-    ...(Platform.OS === 'android' && {
-      width: 'auto',
-      height: 'auto',
-    }),
   },
   bestsellerText: {
     color: '#fff',
@@ -277,6 +284,19 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontFamily: 'gotham-rounded-book',
   },
+  variantChipContainer: {
+    backgroundColor: '#6A68681A',
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    alignSelf: 'flex-start',
+  },
+  variantChipText: {
+    color: '#19191c',
+    fontSize: 11,
+    fontFamily: 'Gotham-Rounded-Medium',
+    letterSpacing: 0.2,
+  },
   priceLabel: {
     fontSize: 12,
     color: '#6A6868',
@@ -315,31 +335,36 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
   },
   cartButtonRow: {
-    marginTop: 6,
+    position: 'absolute',
+    bottom: 8,
+    left: 5,
+    right: 5,
   },
   cartButton: {
     backgroundColor: '#0888B1',
-    paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 6,
     width: '100%',
+    height: 36,
+    justifyContent: 'center',
   },
   cartButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 9,
+    fontSize: 13,
     textAlign: 'center',
     fontFamily: 'Gotham-Rounded-Bold',
   },
   outOfStockButton: {
     backgroundColor: '#99a1ad',
-    paddingVertical: 6,
     borderRadius: 8,
     width: '100%',
+    height: 36,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   outOfStockButtonText: {
     color: '#ffffff',
-    fontSize: 9,
+    fontSize: 11,
     textAlign: 'center',
     fontFamily: 'Gotham-Rounded-Bold',
   },
