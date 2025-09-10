@@ -17,7 +17,11 @@ const Footer = () => (
     <Text style={styles.subText}>
       Whether it’s food, play, or health{'\n'}
       everything your pet needs, with love{' '}
-      <Text style={styles.loveIcon}>♥</Text>
+      <Image
+        source={require('../../assets/images/heart.png')}
+        style={styles.loveIcon}
+        resizeMode="cover"
+      />
     </Text>
   </View>
 );
@@ -28,7 +32,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderColor: '#0888B166',
     padding: 20,
-    margin: 16,
+    margin: 10,
     backgroundColor: '#fff',
     borderStyle: 'dashed',
   },
@@ -60,9 +64,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
   },
   loveIcon: {
-    color: '#F9646A',
-    fontSize: 20,
-    fontWeight: 'bold',
+    height: 18,
+    width: 18,
   },
 });
 

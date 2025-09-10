@@ -93,7 +93,7 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
                   <Image
                     source={{ uri: item.imageUrl }}
                     style={styles.itemImage}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                 </TouchableOpacity>
               ))}
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     width: '100%',
-    height: 100,
+    height: 120,
     marginTop: 12,
   },
   titleContainer: {
@@ -141,23 +141,19 @@ const styles = StyleSheet.create({
     color: '#222',
   },
   gridContainer: {
-    borderRadius: 12,
     overflow: 'hidden',
     width: '100%',
   },
   gridItem: {
     margin: 8,
-    borderRadius: 14,
-    backgroundColor: '#fff',
-    elevation: 2,
+    backgroundColor: 'transparent',
     overflow: 'hidden',
-    aspectRatio: 1,
+    aspectRatio: 0.96,
+    borderRadius: 6,
   },
   itemImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 10,
-    resizeMode: 'cover',
   },
 });
 

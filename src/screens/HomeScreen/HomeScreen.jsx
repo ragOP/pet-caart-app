@@ -9,8 +9,9 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
-import { MapPin } from 'lucide-react-native';
+import { MapPin, Search } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import BannerSlider from '../../components/BannerSlider/BannerSlider';
 import EssentialsSlider from '../../components/EssentialSlider/EssentialSlider';
@@ -30,6 +31,7 @@ import Footer from '../../components/Footer/Footer';
 import AdBannner from '../../components/AdBannner/AdBanner';
 import PetPromosList from '../../components/PetPromos/PetPromos';
 import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
+import { checkDelivery } from '../../apis/checkDelivery';
 
 const HomeScreen = () => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -41,6 +43,11 @@ const HomeScreen = () => {
   const [newlyLaunchedData, setNewlyLaunchedData] = useState([]);
   const [grids, setGrids] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingdel, setLoadingdel] = useState(false);
+  const [locationFocus, setLocationFocus] = useState(false);
+  const [pincode, setPincode] = useState('');
+  const [deliveryDate, setDeliveryDate] = useState('');
+  const productId = 'some-product-id';
 
   useEffect(() => {
     const fetchGrids = async () => {
@@ -166,6 +173,20 @@ const HomeScreen = () => {
     fetchBanner();
     fetchSliders();
   }, []);
+  const handleCheckDelivery = async () => {
+    try {
+      setLoadingdel(true);
+      const response = await checkDelivery({ pincode, productId });
+      console.log('Delivery check response:', response);
+      setDeliveryDate(response.data || '');
+    } catch (error) {
+      console.error('Delivery check error:', error);
+      alert(error.message || 'Error checking delivery');
+      setDeliveryDate('');
+    } finally {
+      setLoadingdel(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -182,10 +203,71 @@ const HomeScreen = () => {
               style={styles.logo}
               resizeMode="contain"
             />
-            <SearchBar />
-            <TouchableOpacity style={styles.locationButton} activeOpacity={1}>
-              <MapPin color="#FFA500" size={24} />
-            </TouchableOpacity>
+            {!locationFocus ? (
+              <>
+                <SearchBar style={{ flex: 1, marginRight: 10 }} />
+                <TouchableOpacity
+                  style={styles.locationButton}
+                  activeOpacity={0.6}
+                  onPress={() => setLocationFocus(true)}
+                >
+                  <MapPin color="#FFA500" size={24} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.locationButton}
+                  onPress={() => setLocationFocus(false)}
+                  activeOpacity={1}
+                >
+                  <Search color="#165174" size={24} />
+                </TouchableOpacity>
+                <View style={styles.pincodeContainer}>
+                  <View style={styles.iconWithSeparator}>
+                    <MapPin
+                      color="#FFA500"
+                      size={24}
+                      style={styles.mapPinIcon}
+                    />
+                    <View style={styles.divider} />
+                  </View>
+                  <TextInput
+                    style={[
+                      styles.pincodeInput,
+                      { fontSize: 9.5, fontWeight: 'bold' },
+                    ]}
+                    placeholder="Enter PINCODE"
+                    keyboardType="default"
+                    maxLength={deliveryDate ? undefined : 6}
+                    value={
+                      deliveryDate
+                        ? `Expected delivery: ${deliveryDate}`
+                        : pincode
+                    }
+                    onChangeText={text => {
+                      setDeliveryDate('');
+                      setPincode(text);
+                    }}
+                    autoFocus={!deliveryDate}
+                    editable={true}
+                  />
+
+                  <TouchableOpacity
+                    style={styles.searchButton}
+                    onPress={handleCheckDelivery}
+                    disabled={loadingdel}
+                    activeOpacity={1}
+                  >
+                    {loadingdel ? (
+                      <ActivityIndicator size="small" color="#165174" />
+                    ) : (
+                      <Search color="#165174" size={20} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </SafeAreaView>
       </View>
@@ -226,6 +308,21 @@ const HomeScreen = () => {
             color="#FF9F00"
             style={{ marginTop: 40 }}
           />
+        ) : grids.length > 0 && grids[3] ? (
+          <CustomGridLayout
+            key={grids[3]._id}
+            gridData={grids[3]}
+            isLoading={loading}
+          />
+        ) : (
+          <Text style={styles.errorText}>No grids available</Text>
+        )}
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#FF9F00"
+            style={{ marginTop: 40 }}
+          />
         ) : grids.length > 0 && grids[0] ? (
           <CustomGridLayout
             key={grids[0]._id}
@@ -235,7 +332,21 @@ const HomeScreen = () => {
         ) : (
           <Text style={styles.errorText}>No grids available</Text>
         )}
-
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#FF9F00"
+            style={{ marginTop: 40 }}
+          />
+        ) : grids.length > 0 && grids[2] ? (
+          <CustomGridLayout
+            key={grids[2]._id}
+            gridData={grids[2]}
+            isLoading={loading}
+          />
+        ) : (
+          <Text style={styles.errorText}>No grids available</Text>
+        )}
         {addToCartData.length === 0 ? (
           <EssentialsSliderShimmer />
         ) : (
@@ -246,7 +357,7 @@ const HomeScreen = () => {
             headingTextBlue="Add-To-Carts"
           />
         )}
-        <AdBannner />
+        {/* <AdBannner /> */}
 
         {/* {newlyLaunchedData.length === 0 ? (
           <ProductSliderShimmer />
@@ -301,7 +412,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -311,19 +422,26 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   logo: {
-    width: 50,
-    height: 40,
+    width: 70,
+    height: 50,
     marginRight: 10,
   },
   locationButton: {
     backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 10,
+    padding: 12,
+    borderRadius: 8,
     marginLeft: 10,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4040400D',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   scrollContent: {
     paddingBottom: 100,
@@ -334,6 +452,59 @@ const styles = StyleSheet.create({
     width: '93%',
     alignSelf: 'center',
     paddingTop: 20,
+  },
+  pincodeContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginLeft: 10,
+    paddingHorizontal: 10,
+    elevation: 2,
+    height: 50,
+  },
+  mapPinIcon: {
+    marginRight: 8,
+  },
+  pincodeInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'gotham-rounded-book',
+  },
+  searchButton: {
+    padding: 2,
+    borderRadius: 8,
+    marginLeft: 6,
+  },
+  locationButton: {
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 8,
+    marginLeft: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4040400D',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  iconWithSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  divider: {
+    width: 1,
+    height: 50,
+    backgroundColor: '#ccc',
+    marginLeft: 1,
   },
 });
 

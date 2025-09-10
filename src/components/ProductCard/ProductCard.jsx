@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   cartButton: {
-    backgroundColor: '#F59A11',
+    backgroundColor: '#0888B1',
     paddingVertical: 6,
     borderRadius: 8,
     width: '100%',

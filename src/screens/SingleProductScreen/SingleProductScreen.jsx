@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
   },
   stickyAddToCartButton: {
-    backgroundColor: '#074b62',
+    backgroundColor: '#0888B1',
     borderRadius: 6,
     paddingVertical: 14,
     paddingHorizontal: 34,

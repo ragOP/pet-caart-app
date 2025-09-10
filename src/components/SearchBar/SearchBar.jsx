@@ -46,11 +46,11 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     paddingHorizontal: 16,
     alignItems: 'center',
-    height: 48,
+    height: 50,
   },
   input: {
     flex: 1,

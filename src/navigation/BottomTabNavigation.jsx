@@ -39,7 +39,7 @@ const CustomTabBar = ({ state, navigation }) => {
   return (
     <SafeAreaView edges={['bottom']} style={styles.wrapper}>
       <ImageBackground
-        source={require('../assets/images/bar.png')}
+        source={require('../assets/images/baar.png')}
         style={styles.backgroundImage}
       >
         <View style={styles.tabBar}>
