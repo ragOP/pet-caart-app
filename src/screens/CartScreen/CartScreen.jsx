@@ -22,8 +22,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCart } from '../../redux/cartSlice';
 import { useNavigation } from '@react-navigation/native';
 import { getAddresses } from '../../apis/getAddresses';
-import BottomSheetModal from '../../components/BottomSheetModal/BottomSheetModal';
-import SpecialDeals from '../../components/SpecialDeals/SpecialDeals';
 
 const CartScreen = () => {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -431,7 +429,6 @@ const CartScreen = () => {
                 </View>
               </TouchableOpacity>
             ))}
-            <SpecialDeals />
             <View style={styles.couponContainer}>
               <View style={styles.couponHeader}>
                 <Image
@@ -535,28 +532,6 @@ const CartScreen = () => {
           PAY ₹{totalPrice.toFixed(2)}
         </Text>
       </TouchableOpacity>
-
-      {/* <CustomAddressBottomSheet
-        visible={isSheetVisible}
-        onClose={() => setSheetVisible(false)}
-        addresses={addresses}
-        selectedAddressId={selectedAddress?.id}
-        onSelectAddress={addr => {
-          setSelectedAddress(addr);
-          setSheetVisible(false);
-        }}
-        onAddAddress={handleAddAddress}
-        onEditAddress={addr => {
-          navigation.navigate('AddAddressScreen', { addressData: addr });
-        }}
-      />
-
-      <CouponSheet
-        ref={couponSheetRef}
-        coupons={coupons}
-        appliedCoupon={appliedCoupon}
-        onApply={handleCouponApply}
-      /> */}
     </View>
   );
 };
