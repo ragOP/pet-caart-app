@@ -22,6 +22,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCart } from '../../redux/cartSlice';
 import { useNavigation } from '@react-navigation/native';
 import { getAddresses } from '../../apis/getAddresses';
+import SpecialDeals from '../../components/SpecialDeals/SpecialDeals';
+import { AddressBottomSheet } from '../../components/AddressBottomSheet/AddressBottomSheet';
 
 const CartScreen = () => {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -39,6 +41,7 @@ const CartScreen = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const couponSheetRef = useRef();
   const defaultAddress = addresses.find(addr => addr.isDefault);
+  const addressSheetRef = useRef();
 
   const handleSelectAddress = address => {
     setSelectedAddress(address);
@@ -287,12 +290,14 @@ const CartScreen = () => {
         <View style={styles.addressContainer}>
           <MapPin size={16} color="#666" />
           <Text style={styles.addressText} numberOfLines={1}>
-            {defaultAddress
+            {selectedAddress
+              ? `${selectedAddress.name}, ${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.zip}`
+              : defaultAddress
               ? `${defaultAddress.name}, ${defaultAddress.address}, ${defaultAddress.city}, ${defaultAddress.zip}`
               : 'Select delivery address'}
           </Text>
           <TouchableOpacity
-            onPress={() => setSheetVisible(true)}
+            onPress={() => addressSheetRef.current.open()}
             style={styles.changeButton}
             activeOpacity={0.7}
           >
@@ -429,6 +434,7 @@ const CartScreen = () => {
                 </View>
               </TouchableOpacity>
             ))}
+            <SpecialDeals />
             <View style={styles.couponContainer}>
               <View style={styles.couponHeader}>
                 <Image
@@ -463,7 +469,7 @@ const CartScreen = () => {
             <View style={styles.gstContainer}>
               <View style={styles.gstHeader}>
                 <Image
-                  source={require('../../assets/icons/cpn.png')}
+                  source={require('../../assets/images/gst.png')}
                   style={{ width: 20, height: 20 }}
                 />
                 <Text style={styles.gstTitle}>Apply for GST Invoice</Text>
@@ -532,6 +538,35 @@ const CartScreen = () => {
           PAY ₹{totalPrice.toFixed(2)}
         </Text>
       </TouchableOpacity>
+
+      {/* <CustomAddressBottomSheet
+        visible={isSheetVisible}
+        onClose={() => setSheetVisible(false)}
+        addresses={addresses}
+        selectedAddressId={selectedAddress?.id}
+        onSelectAddress={addr => {
+          setSelectedAddress(addr);
+          setSheetVisible(false);
+        }}
+        onAddAddress={handleAddAddress}
+        onEditAddress={addr => {
+          navigation.navigate('AddAddressScreen', { addressData: addr });
+        }}
+      />
+
+      <CouponSheet
+        ref={couponSheetRef}
+        coupons={coupons}
+        appliedCoupon={appliedCoupon}
+        onApply={handleCouponApply}
+      /> */}
+      <AddressBottomSheet
+        ref={addressSheetRef}
+        selectedAddressId={selectedAddress?.id}
+        defaultAddressId={defaultAddress?.id}
+        onSelectAddress={addr => setSelectedAddress(addr)}
+        onAddAddress={() => navigation.navigate('AddAddressScreen')}
+      />
     </View>
   );
 };

@@ -1,4 +1,3 @@
-// BottomSheetModal.js
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { View } from 'react-native';
 import RBSheet from 'react-native-raw-bottom-sheet';
