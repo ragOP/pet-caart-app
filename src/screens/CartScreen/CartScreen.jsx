@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,89 +18,130 @@ import { getCart } from '../../apis/getCart';
 import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
 import { getCoupons } from '../../apis/getCoupons';
 import { addProductToCart } from '../../apis/addProductToCart';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCart } from '../../redux/cartSlice';
+import { useNavigation } from '@react-navigation/native';
+import { getAddresses } from '../../apis/getAddresses';
+import BottomSheetModal from '../../components/BottomSheetModal/BottomSheetModal';
+import SpecialDeals from '../../components/SpecialDeals/SpecialDeals';
 
 const CartScreen = () => {
-  const [showAllCoupons, setShowAllCoupons] = useState(false);
+  const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [cartItems, setCartItems] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [couponError, setCouponError] = useState('');
   const [loading, setLoading] = useState(false);
   const [updatingId, setUpdatingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [addresses, setAddresses] = useState([]);
+  const [isSheetVisible, setSheetVisible] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const couponSheetRef = useRef();
+  const defaultAddress = addresses.find(addr => addr.isDefault);
+
+  const handleSelectAddress = address => {
+    setSelectedAddress(address);
+    console.log('Selected Address:', address);
+  };
+
+  const handleAddAddress = () => {
+    console.log('Navigate to Add Address Screen');
+    navigation.navigate('AddAddressScreen');
+  };
 
   useEffect(() => {
     const fetchCartData = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
         const response = await getCart({ params: {} });
         if (response.success) {
           const fetchedItems = response.data.items.map(item => ({
-            id: item._id,
-            title: item.productId.title,
-            price: item.price,
-            quantity: item.quantity,
-            total: item.total,
-            cgst: item.cgst,
-            sgst: item.sgst,
-            cess: item.cess,
-            image: { uri: item.productId.images[0] },
-            productId: item.productId._id,
+            id: item._id || item.productId,
+            title: item.productId?.title || 'No Title',
+            price: item.price || 0,
+            quantity: item.quantity || 1,
+            total: item.total || item.price * item.quantity,
+            cgst: item.cgst || 0,
+            sgst: item.sgst || 0,
+            cess: item.cess || 0,
+            image: item.productId?.images[0] || 'default-image-url',
+            productId: item.productId._id || item.productId,
             variantId: item.variantId?._id || null,
           }));
-
-          setCartItems(fetchedItems);
+          dispatch(setCart(fetchedItems));
+          setLoading(false);
+        } else {
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Error fetching cart data:', error);
-      } finally {
+        console.error(' Error fetching cart data:', error?.message || error);
         setLoading(false);
       }
     };
+
     const fetchCoupons = async () => {
       try {
         const couponsResponse = await getCoupons();
-        console.log('Coupons Response:', couponsResponse);
         if (
           couponsResponse &&
           couponsResponse.data &&
           Array.isArray(couponsResponse.data.data)
         ) {
           setCoupons(couponsResponse.data.data);
-        } else {
-          console.error('Invalid coupon data format.');
         }
       } catch (error) {
         console.error('Error fetching coupons:', error);
       }
     };
 
+    const fetchAddresses = async () => {
+      try {
+        const response = await getAddresses();
+        if (response && response.success) {
+          const formattedAddresses = response.data.map(item => ({
+            id: item._id,
+            name: `${item.firstName} ${item.lastName}`,
+            address: item.address,
+            phone: item.phone,
+            city: item.city,
+            country: item.country,
+            state: item.state,
+            zip: item.zip,
+            isDefault: item.isDefault,
+            type: item.type,
+          }));
+          setAddresses(formattedAddresses);
+        }
+      } catch (error) {
+        console.error('Error fetching addresses:', error);
+      }
+    };
+
+    fetchAddresses();
     fetchCartData();
     fetchCoupons();
-  }, []);
+    console.log('Cart Items from Redux: ', cartItems);
+  }, [isLoggedIn, dispatch]);
+
   const increaseQuantity = async id => {
     const item = cartItems.find(i => i.id === id);
-    if (!item) {
-      console.warn('Item not found for increaseQuantity:', id);
-      return;
-    }
-
+    if (!item) return;
     const newQuantity = item.quantity + 1;
-    console.log(`Increasing quantity for ${item.title} to ${newQuantity}`);
     setUpdatingId(id);
 
     try {
-      const apiResponse = await addProductToCart({
+      await addProductToCart({
         productId: item.productId,
-        variantId: item.variantId || null,
+        variantId: item.variantId || undefined,
         quantity: newQuantity,
       });
-
-      const updated = cartItems.map(i =>
+      const updatedItems = cartItems.map(i =>
         i.id === id ? { ...i, quantity: newQuantity } : i,
       );
-      setCartItems(updated);
-      console.log('Updated cartItems (after increase):', updated);
+      dispatch(setCart(updatedItems));
     } catch (error) {
       console.error('Error while increasing quantity:', error);
     } finally {
@@ -110,27 +151,20 @@ const CartScreen = () => {
 
   const decreaseQuantity = async id => {
     const item = cartItems.find(i => i.id === id);
-    if (!item || item.quantity <= 1) {
-      console.warn('Cannot decrease quantity for item:', id);
-      return;
-    }
-
+    if (!item || item.quantity <= 1) return;
     const newQuantity = item.quantity - 1;
-    console.log(`Decreasing quantity for ${item.title} to ${newQuantity}`);
     setUpdatingId(id);
 
     try {
-      const apiResponse = await addProductToCart({
+      await addProductToCart({
         productId: item.productId,
-        variantId: item.variantId || null,
+        variantId: item.variantId || undefined,
         quantity: newQuantity,
       });
-
-      const updated = cartItems.map(i =>
+      const updatedItems = cartItems.map(i =>
         i.id === id ? { ...i, quantity: newQuantity } : i,
       );
-      setCartItems(updated);
-      console.log('Updated cartItems (after decrease):', updated);
+      dispatch(setCart(updatedItems));
     } catch (error) {
       console.error('Error while decreasing quantity:', error);
     } finally {
@@ -139,24 +173,27 @@ const CartScreen = () => {
   };
 
   const deleteItem = async id => {
+    console.log('deleteItem called with id:', id);
     const item = cartItems.find(i => i.id === id);
-    if (!item) {
-      console.warn('Item not found for delete:', id);
-      return;
-    }
+    if (!item) return;
+    setDeletingId(id);
 
-    setUpdatingId(id);
+    console.log('Deleting item:', item);
 
     try {
-      const apiResponse = await addProductToCart({
+      const response = await addProductToCart({
         productId: item.productId,
-        variantId: item.variantId || null,
+        variantId: item.variantId || undefined,
         quantity: 0,
       });
+      console.log('Delete response:', response);
 
-      const updated = cartItems.filter(i => i.id !== id);
-      setCartItems(updated);
-      console.log('Item deleted successfully');
+      if (response.success) {
+        const updatedItems = cartItems.filter(i => i.id !== id);
+        dispatch(setCart(updatedItems));
+      } else {
+        console.error('Failed to delete item:', response);
+      }
     } catch (error) {
       console.error('Error while deleting item:', error);
     } finally {
@@ -164,16 +201,6 @@ const CartScreen = () => {
     }
   };
 
-  const handleCouponApply = coupon => {
-    if (totalMRP >= coupon.minPurchase) {
-      setAppliedCoupon(coupon);
-      setCouponError('');
-    } else {
-      setCouponError(
-        `Coupon requires a minimum purchase of ₹${coupon.minPurchase}`,
-      );
-    }
-  };
   const totalMRP = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -192,21 +219,39 @@ const CartScreen = () => {
   );
 
   let couponDiscount = 0;
-
   if (appliedCoupon) {
     if (appliedCoupon.discountType === 'fixed') {
       couponDiscount = appliedCoupon.discountValue;
     } else if (appliedCoupon.discountType === 'percentage') {
       const rawDiscount = (appliedCoupon.discountValue / 100) * totalMRP;
-      if (appliedCoupon.maxDiscount) {
-        couponDiscount = Math.min(rawDiscount, appliedCoupon.maxDiscount);
-      } else {
-        couponDiscount = rawDiscount;
-      }
+      couponDiscount = appliedCoupon.maxDiscount
+        ? Math.min(rawDiscount, appliedCoupon.maxDiscount)
+        : rawDiscount;
     }
   }
-
   const totalPrice = totalMRP + cgst + sgst + cess - couponDiscount;
+
+  const handleCouponApply = (coupon, isSelected) => {
+    if (isSelected) {
+      setAppliedCoupon(null);
+      setCouponError('');
+      couponSheetRef.current.close();
+    } else {
+      if (totalMRP >= coupon.minPurchase) {
+        setAppliedCoupon(coupon);
+        setCouponError('');
+        couponSheetRef.current.close();
+      } else {
+        setCouponError(
+          `Coupon requires a minimum purchase of ₹${coupon.minPurchase}`,
+        );
+      }
+    }
+  };
+  const PROGRESS_TARGET = 800;
+  const progress = Math.min(totalPrice / PROGRESS_TARGET, 1);
+  const showProgress = totalPrice > 0;
+  const showDog = totalPrice > 0 && totalPrice < PROGRESS_TARGET;
 
   const renderEmptyCart = () => (
     <View style={styles.emptyCartContainer}>
@@ -236,8 +281,7 @@ const CartScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
-
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.headerWrapper}>
         <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>My Cart</Text>
@@ -245,16 +289,26 @@ const CartScreen = () => {
         <View style={styles.addressContainer}>
           <MapPin size={16} color="#666" />
           <Text style={styles.addressText} numberOfLines={1}>
-            402, Silver Oak Apartments, JP Nagar Phase 5, Be...
+            {defaultAddress
+              ? `${defaultAddress.name}, ${defaultAddress.address}, ${defaultAddress.city}, ${defaultAddress.zip}`
+              : 'Select delivery address'}
           </Text>
+          <TouchableOpacity
+            onPress={() => setSheetVisible(true)}
+            style={styles.changeButton}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.changeButtonText}>Change</Text>
+          </TouchableOpacity>
         </View>
       </View>
+
       {loading ? (
         <AddressShimmer />
       ) : cartItems.length === 0 ? (
         renderEmptyCart()
       ) : (
-        <View>
+        <>
           <LinearGradient
             colors={['#278939', '#419351', '#74C082', '#419351', '#278939']}
             start={{ x: 0, y: 0 }}
@@ -271,57 +325,113 @@ const CartScreen = () => {
           </LinearGradient>
 
           <ScrollView contentContainerStyle={styles.content}>
-            {cartItems.map(item => (
-              <View key={item.id} style={styles.card}>
-                <Image source={item.image} style={styles.productImage} />
-                <View style={styles.details}>
-                  <Text style={styles.title}>{item.title}</Text>
-                  <View style={styles.priceAndStepper}>
-                    <View style={styles.priceWrapper}>
-                      <Text style={styles.price}>₹{item.price}</Text>
-                      <View style={styles.mrpDiscountContainer}>
-                        <Text style={styles.mrp}>MRP ₹{item.price}</Text>
-                        <Text style={styles.discount}>(70% Off)</Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.stepper}>
-                      <TouchableOpacity
-                        style={styles.stepBtn}
-                        onPress={() => decreaseQuantity(item.id)}
-                        disabled={updatingId === item.id}
-                      >
-                        <Text style={styles.stepText}>-</Text>
-                      </TouchableOpacity>
-
-                      {updatingId === item.id ? (
-                        <ActivityIndicator size="small" color="#FFA500" />
-                      ) : (
-                        <Text style={styles.quantity}>{item.quantity}</Text>
-                      )}
-
-                      <TouchableOpacity
-                        style={styles.stepBtn}
-                        onPress={() => increaseQuantity(item.id)}
-                        disabled={updatingId === item.id}
-                      >
-                        <Text style={styles.stepText}>+</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
+            {showProgress && (
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBarBackground}>
+                  <View
+                    style={[
+                      styles.progressBarFill,
+                      { width: `${progress * 100}%` },
+                    ]}
+                  />
                 </View>
-                {deletingId === item.id ? (
-                  <ActivityIndicator size="small" color="#FFA500" />
-                ) : (
-                  <TouchableOpacity
-                    style={styles.trashIcon}
-                    onPress={() => deleteItem(item.id)}
-                  >
-                    <Trash2 size={18} color="#999" />
-                  </TouchableOpacity>
+
+                {showDog && (
+                  <Image
+                    source={require('../../assets/images/dogw.png')}
+                    style={[
+                      styles.dogImage,
+                      {
+                        left: `${progress * 100}%`,
+                        transform: [{ translateX: -20 }],
+                      },
+                    ]}
+                    resizeMode="contain"
+                  />
                 )}
               </View>
+            )}
+
+            {cartItems.map((item, idx) => (
+              <TouchableOpacity
+                key={item.id ? String(item.id) : String(idx)}
+                activeOpacity={0.8}
+                onPress={() =>
+                  navigation.navigate('SingleProductScreen', {
+                    productId: item.productId,
+                  })
+                }
+              >
+                <View style={styles.card}>
+                  <Image
+                    source={{
+                      uri:
+                        typeof item.image === 'string'
+                          ? item.image
+                          : Array.isArray(item.image)
+                          ? item.image[0]
+                          : '',
+                    }}
+                    style={styles.productImage}
+                  />
+                  <View style={styles.details}>
+                    <Text style={styles.title}>{item.title}</Text>
+                    <View style={styles.priceAndStepper}>
+                      <View style={styles.priceWrapper}>
+                        <Text style={styles.price}>₹{item.price}</Text>
+                        <View style={styles.mrpDiscountContainer}>
+                          <Text style={styles.mrp}>MRP ₹{item.price}</Text>
+                          <Text style={styles.discount}>(0% Off)</Text>
+                        </View>
+                      </View>
+                      <View style={styles.stepper}>
+                        <TouchableOpacity
+                          style={styles.stepBtn}
+                          onPress={() => decreaseQuantity(item.id)}
+                          disabled={updatingId === item.id}
+                        >
+                          <Text style={styles.stepText}>-</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.separator} />
+
+                        {updatingId === item.id ? (
+                          <ActivityIndicator size="small" color="#FFA500" />
+                        ) : (
+                          <Text style={styles.quantity}>{item.quantity}</Text>
+                        )}
+
+                        <View style={styles.separator} />
+
+                        <TouchableOpacity
+                          style={styles.stepBtn}
+                          onPress={() => increaseQuantity(item.id)}
+                          disabled={updatingId === item.id}
+                        >
+                          <Text style={styles.stepText}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                  {deletingId === item.id ? (
+                    <ActivityIndicator
+                      style={styles.trashIcon}
+                      size="small"
+                      color="#FFA500"
+                    />
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.trashIcon}
+                      onPress={() => deleteItem(item.id)}
+                      onPressOut={e => e.stopPropagation()}
+                    >
+                      <Trash2 size={18} color="#fc9a8c" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableOpacity>
             ))}
+            <SpecialDeals />
             <View style={styles.couponContainer}>
               <View style={styles.couponHeader}>
                 <Image
@@ -330,7 +440,6 @@ const CartScreen = () => {
                 />
                 <Text style={styles.couponTitle}>Coupons & Offers</Text>
               </View>
-
               <View style={styles.couponInputWrapper}>
                 <TextInput
                   style={styles.couponInput}
@@ -341,78 +450,51 @@ const CartScreen = () => {
                   <Text style={styles.applyBtn}>APPLY</Text>
                 </TouchableOpacity>
               </View>
-
+              {couponError ? (
+                <Text style={styles.couponError}>{couponError}</Text>
+              ) : null}
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.allCouponsRow}
-                onPress={() => setShowAllCoupons(!showAllCoupons)}
+                onPress={() => couponSheetRef.current.open()}
               >
-                <Text style={styles.checkAllCoupons}>
-                  {showAllCoupons ? 'Hide Coupons' : 'Check All Coupons'}
-                </Text>
+                <Text style={styles.checkAllCoupons}>Check All Coupons</Text>
               </TouchableOpacity>
+            </View>
 
-              {showAllCoupons && (
-                <View style={styles.couponChipsWrapper}>
-                  {coupons.map(coupon => {
-                    const isSelected = appliedCoupon?.code === coupon.code;
-
-                    return (
-                      <View
-                        key={coupon._id}
-                        style={[
-                          styles.couponChip,
-                          isSelected && styles.selectedCouponChip,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.chipText,
-                            isSelected && styles.selectedChipText,
-                          ]}
-                        >
-                          {coupon.code}
-                        </Text>
-                        <TouchableOpacity
-                          style={styles.applyCouponBtn}
-                          onPress={() => {
-                            if (isSelected) {
-                              setAppliedCoupon(null);
-                            } else {
-                              handleCouponApply(coupon);
-                            }
-                          }}
-                        >
-                          <Text style={styles.chipBtn}>
-                            {isSelected ? 'Remove' : 'Apply'}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    );
-                  })}
-                </View>
-              )}
-
-              {couponError && (
-                <Text style={styles.couponError}>{couponError}</Text>
-              )}
+            {/* GST Invoice Section */}
+            <View style={styles.gstContainer}>
+              <View style={styles.gstHeader}>
+                <Image
+                  source={require('../../assets/icons/cpn.png')}
+                  style={{ width: 20, height: 20 }}
+                />
+                <Text style={styles.gstTitle}>Apply for GST Invoice</Text>
+              </View>
+              <View style={styles.gstInputWrapper}>
+                <TextInput
+                  style={styles.gstInput}
+                  placeholder="Enter GST Number"
+                  placeholderTextColor="#999"
+                />
+                <TouchableOpacity activeOpacity={1}>
+                  <Text style={styles.applyBtn}>APPLY</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.priceDetailsWrapper}>
               <Text style={styles.priceDetailsTitle}>📦 Price Details</Text>
-
               <View style={styles.priceRow}>
                 <Text style={styles.label}>Total MRP Price</Text>
                 <Text style={styles.value}>₹{totalMRP.toFixed(2)}</Text>
               </View>
-
               <View style={styles.priceRow}>
                 <Text style={styles.freeText}>Coupon Discount</Text>
                 <Text style={styles.freeText}>
                   - ₹{couponDiscount.toFixed(2)}
                 </Text>
               </View>
-
               <View style={styles.priceRow}>
                 <Text style={styles.label}>CGST</Text>
                 <Text style={styles.value}>₹{cgst.toFixed(2)}</Text>
@@ -425,7 +507,6 @@ const CartScreen = () => {
                 <Text style={styles.label}>CESS</Text>
                 <Text style={styles.value}>₹{cess.toFixed(2)}</Text>
               </View>
-
               <View style={styles.priceRow}>
                 <View>
                   <Text style={styles.label}>Shipping Charges</Text>
@@ -433,31 +514,49 @@ const CartScreen = () => {
                 </View>
                 <Text style={styles.freeText}>FREE</Text>
               </View>
-
               <View style={styles.dashedLine} />
-
               <View style={styles.priceRow}>
                 <Text style={styles.totalPay}>To Pay</Text>
                 <Text style={styles.totalPayAmount}>
                   ₹{totalPrice.toFixed(2)}
                 </Text>
               </View>
-              <View style={styles.fixedBottomButtonWrapper}>
-                <TouchableOpacity
-                  style={styles.payNowButton}
-                  onPress={() => {
-                    console.log(
-                      'Proceeding to payment of ₹' + totalPrice.toFixed(2),
-                    );
-                  }}
-                >
-                  <Text style={styles.payNowText}>Pay Now</Text>
-                </TouchableOpacity>
-              </View>
             </View>
           </ScrollView>
-        </View>
+        </>
       )}
+
+      <TouchableOpacity
+        style={styles.payNowButton}
+        activeOpacity={0.9}
+        onPress={() => {}}
+      >
+        <Text style={styles.payNowButtonText}>
+          PAY ₹{totalPrice.toFixed(2)}
+        </Text>
+      </TouchableOpacity>
+
+      {/* <CustomAddressBottomSheet
+        visible={isSheetVisible}
+        onClose={() => setSheetVisible(false)}
+        addresses={addresses}
+        selectedAddressId={selectedAddress?.id}
+        onSelectAddress={addr => {
+          setSelectedAddress(addr);
+          setSheetVisible(false);
+        }}
+        onAddAddress={handleAddAddress}
+        onEditAddress={addr => {
+          navigation.navigate('AddAddressScreen', { addressData: addr });
+        }}
+      />
+
+      <CouponSheet
+        ref={couponSheetRef}
+        coupons={coupons}
+        appliedCoupon={appliedCoupon}
+        onApply={handleCouponApply}
+      /> */}
     </View>
   );
 };
@@ -468,10 +567,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: 10,
-    backgroundColor: '#FFF8EE',
+    backgroundColor: '#FFFFFF',
   },
   headerWrapper: {
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 30,
   },
   headerRow: {
@@ -518,10 +617,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     alignItems: 'center',
     position: 'relative',
+    borderColor: '#F59A11',
+    borderWidth: 0.8,
   },
   productImage: {
-    width: 60,
-    height: 100,
+    width: 80,
+    height: 80,
     resizeMode: 'contain',
     marginRight: 10,
   },
@@ -534,19 +635,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     color: '#222',
     width: '85%',
-  },
-  tag: {
-    backgroundColor: '#004E6A33',
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  tagText: {
-    fontSize: 12,
-    fontFamily: 'Gotham-Rounded-Medium',
-    color: '#333',
   },
   priceAndStepper: {
     flexDirection: 'row',
@@ -628,10 +716,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Gotham-Rounded-Medium',
   },
-
   couponContainer: {
-    backgroundColor: 'white',
-    borderColor: '#FFA500',
+    backgroundColor: '#0888B133',
+    borderColor: '#0888B1',
     borderWidth: 1,
     borderRadius: 16,
     padding: 16,
@@ -657,8 +744,9 @@ const styles = StyleSheet.create({
     borderColor: '#EEE',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: Platform.OS === 'ios' ? 10 : 6,
+    paddingHorizontal: 10,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 1,
+    height: 45,
   },
   couponInput: {
     fontSize: 16,
@@ -671,9 +759,50 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
     marginLeft: 12,
   },
+  couponError: {
+    color: 'red',
+    marginTop: 6,
+  },
+  gstContainer: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#EBEBEB',
+    borderWidth: 2,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  gstHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  gstTitle: {
+    fontSize: 18,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#222',
+    marginLeft: 8,
+  },
+  gstInputWrapper: {
+    flexDirection: 'row',
+    backgroundColor: '#F9F9F9',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#EEE',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 1,
+    height: 45,
+  },
+  gstInput: {
+    fontSize: 16,
+    color: '#222',
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
   allCouponsRow: {
     borderTopWidth: 1,
-    borderTopColor: '#FFA500',
+    borderTopColor: '#0888B1',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -682,22 +811,17 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   checkAllCoupons: {
-    color: '#FFA500',
+    color: '#0888B1',
     fontSize: 16,
     fontFamily: 'Gotham-Rounded-Bold',
-  },
-  arrow: {
-    color: '#FFA500',
-    fontSize: 20,
-    marginLeft: 8,
   },
   priceDetailsWrapper: {
     backgroundColor: '#fff',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#FFA500',
+    borderColor: '#F59A11',
     padding: 16,
-    marginBottom: 250,
+    marginBottom: '45%',
   },
   priceDetailsTitle: {
     fontSize: 18,
@@ -734,7 +858,7 @@ const styles = StyleSheet.create({
   },
   dashedLine: {
     borderTopWidth: 1,
-    borderColor: '#FFA500',
+    borderColor: '#F59A11',
     borderStyle: 'dashed',
     marginVertical: 16,
   },
@@ -748,57 +872,65 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
     color: '#000',
   },
-  couponChipsWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 12,
-    gap: 10,
-  },
-  couponChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FFA500',
-    backgroundColor: 'transparent',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  chipText: {
-    fontSize: 14,
-    fontFamily: 'Gotham-Rounded-Medium',
-    color: '#333',
-    marginRight: 10,
-  },
-  chipBtn: {
-    fontSize: 13,
-    fontFamily: 'Gotham-Rounded-Bold',
-    color: '#FFA500',
-  },
-  fixedBottomButtonWrapper: {
-    bottom: 0,
+  payNowButton: {
+    position: 'absolute',
+    bottom: '10%',
     left: 0,
     right: 0,
-    borderStyle: 'dashed',
-    borderTopWidth: 1,
-    borderColor: '#FFA500',
+    backgroundColor: '#004E6A',
+    paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 5,
   },
-
-  payNowButton: {
-    backgroundColor: '#FFA500',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 14,
-    width: '100%',
-    alignItems: 'center',
-  },
-
-  payNowText: {
-    color: 'white',
-    fontSize: 16,
+  payNowButtonText: {
+    color: '#FFF',
+    fontSize: 18,
     fontFamily: 'Gotham-Rounded-Bold',
+  },
+  changeButtonText: {
+    color: '#0888B1',
+    fontSize: 14,
+    fontWeight: '700',
+    fontFamily: 'Gotham-Rounded-Bold',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  separator: {
+    width: 1,
+    height: 20,
+    backgroundColor: '#004E6A80',
+  },
+  progressContainer: {
+    marginBottom: 8,
+    height: 50,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+
+  progressBarBackground: {
+    height: 12,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: '#FFA500',
+    borderRadius: 20,
+  },
+
+  dogImage: {
+    width: 50,
+    height: 80,
+    position: 'absolute',
+    top: -33,
   },
 });

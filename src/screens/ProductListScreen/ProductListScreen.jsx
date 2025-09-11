@@ -99,6 +99,7 @@ export default function ProductListScreen({ route, navigation }) {
                     cardWidth={screenWidth * 0.46}
                     productId={product._id}
                     variantId={product.variants?.[0]?._id || null}
+                    variants={product.variants}
                   />
                 </View>
               ))}

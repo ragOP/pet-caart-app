@@ -18,7 +18,7 @@ const AddressShimmer = () => {
           duration: 1500,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   }, [shimmerWidth]);
 
@@ -49,7 +49,6 @@ const AddressShimmer = () => {
         <View style={styles.shimmerItem}></View>
         <View style={styles.shimmerItem}></View>
       </View>
-    
     </View>
   );
 };
@@ -60,7 +59,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   addressCard: {
-    backgroundColor: '#F59A110D',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 15,
     marginBottom: 12,

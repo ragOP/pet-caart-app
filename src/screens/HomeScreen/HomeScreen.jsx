@@ -32,6 +32,7 @@ import AdBannner from '../../components/AdBannner/AdBanner';
 import PetPromosList from '../../components/PetPromos/PetPromos';
 import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
 import { checkDelivery } from '../../apis/checkDelivery';
+import CustomGridLayoutShimmer from '../../ui/Shimmer/CustomGridLayoutShimmer';
 
 const HomeScreen = () => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -142,6 +143,7 @@ const HomeScreen = () => {
                 images: item.images || item.variants?.[0]?.images || [],
                 isVeg: item.isVeg || false,
                 brandId: item.brandId,
+                variants: item.variants || [],
               };
             });
 
@@ -303,11 +305,7 @@ const HomeScreen = () => {
           headingTextBlue="Essentials"
         /> */}
         {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#FF9F00"
-            style={{ marginTop: 40 }}
-          />
+          <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[3] ? (
           <CustomGridLayout
             key={grids[3]._id}
@@ -318,11 +316,7 @@ const HomeScreen = () => {
           <Text style={styles.errorText}>No grids available</Text>
         )}
         {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#FF9F00"
-            style={{ marginTop: 40 }}
-          />
+          <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[0] ? (
           <CustomGridLayout
             key={grids[0]._id}
@@ -333,11 +327,7 @@ const HomeScreen = () => {
           <Text style={styles.errorText}>No grids available</Text>
         )}
         {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#FF9F00"
-            style={{ marginTop: 40 }}
-          />
+          <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[2] ? (
           <CustomGridLayout
             key={grids[2]._id}
@@ -380,11 +370,7 @@ const HomeScreen = () => {
           />
         )}
         {loading ? (
-          <ActivityIndicator
-            size="large"
-            color="#FF9F00"
-            style={{ marginTop: 40 }}
-          />
+          <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[1] ? (
           <CustomGridLayout
             key={grids[1]._id}

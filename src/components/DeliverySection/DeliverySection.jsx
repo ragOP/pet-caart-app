@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,46 +6,86 @@ import {
   TouchableOpacity,
   TextInput,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { MapPin, Truck, Ban, BadgePercent } from 'lucide-react-native';
+import { checkDelivery } from '../../apis/checkDelivery';
 
 const DeliverySection = () => {
+  const [pincode, setPincode] = useState('');
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleCheckDelivery = async () => {
+    if (pincode.length !== 6) {
+      setError('Please enter a 6-digit pincode');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await checkDelivery({ pincode, productId: 'dummy' });
+      console.log('API result:', result);
+      console.log('Processed deliveryInfo:', {
+        dateText: result.data,
+        humanDate: result.data,
+      });
+      setDeliveryInfo({
+        dateText: result.data,
+      });
+    } catch (err) {
+      setError(err.message || 'Failed to check delivery. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* Heading */}
       <Text style={styles.heading}>Delivery & Service Information</Text>
 
       <View style={styles.pincodeRow}>
         <MapPin size={20} color="#F5A500" style={styles.pinIcon} />
         <TextInput
           style={styles.input}
-          placeholder="Enter PINCODE to check delivery date"
+          placeholder="Enter PINCODE"
           placeholderTextColor="#333"
           keyboardType="numeric"
+          value={pincode}
+          onChangeText={setPincode}
+          maxLength={6}
         />
-        <TouchableOpacity style={styles.checkButton} activeOpacity={0.8}>
-          <Text style={styles.checkText}>CHECK</Text>
+        <TouchableOpacity
+          style={styles.checkButton}
+          activeOpacity={0.8}
+          onPress={handleCheckDelivery}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.checkText}>CHECK</Text>
+          )}
         </TouchableOpacity>
       </View>
 
-      {/* Expected Delivery Info Row */}
+      {error && <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>}
+
       <View style={styles.infoRow}>
         <Truck size={32} color="#FFA600" style={styles.infoIcon} />
         <View style={{ flex: 1 }}>
           <Text style={styles.infoText}>
-            Expected delivery date - <Text style={styles.bold}>Tomorrow</Text>
+            Expected delivery date -{' '}
+            <Text style={styles.bold}>{deliveryInfo?.dateText}</Text>
           </Text>
-          <Text style={styles.dateText}>(Thu Jun 12 2025 - By 9PM)</Text>
         </View>
       </View>
-
-      {/* No Exchange & Returns Row */}
       <View style={styles.infoRow}>
         <Ban size={32} color="#FFA600" style={styles.infoIcon} />
         <Text style={styles.infoText}>No Exchange & Returns</Text>
       </View>
-
-      {/* Free Delivery Row */}
       <View style={styles.infoRow}>
         <BadgePercent size={32} color="#349AFE" style={styles.infoIcon} />
         <Text style={styles.infoText}>
@@ -62,7 +102,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 10,
     marginTop: 12,
-    // margin: 12,
   },
   heading: {
     fontSize: 19,
@@ -88,7 +127,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
     color: '#222',
     paddingVertical: 2,
     paddingHorizontal: 4,

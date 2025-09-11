@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,9 @@ import {
 import Swiper from 'react-native-swiper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addProductToCart } from '../../apis/addProductToCart';
-import { addItemToCart } from '../../redux/cartSlice';
+import { addItemToCart, removeItemFromCart } from '../../redux/cartSlice';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -49,6 +49,10 @@ const ProductCard = ({
   const isOutOfStock = stock <= 0;
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
+  const isProductInCart = cartItems.some(
+    item => item.productId === productId && item.variantId === variantId,
+  );
 
   const handleAddToCart = async () => {
     if (loading) return;
@@ -59,11 +63,12 @@ const ProductCard = ({
         variantId,
         quantity: 1,
         title,
-        price,
-        images,
+        price: discountedPrice,
+        image: images && images.length > 0 ? images[0] : '',
         discount,
       };
       dispatch(addItemToCart(productData));
+      console.log('productData', productData);
       await addProductToCart({ productId, variantId, quantity: 1 });
       navigation.navigate('Cart');
     } catch (error) {
@@ -71,6 +76,10 @@ const ProductCard = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoToCart = () => {
+    navigation.navigate('Cart');
   };
 
   const handleCardPress = () => {
@@ -123,12 +132,18 @@ const ProductCard = ({
           <Text style={styles.titleText} numberOfLines={2}>
             {title}
           </Text>
-          <View style={styles.vegWrapper}>
+          {/* <View style={styles.vegWrapper}>
             <Image
               source={require('../../assets/images/vegg.png')}
               style={styles.vegIcon}
               resizeMode="contain"
             />
+          </View> */}
+          <View style={styles.vegMark}>
+            <View style={styles.vegBox}>
+              <View style={styles.vegDot} />
+            </View>
+            <Text style={styles.vegText}>VEG</Text>
           </View>
         </View>
         {brandId && brandId.name && (
@@ -163,15 +178,22 @@ const ProductCard = ({
           )}
         </View>
       </View>
-      {/* Button wrapper */}
       <View style={styles.cartButtonRow}>
         {isOutOfStock ? (
           <View style={styles.outOfStockButton}>
             <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
           </View>
+        ) : isProductInCart ? (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.cartButton}
+            onPress={handleGoToCart}
+          >
+            <Text style={styles.cartButtonText}>GO TO CART</Text>
+          </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            activeOpacity={0.6}
+            activeOpacity={0.9}
             style={styles.cartButton}
             onPress={handleAddToCart}
           >
@@ -206,6 +228,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F6F6F6',
     borderRadius: 6,
     padding: 1,
+    height: screenHeight * 0.22,
   },
   bestsellerContainer: {
     borderRadius: 5,
@@ -223,7 +246,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
   },
   swiper: {
-    height: screenHeight * 0.22,
     width: '100%',
   },
   productImage: {
@@ -368,4 +390,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Gotham-Rounded-Bold',
   },
+  vegMark: { alignItems: 'center', marginLeft: 12 },
+  vegBox: {
+    width: 18,
+    height: 18,
+    borderWidth: 2,
+    borderColor: '#008000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  vegDot: {
+    width: 11,
+    height: 11,
+    borderRadius: 7,
+    backgroundColor: '#008000',
+  },
+  vegText: { fontSize: 11, color: '#008000', marginTop: 1 },
 });
