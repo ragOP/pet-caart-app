@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { getAddresses } from '../../apis/getAddresses';
 import SpecialDeals from '../../components/SpecialDeals/SpecialDeals';
 import { AddressBottomSheet } from '../../components/AddressBottomSheet/AddressBottomSheet';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CartScreen = () => {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -39,25 +40,46 @@ const CartScreen = () => {
   const [addresses, setAddresses] = useState([]);
   const [isSheetVisible, setSheetVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [shippingCost, setShippingCost] = useState(0);
+  const [shippingName, setShippingName] = useState('');
+  const [shippingDate, setShippingDate] = useState('');
   const couponSheetRef = useRef();
   const defaultAddress = addresses.find(addr => addr.isDefault);
   const addressSheetRef = useRef();
 
-  const handleSelectAddress = address => {
-    setSelectedAddress(address);
-    console.log('Selected Address:', address);
+  const SELECTED_ADDRESS_KEY = '@selectedAddressId';
+
+  const loadSelectedAddressId = async () => {
+    try {
+      const savedId = await AsyncStorage.getItem(SELECTED_ADDRESS_KEY);
+      if (savedId) {
+        const addr = addresses.find(a => a.id === savedId);
+        if (addr) {
+          setSelectedAddress(addr);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load selected address ID', e);
+    }
   };
 
-  const handleAddAddress = () => {
-    console.log('Navigate to Add Address Screen');
-    navigation.navigate('AddAddressScreen');
+  const handleSelectAddress = async address => {
+    setSelectedAddress(address);
+    try {
+      await AsyncStorage.setItem(SELECTED_ADDRESS_KEY, address.id);
+    } catch (e) {
+      console.error('Failed to save selected address ID', e);
+    }
   };
 
   useEffect(() => {
     const fetchCartData = async () => {
       try {
         setLoading(true);
-        const response = await getCart({ params: {} });
+        const addressId =
+          selectedAddress?.id ||
+          (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
+        const response = await getCart({ params: { address_id: addressId } });
         if (response.success) {
           const fetchedItems = response.data.items.map(item => ({
             id: item._id || item.productId,
@@ -68,11 +90,14 @@ const CartScreen = () => {
             cgst: item.cgst || 0,
             sgst: item.sgst || 0,
             cess: item.cess || 0,
+            igst: item.igst || 0,
             image: item.productId?.images[0] || 'default-image-url',
             productId: item.productId._id || item.productId,
             variantId: item.variantId?._id || null,
           }));
           dispatch(setCart(fetchedItems));
+          setShippingCost(response.data.shippingDetails?.totalCost || 0);
+          setShippingDate(response.data.shippingDetails?.estimatedDate || '');
           setLoading(false);
         } else {
           setLoading(false);
@@ -87,8 +112,7 @@ const CartScreen = () => {
       try {
         const couponsResponse = await getCoupons();
         if (
-          couponsResponse &&
-          couponsResponse.data &&
+          couponsResponse?.data?.data &&
           Array.isArray(couponsResponse.data.data)
         ) {
           setCoupons(couponsResponse.data.data);
@@ -101,7 +125,7 @@ const CartScreen = () => {
     const fetchAddresses = async () => {
       try {
         const response = await getAddresses();
-        if (response && response.success) {
+        if (response?.success) {
           const formattedAddresses = response.data.map(item => ({
             id: item._id,
             name: `${item.firstName} ${item.lastName}`,
@@ -115,6 +139,10 @@ const CartScreen = () => {
             type: item.type,
           }));
           setAddresses(formattedAddresses);
+          const defaultAddr = formattedAddresses.find(addr => addr.isDefault);
+          if (defaultAddr) {
+            console.log('Default address found on load:', defaultAddr);
+          }
         }
       } catch (error) {
         console.error('Error fetching addresses:', error);
@@ -124,7 +152,7 @@ const CartScreen = () => {
     fetchAddresses();
     fetchCartData();
     fetchCoupons();
-    console.log('Cart Items from Redux: ', cartItems);
+    loadSelectedAddressId();
   }, [isLoggedIn, dispatch]);
 
   const increaseQuantity = async id => {
@@ -132,7 +160,6 @@ const CartScreen = () => {
     if (!item) return;
     const newQuantity = item.quantity + 1;
     setUpdatingId(id);
-
     try {
       await addProductToCart({
         productId: item.productId,
@@ -155,7 +182,6 @@ const CartScreen = () => {
     if (!item || item.quantity <= 1) return;
     const newQuantity = item.quantity - 1;
     setUpdatingId(id);
-
     try {
       await addProductToCart({
         productId: item.productId,
@@ -174,21 +200,15 @@ const CartScreen = () => {
   };
 
   const deleteItem = async id => {
-    console.log('deleteItem called with id:', id);
     const item = cartItems.find(i => i.id === id);
     if (!item) return;
     setDeletingId(id);
-
-    console.log('Deleting item:', item);
-
     try {
       const response = await addProductToCart({
         productId: item.productId,
         variantId: item.variantId || undefined,
         quantity: 0,
       });
-      console.log('Delete response:', response);
-
       if (response.success) {
         const updatedItems = cartItems.filter(i => i.id !== id);
         dispatch(setCart(updatedItems));
@@ -218,6 +238,10 @@ const CartScreen = () => {
     (sum, item) => sum + (item.cess || 0) * item.quantity,
     0,
   );
+  const igst = cartItems.reduce(
+    (sum, item) => sum + (item.igst || 0) * item.quantity,
+    0,
+  );
 
   let couponDiscount = 0;
   if (appliedCoupon) {
@@ -230,7 +254,9 @@ const CartScreen = () => {
         : rawDiscount;
     }
   }
-  const totalPrice = totalMRP + cgst + sgst + cess - couponDiscount;
+
+  const totalPayable =
+    totalMRP + cgst + sgst + cess + igst - couponDiscount + shippingCost;
 
   const handleCouponApply = (coupon, isSelected) => {
     if (isSelected) {
@@ -249,10 +275,11 @@ const CartScreen = () => {
       }
     }
   };
+
   const PROGRESS_TARGET = 800;
-  const progress = Math.min(totalPrice / PROGRESS_TARGET, 1);
-  const showProgress = totalPrice > 0;
-  const showDog = totalPrice > 0 && totalPrice < PROGRESS_TARGET;
+  const progress = Math.min(totalPayable / PROGRESS_TARGET, 1);
+  const showProgress = totalPayable > 0;
+  const showDog = totalPayable > 0 && totalPayable < PROGRESS_TARGET;
 
   const renderEmptyCart = () => (
     <View style={styles.emptyCartContainer}>
@@ -338,7 +365,6 @@ const CartScreen = () => {
                     ]}
                   />
                 </View>
-
                 {showDog && (
                   <Image
                     source={require('../../assets/images/dogw.png')}
@@ -395,17 +421,13 @@ const CartScreen = () => {
                         >
                           <Text style={styles.stepText}>-</Text>
                         </TouchableOpacity>
-
                         <View style={styles.separator} />
-
                         {updatingId === item.id ? (
                           <ActivityIndicator size="small" color="#FFA500" />
                         ) : (
                           <Text style={styles.quantity}>{item.quantity}</Text>
                         )}
-
                         <View style={styles.separator} />
-
                         <TouchableOpacity
                           style={styles.stepBtn}
                           onPress={() => increaseQuantity(item.id)}
@@ -507,21 +529,29 @@ const CartScreen = () => {
                 <Text style={styles.value}>₹{sgst.toFixed(2)}</Text>
               </View>
               <View style={styles.priceRow}>
+                <Text style={styles.label}>IGST</Text>
+                <Text style={styles.value}>₹{igst.toFixed(2)}</Text>
+              </View>
+              <View style={styles.priceRow}>
                 <Text style={styles.label}>CESS</Text>
                 <Text style={styles.value}>₹{cess.toFixed(2)}</Text>
               </View>
               <View style={styles.priceRow}>
                 <View>
                   <Text style={styles.label}>Shipping Charges</Text>
-                  <Text style={styles.subText}>To be applied at checkout</Text>
+                  <Text style={styles.subText}>
+                    {shippingCost === 0
+                      ? 'Free'
+                      : `Expected Delivery By : ${shippingDate}`}
+                  </Text>
                 </View>
-                <Text style={styles.freeText}>FREE</Text>
+                <Text style={styles.freeText}>₹{shippingCost.toFixed(2)}</Text>
               </View>
               <View style={styles.dashedLine} />
               <View style={styles.priceRow}>
                 <Text style={styles.totalPay}>To Pay</Text>
                 <Text style={styles.totalPayAmount}>
-                  ₹{totalPrice.toFixed(2)}
+                  ₹{totalPayable.toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -535,36 +565,15 @@ const CartScreen = () => {
         onPress={() => {}}
       >
         <Text style={styles.payNowButtonText}>
-          PAY ₹{totalPrice.toFixed(2)}
+          PAY ₹{totalPayable.toFixed(2)}
         </Text>
       </TouchableOpacity>
 
-      {/* <CustomAddressBottomSheet
-        visible={isSheetVisible}
-        onClose={() => setSheetVisible(false)}
-        addresses={addresses}
-        selectedAddressId={selectedAddress?.id}
-        onSelectAddress={addr => {
-          setSelectedAddress(addr);
-          setSheetVisible(false);
-        }}
-        onAddAddress={handleAddAddress}
-        onEditAddress={addr => {
-          navigation.navigate('AddAddressScreen', { addressData: addr });
-        }}
-      />
-
-      <CouponSheet
-        ref={couponSheetRef}
-        coupons={coupons}
-        appliedCoupon={appliedCoupon}
-        onApply={handleCouponApply}
-      /> */}
       <AddressBottomSheet
         ref={addressSheetRef}
         selectedAddressId={selectedAddress?.id}
         defaultAddressId={defaultAddress?.id}
-        onSelectAddress={addr => setSelectedAddress(addr)}
+        onSelectAddress={handleSelectAddress}
         onAddAddress={() => navigation.navigate('AddAddressScreen')}
       />
     </View>
@@ -923,20 +932,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-
   progressBarBackground: {
     height: 12,
     backgroundColor: '#E0E0E0',
     borderRadius: 20,
     overflow: 'hidden',
   },
-
   progressBarFill: {
     height: '100%',
     backgroundColor: '#FFA500',
     borderRadius: 20,
   },
-
   dogImage: {
     width: 50,
     height: 80,

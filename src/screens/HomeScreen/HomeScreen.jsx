@@ -304,7 +304,7 @@ const HomeScreen = () => {
           headingTextOrange="Everyday"
           headingTextBlue="Essentials"
         /> */}
-        {loading ? (
+        {/* {loading ? (
           <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[3] ? (
           <CustomGridLayout
@@ -314,7 +314,7 @@ const HomeScreen = () => {
           />
         ) : (
           <Text style={styles.errorText}>No grids available</Text>
-        )}
+        )} */}
         {loading ? (
           <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[0] ? (
@@ -326,7 +326,7 @@ const HomeScreen = () => {
         ) : (
           <Text style={styles.errorText}>No grids available</Text>
         )}
-        {loading ? (
+        {/* {loading ? (
           <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[2] ? (
           <CustomGridLayout
@@ -336,7 +336,7 @@ const HomeScreen = () => {
           />
         ) : (
           <Text style={styles.errorText}>No grids available</Text>
-        )}
+        )} */}
         {addToCartData.length === 0 ? (
           <EssentialsSliderShimmer />
         ) : (

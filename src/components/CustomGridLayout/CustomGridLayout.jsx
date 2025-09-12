@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     overflow: 'hidden',
     aspectRatio: 0.96,
-    borderRadius: 6,
+    // borderRadius: 6,
   },
   itemImage: {
     width: '100%',
