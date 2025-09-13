@@ -11,7 +11,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import { Trash2, MapPin } from 'lucide-react-native';
+import { Trash2, MapPin, MapPinHouse } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { getCart } from '../../apis/getCart';
@@ -25,6 +25,7 @@ import { getAddresses } from '../../apis/getAddresses';
 import SpecialDeals from '../../components/SpecialDeals/SpecialDeals';
 import { AddressBottomSheet } from '../../components/AddressBottomSheet/AddressBottomSheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CouponSheet from '../../components/CouponBottomSheet/CouponBottomSheet';
 
 const CartScreen = () => {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -38,17 +39,19 @@ const CartScreen = () => {
   const [updatingId, setUpdatingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [addresses, setAddresses] = useState([]);
-  const [isSheetVisible, setSheetVisible] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [shippingCost, setShippingCost] = useState(0);
-  const [shippingName, setShippingName] = useState('');
   const [shippingDate, setShippingDate] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+
   const couponSheetRef = useRef();
   const defaultAddress = addresses.find(addr => addr.isDefault);
   const addressSheetRef = useRef();
 
   const SELECTED_ADDRESS_KEY = '@selectedAddressId';
-
+  const onSheetClose = () => {
+    couponSheetRef.current?.close();
+  };
   const loadSelectedAddressId = async () => {
     try {
       const savedId = await AsyncStorage.getItem(SELECTED_ADDRESS_KEY);
@@ -259,21 +262,35 @@ const CartScreen = () => {
     totalMRP + cgst + sgst + cess + igst - couponDiscount + shippingCost;
 
   const handleCouponApply = (coupon, isSelected) => {
-    if (isSelected) {
+    if (coupon && totalMRP >= coupon.minPurchase) {
+      setAppliedCoupon(coupon);
+      setCouponCode(coupon.code); // Update input with selected code
+      setCouponError('');
+      couponSheetRef.current.close();
+    } else if (!coupon) {
       setAppliedCoupon(null);
+      setCouponCode('');
       setCouponError('');
       couponSheetRef.current.close();
     } else {
-      if (totalMRP >= coupon.minPurchase) {
-        setAppliedCoupon(coupon);
-        setCouponError('');
-        couponSheetRef.current.close();
-      } else {
-        setCouponError(
-          `Coupon requires a minimum purchase of ₹${coupon.minPurchase}`,
-        );
-      }
+      setCouponError('Minimum purchase not met');
     }
+  };
+
+  const handleManualCouponApply = () => {
+    const foundCoupon = coupons.find(cpn => cpn.code === couponCode.trim());
+    if (!foundCoupon) {
+      setCouponError('Invalid Coupon');
+      setAppliedCoupon(null);
+      return;
+    }
+    if (totalMRP < foundCoupon.minPurchase) {
+      setCouponError('Minimum purchase not met');
+      setAppliedCoupon(null);
+      return;
+    }
+    setAppliedCoupon(foundCoupon);
+    setCouponError('');
   };
 
   const PROGRESS_TARGET = 800;
@@ -315,7 +332,7 @@ const CartScreen = () => {
           <Text style={styles.headerTitle}>My Cart</Text>
         </View>
         <View style={styles.addressContainer}>
-          <MapPin size={16} color="#666" />
+          <MapPinHouse size={17} color="#666" />
           <Text style={styles.addressText} numberOfLines={1}>
             {selectedAddress
               ? `${selectedAddress.name}, ${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.zip}`
@@ -470,8 +487,15 @@ const CartScreen = () => {
                   style={styles.couponInput}
                   placeholder="Enter Coupon Code"
                   placeholderTextColor="#999"
+                  value={couponCode}
+                  onChangeText={setCouponCode}
+                  editable={true}
                 />
-                <TouchableOpacity activeOpacity={1}>
+
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={handleManualCouponApply}
+                >
                   <Text style={styles.applyBtn}>APPLY</Text>
                 </TouchableOpacity>
               </View>
@@ -575,6 +599,12 @@ const CartScreen = () => {
         defaultAddressId={defaultAddress?.id}
         onSelectAddress={handleSelectAddress}
         onAddAddress={() => navigation.navigate('AddAddressScreen')}
+      />
+      <CouponSheet
+        innerRef={couponSheetRef}
+        appliedCoupon={appliedCoupon}
+        onSelectCoupon={handleCouponApply}
+        onSheetClose={onSheetClose}
       />
     </View>
   );
