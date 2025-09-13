@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  TextInput,
+  ImageBackground,
   Image,
 } from 'react-native';
 import BottomSheet from 'react-native-raw-bottom-sheet';
@@ -20,6 +22,7 @@ const CouponBottomSheet = ({
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const loadCoupons = async () => {
     setLoading(true);
     setError(null);
@@ -39,11 +42,13 @@ const CouponBottomSheet = ({
   useEffect(() => {
     loadCoupons();
   }, []);
+
   const handleCouponPress = coupon => {
     const isSelected = appliedCoupon?.id === coupon.id;
     onSelectCoupon(isSelected ? null : coupon);
     onSheetClose();
   };
+
   const renderCoupon = ({ item }) => (
     <TouchableOpacity
       style={[
@@ -52,13 +57,12 @@ const CouponBottomSheet = ({
       ]}
       onPress={() => handleCouponPress(item)}
     >
-      <View style={styles.couponInner}>
-        <Image
-          source={require('../../assets/icons/cpn.png')}
-          style={styles.couponIcon}
-        />
-        <View style={styles.couponDetails}>
-          <Text style={styles.couponTitle}>{item.code}</Text>
+      <ImageBackground
+        source={require('../../assets/images/cpnbg.png')}
+        style={styles.couponBackground}
+        imageStyle={styles.couponImage}
+      >
+        <View style={styles.couponInner}>
           <Text style={styles.couponDesc}>
             {item.discountType === 'fixed'
               ? `${item.discountValue} off`
@@ -71,7 +75,11 @@ const CouponBottomSheet = ({
               : 'No minimum order'}
           </Text>
         </View>
-      </View>
+
+        <TouchableOpacity style={styles.applyButton}>
+          <Text style={styles.applyButtonText}>APPLY</Text>
+        </TouchableOpacity>
+      </ImageBackground>
     </TouchableOpacity>
   );
 
@@ -87,7 +95,29 @@ const CouponBottomSheet = ({
         wrapper: styles.wrapper,
       }}
     >
-      <Text style={styles.header}>Available Coupons</Text>
+      <View style={styles.couponHeader}>
+        <Image
+          source={require('../../assets/icons/cpn.png')}
+          style={{ width: 20, height: 20 }}
+        />
+        <Text style={styles.header}>Coupons & Offers</Text>
+      </View>
+      <View style={styles.couponInputWrapper}>
+        <TextInput
+          style={styles.couponInput}
+          placeholder="Enter Coupon Code"
+          placeholderTextColor="#999"
+          editable={true}
+        />
+
+        <TouchableOpacity activeOpacity={1}>
+          <Text style={styles.applyBtn}>APPLY</Text>
+        </TouchableOpacity>
+      </View>
+      {/* <TouchableOpacity style={styles.applyButton}>
+        <Text style={styles.applyButtonText}>APPLY</Text>
+      </TouchableOpacity> */}
+
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#FFA500" />
@@ -122,51 +152,96 @@ const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
+
+  couponHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#F59A1133',
+    paddingBottom: 15,
+  },
   header: {
     fontSize: 18,
     fontFamily: 'Gotham-Rounded-Bold',
-    color: '#004E6A',
-    marginBottom: 16,
+    color: '#222',
+    marginLeft: 8,
+  },
+  couponInputWrapper: {
+    flexDirection: 'row',
+    backgroundColor: '#F9F9F9',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#EEE',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 1,
+    height: 45,
+    marginBottom: 20,
+  },
+  couponInput: {
+    fontSize: 16,
+    color: '#222',
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
+  applyBtn: {
+    color: '#0B99C6',
+    fontSize: 16,
+    fontFamily: 'Gotham-Rounded-Bold',
+    marginLeft: 12,
+  },
+  couponError: {
+    color: 'red',
+    marginTop: 6,
+  },
+  applyButton: {
+    backgroundColor: '#FF9900',
+    paddingVertical: 12,
+    borderRadius: 30,
+    marginBottom: 20,
+  },
+  applyButtonText: {
+    color: '#fff',
+    fontSize: 16,
     textAlign: 'center',
   },
   couponItem: {
-    backgroundColor: '#f8f8f8',
     marginBottom: 12,
-    borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E9E9E9',
   },
   selectedCoupon: {
     borderColor: '#FFA500',
     borderWidth: 2,
   },
-
-  couponInner: {
+  couponBackground: {
     flexDirection: 'row',
     padding: 14,
     alignItems: 'center',
+
+    height: 120,
+    justifyContent: 'space-between',
   },
-  couponIcon: {
-    width: 28,
-    height: 28,
-    marginRight: 12,
+  couponImage: {
+    resizeMode: 'contain',
   },
-  couponDetails: {
+  couponInner: {
     flex: 1,
+    justifyContent: 'center',
   },
   couponTitle: {
-    fontSize: 16,
-    color: '#222',
+    fontSize: 18,
+    color: '#fff',
     fontWeight: 'bold',
     marginBottom: 4,
   },
   couponDesc: {
-    color: '#555',
+    color: '#fff',
     marginBottom: 2,
   },
   couponCondition: {
-    color: '#888',
+    color: '#fff',
     fontSize: 13,
   },
   center: {
