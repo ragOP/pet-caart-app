@@ -25,6 +25,7 @@
     "lucide-react-native": "^0.525.0",
     "react": "19.1.0",
     "react-native": "0.80.1",
+    "react-native-element-dropdown": "^2.12.4",
     "react-native-gesture-handler": "^2.27.1",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-raw-bottom-sheet": "^3.0.0",

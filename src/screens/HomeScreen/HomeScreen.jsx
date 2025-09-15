@@ -275,13 +275,13 @@ const HomeScreen = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* {loadingBanner ? (
+        {loadingBanner ? (
           <BannerShimmer />
         ) : bannerImageUrl ? (
           <Banner source={{ uri: bannerImageUrl }} />
         ) : null}
 
-        {sliderData.length === 0 ? (
+        {/* {sliderData.length === 0 ? (
           <BannerSliderShimmer />
         ) : (
           <BannerSlider data={sliderData} />
@@ -299,6 +299,20 @@ const HomeScreen = () => {
   />
 )} */}
         <AdBannner />
+        {loading ? (
+          <CustomGridLayoutShimmer />
+        ) : grids.length > 0 ? (
+          grids.map(grid => (
+            <CustomGridLayout
+              key={grid._id}
+              gridData={grid}
+              isLoading={loading}
+            />
+          ))
+        ) : (
+          <Text style={styles.errorText}>No grids available</Text>
+        )}
+
         {/* <EssentialsSlider
           headingIcon={require('../../assets/icons/paw2.png')}
           headingTextOrange="Everyday"
@@ -315,7 +329,7 @@ const HomeScreen = () => {
         ) : (
           <Text style={styles.errorText}>No grids available</Text>
         )} */}
-        {loading ? (
+        {/* {loading ? (
           <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[0] ? (
           <CustomGridLayout
@@ -325,7 +339,7 @@ const HomeScreen = () => {
           />
         ) : (
           <Text style={styles.errorText}>No grids available</Text>
-        )}
+        )} */}
         {/* {loading ? (
           <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[2] ? (
@@ -369,7 +383,7 @@ const HomeScreen = () => {
             products={bestSellerData}
           />
         )}
-        {loading ? (
+        {/* {loading ? (
           <CustomGridLayoutShimmer />
         ) : grids.length > 0 && grids[1] ? (
           <CustomGridLayout
@@ -379,7 +393,7 @@ const HomeScreen = () => {
           />
         ) : (
           <Text style={styles.errorText}>No grids available</Text>
-        )}
+        )} */}
 
         {/* <CatLifeScreen
           headingIcon={require('../../assets/icons/paw2.png')}

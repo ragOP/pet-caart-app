@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
+  Image,
 } from 'react-native';
 import RawBottomSheet from 'react-native-raw-bottom-sheet';
 import { MapPin, X } from 'lucide-react-native';
@@ -97,17 +98,17 @@ export const AddressBottomSheet = React.forwardRef(
       >
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Select Delivery Address</Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.closeIcon}
             onPress={() => ref.current?.close()}
             hitSlop={{ top: 10, right: 10, left: 10, bottom: 10 }}
           >
             <X size={24} color="#636569" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         {loading ? (
           <ActivityIndicator size="large" style={styles.loader} color="#888" />
-        ) : (
+        ) : addresses.length ? (
           <FlatList
             data={addresses}
             keyExtractor={item => item.id}
@@ -115,6 +116,21 @@ export const AddressBottomSheet = React.forwardRef(
             contentContainerStyle={styles.listContent}
             style={{ maxHeight: 350 }}
           />
+        ) : (
+          <View style={styles.noAddressContainer}>
+            <Image
+              source={require('../../assets/images/noadd.png')}
+              style={styles.noAddressImage}
+              resizeMode="contain"
+            />
+            <View style={{ marginBottom: 16 }}>
+              <Text style={styles.noAddressText}>
+                Looks like you haven’t added a delivery address. Add one now to
+                get your goodies delivered to the right doorstep!
+              </Text>
+              <Text style={styles.noAddressText}></Text>
+            </View>
+          </View>
         )}
         <TouchableOpacity
           style={styles.addButton}
@@ -200,7 +216,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: 'Gotham-Rounded-Bold',
     color: '#636569',
   },
   selectedName: {
@@ -210,11 +226,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#636569',
     marginBottom: 2,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   phone: {
     fontSize: 15,
     color: '#636569',
     marginTop: 4,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   listContent: {
     paddingBottom: 80,
@@ -234,7 +252,27 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+  noAddressContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+  },
+  noAddressImage: {
+    width: 300,
+    height: 200,
+    marginBottom: 24,
+  },
+  noAddressText: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 4,
+    fontFamily: 'gotham-rounded-book',
+    lineHeight: 20,
   },
 });
 

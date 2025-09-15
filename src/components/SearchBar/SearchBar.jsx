@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { Search } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 
 const SearchBar = () => {
   const data = ["Search 'Dog Food'", "Search 'Cat Food'", "Search 'Pedigree'"];
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigation = useNavigation();
+  const handleSearchSubmit = () => {
+    if (searchQuery.trim()) {
+      navigation.navigate('ProductListScreen', {
+        searchQuery, // Pass the search query here
+      });
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -21,8 +31,11 @@ const SearchBar = () => {
           style={styles.input}
           placeholder={data[placeholderIndex]}
           placeholderTextColor="#999"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearchSubmit} // Trigger search on submit
         />
-        <Search color="#004E6A" size={20} />
+        <Search color="#004E6A" size={20} onPress={handleSearchSubmit} />
       </View>
     </View>
   );

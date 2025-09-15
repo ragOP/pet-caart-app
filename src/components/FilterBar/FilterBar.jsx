@@ -12,28 +12,30 @@ import { SlidersHorizontal } from 'lucide-react-native';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { getBrands } from '../../apis/getBrands';
 import { getBreeds } from '../../apis/getBreeds';
+import { Dropdown } from 'react-native-element-dropdown';
 
 const windowWidth = Dimensions.get('window').width;
 
 const FilterBar = ({
-  selectedBrand, // brandSlug | null
-  selectedBreed, // breedSlug | null
-  setSelectedBrand, // (slug|null)=>void
-  setSelectedBreed, // (slug|null)=>void
-  collectionName, // string | undefined
+  selectedBrand,
+  selectedBreed,
+  setSelectedBrand,
+  setSelectedBreed,
+  collectionName,
 }) => {
   const bottomSheetRef = useRef();
 
-  // list data
   const [brands, setBrands] = useState([]);
   const [breeds, setBreeds] = useState([]);
-
-  // bottom sheet ke liye temp selection
   const [tempBrandSlug, setTempBrandSlug] = useState(selectedBrand);
   const [tempBreedSlug, setTempBreedSlug] = useState(selectedBreed);
-
-  // optional: collection chip ko hide/show karne ke liye UI-only flag
   const [showCollectionChip, setShowCollectionChip] = useState(true);
+  const sortOptions = [
+    { label: 'High to Low', value: 'highToLow' },
+    { label: 'Low to High', value: 'lowToHigh' },
+  ];
+
+  const [sortOrder, setSortOrder] = useState(null);
 
   useEffect(() => {
     const fetchBrands = async () => {
@@ -60,9 +62,9 @@ const FilterBar = ({
   useEffect(() => setTempBreedSlug(selectedBreed || null), [selectedBreed]);
 
   const filterOptions = [
-    { label: 'BRAND', isActive: true },
-    { label: 'BREED', isActive: true },
-    { label: 'RATING', isActive: true },
+    // { label: 'BRAND', isActive: true },
+    // { label: 'BREED', isActive: true },
+    // { label: 'RATING', isActive: true },
   ];
 
   const openBottomSheet = () => {
@@ -113,8 +115,21 @@ const FilterBar = ({
           <SlidersHorizontal size={20} color="#333" />
           <Text style={[styles.buttonText, styles.activeText]}>FILTERS</Text>
         </TouchableOpacity>
-
-        {/* Collection chip: "Collection:CatFood x" */}
+        <Dropdown
+          data={sortOptions}
+          style={[styles.dropdown, sortOrder && styles.activeButton]}
+          labelField="label"
+          valueField="value"
+          placeholder="Sort By"
+          value={sortOrder}
+          onChange={item => setSortOrder(item.value)}
+          placeholderStyle={{ color: '#333', fontSize: 14 }}
+          selectedTextStyle={{
+            color: sortOrder ? '#000' : '#333',
+            fontSize: 16,
+          }}
+          activeColor="#6A68681A"
+        />
         {!!collectionName && showCollectionChip && (
           <View style={styles.chip}>
             <Text
@@ -122,12 +137,7 @@ const FilterBar = ({
             >{`Collection:${collectionName}`}</Text>
             <TouchableOpacity
               onPress={() => {
-                // Pure UI hide:
                 setShowCollectionChip(false);
-
-                // Agar logical collection filter bhi hatana ho:
-                // 1) Parent me collectionSlug ko state bana ke null set karo yahan se
-                // 2) fetchProducts se params.collectionSlug hata do
               }}
             >
               <Text style={styles.chipRemoveText}>x</Text>
@@ -402,6 +412,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     fontWeight: 'bold',
+  },
+  dropdown: {
+    height: 44,
+    width: 150,
+    borderColor: '#6A68681A',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

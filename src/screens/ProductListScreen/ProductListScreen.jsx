@@ -14,37 +14,85 @@ import ProductCard from '../../components/ProductCard/ProductCard';
 import { getProducts } from '../../apis/getProducts';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
-import AdBannner from '../../components/AdBannner/AdBanner';
 import FilterBar from '../../components/FilterBar/FilterBar';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function ProductListScreen({ route, navigation }) {
-  const { categorySlug, collectionSlug, collectionName } = route.params;
+  const { categorySlug, collectionSlug, collectionName, searchQuery } =
+    route.params;
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
-  const [selectedBrand, setSelectedBrand] = useState(null); // brandSlug
-  const [selectedBreed, setSelectedBreed] = useState(null); // breedSlug
-
+  const [allCollectionProducts, setAllCollectionProducts] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedBreed, setSelectedBreed] = useState(null);
   useEffect(() => {
     fetchProducts();
-  }, [categorySlug, collectionSlug, selectedBrand, selectedBreed]);
+  }, [categorySlug, collectionSlug, selectedBrand, selectedBreed, searchQuery]);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params = { categorySlug, collectionSlug };
+      const params = {
+        categorySlug,
+        collectionSlug,
+      };
       if (selectedBrand) params.brandSlug = selectedBrand;
       if (selectedBreed) params.breedSlug = selectedBreed;
+
       const res = await getProducts(params);
-      if (res?.data?.data) setProducts(res.data.data);
-      else setProducts([]);
+      const fetchedProducts = res?.data?.data || [];
+      setAllCollectionProducts(fetchedProducts);
+      let filtered = fetchedProducts;
+      if (searchQuery && searchQuery.trim() !== '') {
+        const searchTerm = searchQuery.toLowerCase();
+        filtered = fetchedProducts.filter(product => {
+          const matchesTitle = product.title
+            ?.toLowerCase()
+            .includes(searchTerm);
+          const matchesDesc = product.description
+            ?.toLowerCase()
+            .includes(searchTerm);
+          const matchesBrand = product.brandId?.name
+            ?.toLowerCase()
+            .includes(searchTerm);
+          const matchesCategory = product.categoryId?.name
+            ?.toLowerCase()
+            .includes(searchTerm);
+          const matchesSubCategory = product.subCategoryId?.name
+            ?.toLowerCase()
+            .includes(searchTerm);
+          const matchesBreed = product.breedId?.some(breed =>
+            breed.name?.toLowerCase().includes(searchTerm),
+          );
+          return (
+            matchesTitle ||
+            matchesDesc ||
+            matchesBrand ||
+            matchesCategory ||
+            matchesSubCategory ||
+            matchesBreed
+          );
+        });
+      }
+      setProducts(filtered);
     } catch (error) {
-      console.log('Error fetching products:', error);
+      console.error('Product fetch error:', error);
       setProducts([]);
     } finally {
       setLoading(false);
     }
+  };
+  const handleSearchChange = query => {
+    navigation.setParams({ ...route.params, searchQuery: query });
+  };
+
+  const handleBrandChange = brandSlug => {
+    setSelectedBrand(brandSlug);
+  };
+
+  const handleBreedChange = breedSlug => {
+    setSelectedBreed(breedSlug);
   };
 
   return (
@@ -62,7 +110,11 @@ export default function ProductListScreen({ route, navigation }) {
           >
             <ArrowLeft size={30} color="#000" />
           </TouchableOpacity>
-          <SearchBar style={styles.searchBar} />
+          <SearchBar
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+            style={styles.searchBar}
+          />
         </View>
       </View>
 
@@ -70,13 +122,12 @@ export default function ProductListScreen({ route, navigation }) {
         <ActivityIndicator size="large" color="#F5A500" />
       ) : (
         <ScrollView style={styles.screen}>
-          <AdBannner />
           <FilterBar
             collectionName={collectionName}
             selectedBrand={selectedBrand}
             selectedBreed={selectedBreed}
-            setSelectedBrand={setSelectedBrand}
-            setSelectedBreed={setSelectedBreed}
+            setSelectedBrand={handleBrandChange}
+            setSelectedBreed={handleBreedChange}
           />
           {products.length > 0 ? (
             <View style={styles.productContainer}>
@@ -132,8 +183,10 @@ const styles = StyleSheet.create({
   noProductsText: {
     textAlign: 'center',
     marginTop: 20,
-    fontFamily: 'Gotham-Rounded-Medium',
+    fontFamily: 'Gotham-Rounded-Bold',
     color: '#888',
+    alignSelf: 'center',
+    fontSize: 16,
   },
   productContainer: {
     padding: 15,
