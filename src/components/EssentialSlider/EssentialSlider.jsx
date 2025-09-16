@@ -1,59 +1,65 @@
-// EssentialSlider.js
-import React from 'react';
-import { View, Text, FlatList, Image, StyleSheet } from 'react-native';
-
-const data = [
-  [
-    {
-      id: '1',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-    {
-      id: '2',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-    {
-      id: '3',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-    {
-      id: '4',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-  ],
-  [
-    {
-      id: '5',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-    {
-      id: '6',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-    {
-      id: '7',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-    {
-      id: '8',
-      name: 'Chicken Gravy',
-      image: require('../../assets/images/dog.png'),
-    },
-  ],
-];
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
+import { getProducts } from '../../apis/getProducts';
 
 const EssentialSlider = ({
   headingIcon,
-  headingTextOrange = '',
-  headingTextBlue = '',
+  headingTextOrange = 'Newly',
+  headingTextBlue = 'Launched',
 }) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const fetchProducts = async () => {
+    try {
+      const response = await getProducts();
+      if (Array.isArray(response?.data?.data)) {
+        setProducts(response.data.data);
+      } else {
+        setError('No products found');
+      }
+    } catch (error) {
+      setError('Error fetching products');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const groupedProducts = [];
+  if (products.length) {
+    for (let i = 0; i < products.length; i += 4) {
+      groupedProducts.push(products.slice(i, i + 4));
+    }
+  }
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { paddingVertical: 20 }]}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {headingIcon && (
@@ -69,21 +75,30 @@ const EssentialSlider = ({
           </Text>
         </View>
       )}
-
-      {data.map((row, index) => (
+      {groupedProducts.map((row, rowIndex) => (
         <FlatList
-          key={index}
+          key={rowIndex}
           horizontal
           data={row}
-          style={styles.sliderRow}
-          showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={styles.itemContainer}>
-              <Image source={item.image} style={styles.image} />
-              <Text style={styles.text}>{item.name}</Text>
+              <Image
+                source={{
+                  uri:
+                    item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
+                }}
+                style={styles.image}
+                resizeMode="contain"
+                onError={() => console.warn('Failed to load image', item.title)}
+              />
+              <Text style={styles.text} numberOfLines={2} ellipsizeMode="tail">
+                {item.title}
+              </Text>
             </View>
           )}
-          keyExtractor={item => item.id}
+          keyExtractor={(item, index) => item._id || `${rowIndex}_${index}`}
+          showsHorizontalScrollIndicator={false}
+          style={styles.sliderRow}
         />
       ))}
     </View>
@@ -109,16 +124,20 @@ const styles = StyleSheet.create({
   itemContainer: {
     alignItems: 'center',
     marginRight: 8,
+    width: 120,
   },
   image: {
     width: 120,
     height: 130,
-    resizeMode: 'contain',
   },
   text: {
-    marginTop: 8,
-    fontSize: 15,
+    width: '100%',
+    textAlign: 'center',
+    color: 'black',
+    fontSize: 14,
+    marginTop: 5,
     fontFamily: 'Gotham-Rounded-Bold',
+    lineHeight: 20,
   },
 });
 

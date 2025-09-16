@@ -21,7 +21,7 @@ const IMAGES = [
   { id: '4', src: require('../../assets/images/petSlider2.png') },
 ];
 
-export default function TwoPerScreenWithGap() {
+export default function PetPromo() {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       activeOpacity={0.85}
@@ -38,11 +38,8 @@ export default function TwoPerScreenWithGap() {
       keyExtractor={it => it.id}
       renderItem={renderItem}
       showsHorizontalScrollIndicator={false}
-      // gap between items
-      ItemSeparatorComponent={() => <View style={{ width: GAP }} />} // reliable separator for horizontal lists
-      // outer padding to match screenshot
-      contentContainerStyle={{ paddingHorizontal: V_PADDING }} // start/end spacing
-      // snapping aligned to start; include gap in interval
+      ItemSeparatorComponent={() => <View style={{ width: GAP }} />}
+      contentContainerStyle={{ paddingHorizontal: V_PADDING }}
       decelerationRate="fast"
       snapToInterval={ITEM_W + GAP}
       snapToAlignment="start"
@@ -51,7 +48,6 @@ export default function TwoPerScreenWithGap() {
         offset: (ITEM_W + GAP) * index + V_PADDING,
         index,
       })}
-      // keep last item visible without trailing cut-off
       ListFooterComponent={<View style={{ width: V_PADDING }} />}
     />
   );

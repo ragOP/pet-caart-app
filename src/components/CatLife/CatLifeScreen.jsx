@@ -14,7 +14,11 @@ import { getCatLifeBanners } from '../../apis/getCatLifeBanners';
 
 const { width } = Dimensions.get('window');
 
-export default function CatLifeScreen({ headingIcon, headingTextOrange, headingTextBlue }) {
+export default function CatLifeScreen({
+  headingIcon,
+  headingTextOrange,
+  headingTextBlue,
+}) {
   const [catLifeData, setCatLifeData] = useState([]);
   const [scales, setScales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,9 +26,9 @@ export default function CatLifeScreen({ headingIcon, headingTextOrange, headingT
   useEffect(() => {
     const fetchCatLifeBanners = async () => {
       try {
-        const response = await getCatLifeBanners();    
+        const response = await getCatLifeBanners();
         const banners = response?.data?.data;
-    
+
         if (Array.isArray(banners)) {
           setCatLifeData(banners);
           setScales(banners.map(() => new Animated.Value(1)));
@@ -40,7 +44,7 @@ export default function CatLifeScreen({ headingIcon, headingTextOrange, headingT
     fetchCatLifeBanners();
   }, []);
 
-  const handlePressIn = (index) => {
+  const handlePressIn = index => {
     Animated.spring(scales[index], {
       toValue: 0.96,
       friction: 3,
@@ -48,7 +52,7 @@ export default function CatLifeScreen({ headingIcon, headingTextOrange, headingT
     }).start();
   };
 
-  const handlePressOut = (index) => {
+  const handlePressOut = index => {
     Animated.spring(scales[index], {
       toValue: 1,
       friction: 3,
@@ -56,19 +60,15 @@ export default function CatLifeScreen({ headingIcon, headingTextOrange, headingT
     }).start();
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#f39c12" />
-      </View>
-    );
-  }
-
   return (
     <ScrollView style={styles.container}>
       {headingIcon && (
         <View style={styles.headingContainer}>
-          <Image source={headingIcon} style={styles.iconImage} resizeMode="contain" />
+          <Image
+            source={headingIcon}
+            style={styles.iconImage}
+            resizeMode="contain"
+          />
           <Text style={styles.headingText}>
             <Text style={styles.orange}>{headingTextOrange} </Text>
             <Text style={styles.blue}>{headingTextBlue}</Text>
@@ -80,7 +80,10 @@ export default function CatLifeScreen({ headingIcon, headingTextOrange, headingT
         {catLifeData.map((item, index) => (
           <View key={item._id} style={styles.card}>
             <Animated.View
-              style={[styles.imageWrapper, { transform: [{ scale: scales[index] }] }]}
+              style={[
+                styles.imageWrapper,
+                { transform: [{ scale: scales[index] }] },
+              ]}
             >
               <TouchableOpacity
                 onPressIn={() => handlePressIn(index)}
@@ -88,7 +91,11 @@ export default function CatLifeScreen({ headingIcon, headingTextOrange, headingT
                 activeOpacity={1}
                 style={styles.imageWrapper}
               >
-                <Image source={{ uri: item.image }} style={styles.image} resizeMode="cover" />
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
               </TouchableOpacity>
             </Animated.View>
             <Text style={styles.label}>{item.title}</Text>
@@ -102,7 +109,7 @@ export default function CatLifeScreen({ headingIcon, headingTextOrange, headingT
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDF4E6',
+    backgroundColor: '#FFFFFF',
     padding: 16,
   },
   headingContainer: {
@@ -142,7 +149,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 100,
+    height: 120,
     borderRadius: 12,
   },
   label: {

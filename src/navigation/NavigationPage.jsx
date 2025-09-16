@@ -18,7 +18,6 @@ import AllCategoriesScreen from '../screens/AllCategoriesScreen/AllCategoriesScr
 import BrandScreen from '../screens/BrandScreen/BrandScreen';
 import ProductListScreen from '../screens/ProductListScreen/ProductListScreen';
 import SingleProductScreen from '../screens/SingleProductScreen/SingleProductScreen';
-import ContactUsScreen from '../screens/ContactUsScreen/ContactUsScreen';
 
 const Stack = createStackNavigator();
 
@@ -112,11 +111,6 @@ export default function NavigationPage() {
         <Stack.Screen
           name="SingleProductScreen"
           component={SingleProductScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ContactUsScreen"
-          component={ContactUsScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

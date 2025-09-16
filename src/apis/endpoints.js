@@ -55,4 +55,5 @@ export const endpoints = {
   sendOtp: 'api/otp/send-otp',
   collection: 'api/collection',
   delivery: 'api/delivery/check',
+  pageConfig: 'api/page-config/get-page-config-by-key',
 };

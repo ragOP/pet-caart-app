@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   SafeAreaView,
@@ -10,171 +10,70 @@ import {
   ScrollView,
   ActivityIndicator,
   TextInput,
+  Text,
 } from 'react-native';
 import { MapPin, Search } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
-import BannerSlider from '../../components/BannerSlider/BannerSlider';
-import EssentialsSlider from '../../components/EssentialSlider/EssentialSlider';
 import Banner from '../../components/Banner/Banner';
-import { getAdBanner } from '../../apis/getAdBanner';
-import { getSliders } from '../../apis/getSliders';
-import BannerShimmer from '../../ui/Shimmer/BannerShimmer';
-import { getProducts } from '../../apis/getProducts';
-import BannerSliderShimmer from '../../ui/Shimmer/BannerSliderShimmer';
-import EssentialsSliderShimmer from '../../ui/Shimmer/EssentialsSliderShimmer';
-import ProductSlider from '../../components/ProductSlider/ProductSlider';
-import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
-import NewlyLaunchedSlider from '../../components/NewlyLaunchedSlider/NewlyLaunchedSlider';
-import CatLifeScreen from '../../components/CatLife/CatLifeScreen';
-import BakedProduct from '../../components/BakedProduct/BakedProduct';
-import Footer from '../../components/Footer/Footer';
 import AdBannner from '../../components/AdBannner/AdBanner';
-import PetPromosList from '../../components/PetPromos/PetPromos';
+import BestSeller from '../../components/BestSeller/BestSeller';
 import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
-import { checkDelivery } from '../../apis/checkDelivery';
 import CustomGridLayoutShimmer from '../../ui/Shimmer/CustomGridLayoutShimmer';
+import { checkDelivery } from '../../apis/checkDelivery';
+import { getPageConfig } from '../../apis/getPageConfig';
+import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
+import CatLifeScreen from '../../components/CatLife/CatLifeScreen';
+import Footer from '../../components/Footer/Footer';
+
+const staticComponents = {
+  main_banner: Banner,
+  slider: AdBannner,
+  grid: CustomGridLayout,
+  best_sellers: BestSeller,
+  product_banner_ads: EssentialSlider,
+  day_in_cats_life: CatLifeScreen,
+};
+
+const sectionProps = {
+  best_sellers: {
+    headingIcon: require('../../assets/icons/paw2.png'),
+  },
+  product_banner_ads: {
+    headingIcon: require('../../assets/icons/paw2.png'),
+  },
+  day_in_cats_life: {
+    headingIcon: require('../../assets/icons/paw2.png'),
+    headingTextOrange: 'A Day in Your',
+    headingTextBlue: 'Cat Life...',
+  },
+};
 
 const HomeScreen = () => {
-  const [bannerImageUrl, setBannerImageUrl] = useState(null);
-  const [sliderData, setSliderData] = useState([]);
-  const [loadingBanner, setLoadingBanner] = useState(true);
-  const [essentialsData, setEssentialsData] = useState([]);
-  const [addToCartData, setAddToCartData] = useState([]);
-  const [bestSellerData, setBestSellerData] = useState([]);
-  const [newlyLaunchedData, setNewlyLaunchedData] = useState([]);
-  const [grids, setGrids] = useState([]);
+  const [sections, setSections] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingdel, setLoadingdel] = useState(false);
   const [locationFocus, setLocationFocus] = useState(false);
   const [pincode, setPincode] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
-  const productId = 'some-product-id';
+  const productId = 'nnn';
 
   useEffect(() => {
-    const fetchGrids = async () => {
+    const fetchPageConfig = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          'https://pet-caart-be.onrender.com/api/home-config/get-all-grid?keyword=home',
+        const response = await getPageConfig({ pageKey: 'home' });
+        setSections(
+          response.data.sections.sort((a, b) => a.position - b.position),
         );
-        const data = await res.json();
-        if (data?.data) {
-          console.log('sss', data);
-          setGrids(data.data);
-        }
       } catch (error) {
-        console.error('Error fetching home grids:', error);
+        console.error('Error fetching page config:', error);
       } finally {
         setLoading(false);
       }
     };
-    const fetchBanner = async () => {
-      try {
-        const response = await getAdBanner();
-        const url = response?.data?.data?.[0]?.image;
-        if (url) {
-          setBannerImageUrl(url);
-        } else {
-          console.warn('No image URL found');
-        }
-      } catch (error) {
-        console.error('Error fetching banner image:', error);
-      } finally {
-        setLoadingBanner(false);
-      }
-    };
-
-    const fetchSliders = async () => {
-      try {
-        const response = await getSliders();
-        const sliders = response?.data?.data;
-        if (sliders && sliders.length > 0) {
-          const sliderImages = sliders.map(slider => ({
-            image: { uri: slider.image },
-            link: slider.link,
-            id: slider.id,
-            isActive: slider.isActive,
-            type: slider.type,
-          }));
-          setSliderData(sliderImages);
-        } else {
-          console.warn('No sliders found');
-        }
-      } catch (error) {
-        console.error('Error fetching sliders:', error);
-      }
-    };
-    const fetchProducts = async () => {
-      try {
-        const response = await getProducts();
-        const allProducts = response?.data?.data;
-        if (Array.isArray(allProducts)) {
-          const essentials = allProducts
-            .filter(item => item.isEverydayEssential)
-            .map(item => ({
-              id: item._id,
-              label: item.title,
-              image: {
-                uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
-              },
-            }));
-          const addToCart = allProducts
-            .filter(item => item.isAddToCart)
-            .map(item => ({
-              id: item._id,
-              label: item.title,
-              image: {
-                uri: item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
-              },
-            }));
-          const bestSellers = allProducts
-            .filter(item => item.isBestSeller && Number(item.salePrice) < 599)
-            .map(item => {
-              const discountPercent = item.salePrice
-                ? Math.round(((item.price - item.salePrice) / item.price) * 100)
-                : 0;
-
-              return {
-                _id: item._id,
-                title: item.title,
-                rating: item.ratings?.average || 0,
-                price: item.price,
-                discount: discountPercent > 0 ? discountPercent + '%' : '0%',
-                images: item.images || item.variants?.[0]?.images || [],
-                isVeg: item.isVeg || false,
-                brandId: item.brandId,
-                variants: item.variants || [],
-              };
-            });
-
-          const newlyLaunched = allProducts
-            .filter(item => (item.newleyLaunced = true))
-            .map(item => {
-              return {
-                id: item._id,
-                label: item.title,
-                image: {
-                  uri:
-                    item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
-                },
-                isBestSeller: item.isBestSeller || false,
-              };
-            });
-
-          setBestSellerData(bestSellers);
-          setEssentialsData(essentials);
-          setAddToCartData(addToCart);
-          setNewlyLaunchedData(newlyLaunched);
-        }
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    };
-    fetchGrids();
-    fetchProducts();
-    fetchBanner();
-    fetchSliders();
+    fetchPageConfig();
   }, []);
+
   const handleCheckDelivery = async () => {
     try {
       setLoadingdel(true);
@@ -188,6 +87,15 @@ const HomeScreen = () => {
     } finally {
       setLoadingdel(false);
     }
+  };
+
+  const renderSection = section => {
+    const Component = staticComponents[section.key];
+    if (!Component) return null;
+    if (section.key === 'grid') {
+      return <Component key={section._id} gridData={section.id} />;
+    }
+    return <Component key={section._id} {...sectionProps[section.key]} />;
   };
 
   return (
@@ -254,7 +162,6 @@ const HomeScreen = () => {
                     autoFocus={!deliveryDate}
                     editable={true}
                   />
-
                   <TouchableOpacity
                     style={styles.searchButton}
                     onPress={handleCheckDelivery}
@@ -273,135 +180,12 @@ const HomeScreen = () => {
           </View>
         </SafeAreaView>
       </View>
-
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {loadingBanner ? (
-          <BannerShimmer />
-        ) : bannerImageUrl ? (
-          <Banner source={{ uri: bannerImageUrl }} />
-        ) : null}
-
-        {/* {sliderData.length === 0 ? (
-          <BannerSliderShimmer />
-        ) : (
-          <BannerSlider data={sliderData} />
-        )} */}
-
-        {/* {essentialsData.length === 0 ? (
-  <EssentialsSliderShimmer />
-) : (
-  <EssentialsSlider
-    products={essentialsData}
-    headingIcon={require('../../assets/icons/paw2.png')}
-      headingTextOrange="Everyday"
-    headingTextBlue="Essentials"
- 
-  />
-)} */}
-        <AdBannner />
-        {loading ? (
-          <CustomGridLayoutShimmer />
-        ) : grids.length > 0 ? (
-          grids.map(grid => (
-            <CustomGridLayout
-              key={grid._id}
-              gridData={grid}
-              isLoading={loading}
-            />
-          ))
-        ) : (
-          <Text style={styles.errorText}>No grids available</Text>
+        {loading && <CustomGridLayoutShimmer />}
+        {!loading && !sections && (
+          <Text style={styles.errorText}>Error loading sections</Text>
         )}
-
-        {/* <EssentialsSlider
-          headingIcon={require('../../assets/icons/paw2.png')}
-          headingTextOrange="Everyday"
-          headingTextBlue="Essentials"
-        /> */}
-        {/* {loading ? (
-          <CustomGridLayoutShimmer />
-        ) : grids.length > 0 && grids[3] ? (
-          <CustomGridLayout
-            key={grids[3]._id}
-            gridData={grids[3]}
-            isLoading={loading}
-          />
-        ) : (
-          <Text style={styles.errorText}>No grids available</Text>
-        )} */}
-        {/* {loading ? (
-          <CustomGridLayoutShimmer />
-        ) : grids.length > 0 && grids[0] ? (
-          <CustomGridLayout
-            key={grids[0]._id}
-            gridData={grids[0]}
-            isLoading={loading}
-          />
-        ) : (
-          <Text style={styles.errorText}>No grids available</Text>
-        )} */}
-        {/* {loading ? (
-          <CustomGridLayoutShimmer />
-        ) : grids.length > 0 && grids[2] ? (
-          <CustomGridLayout
-            key={grids[2]._id}
-            gridData={grids[2]}
-            isLoading={loading}
-          />
-        ) : (
-          <Text style={styles.errorText}>No grids available</Text>
-        )} */}
-        {addToCartData.length === 0 ? (
-          <EssentialsSliderShimmer />
-        ) : (
-          <EssentialsSlider
-            products={addToCartData}
-            headingIcon={require('../../assets/icons/paw2.png')}
-            headingTextOrange="Trending"
-            headingTextBlue="Add-To-Carts"
-          />
-        )}
-        {/* <AdBannner /> */}
-
-        {/* {newlyLaunchedData.length === 0 ? (
-          <ProductSliderShimmer />
-        ) : (
-          <NewlyLaunchedSlider
-            products={newlyLaunchedData}
-            headingIcon={require('../../assets/icons/paw2.png')}
-            headingTextOrange="Newly"
-            headingTextBlue="Launched"
-          />
-        )} */}
-        {bestSellerData.length === 0 ? (
-          <ProductSliderShimmer />
-        ) : (
-          <ProductSlider
-            headingIcon={require('../../assets/icons/paw2.png')}
-            headingTextOrange="Bestsellers"
-            headingTextBlue="Under ₹599"
-            products={bestSellerData}
-          />
-        )}
-        {/* {loading ? (
-          <CustomGridLayoutShimmer />
-        ) : grids.length > 0 && grids[1] ? (
-          <CustomGridLayout
-            key={grids[1]._id}
-            gridData={grids[1]}
-            isLoading={loading}
-          />
-        ) : (
-          <Text style={styles.errorText}>No grids available</Text>
-        )} */}
-
-        {/* <CatLifeScreen
-          headingIcon={require('../../assets/icons/paw2.png')}
-          headingTextOrange="A Day in Your"
-          headingTextBlue="Cat’s Life..."
-        />
-        <BakedProduct style={styles.baked} /> */}
-        <PetPromosList />
+        {!loading && sections?.map(section => renderSection(section))}
         <Footer />
       </ScrollView>
     </View>
@@ -446,12 +230,11 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100,
     backgroundColor: '#FFFFFF',
-    // marginBottom: 16,
   },
-  baked: {
-    width: '93%',
-    alignSelf: 'center',
-    paddingTop: 20,
+  errorText: {
+    padding: 16,
+    textAlign: 'center',
+    color: 'red',
   },
   pincodeContainer: {
     flex: 1,
@@ -477,23 +260,6 @@ const styles = StyleSheet.create({
     padding: 2,
     borderRadius: 8,
     marginLeft: 6,
-  },
-  locationButton: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 8,
-    marginLeft: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#4040400D',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
   },
   iconWithSeparator: {
     flexDirection: 'row',
