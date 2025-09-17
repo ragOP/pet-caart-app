@@ -233,11 +233,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     marginHorizontal: 20,
-    borderColor: '#004E6A',
+    borderColor: '#0888B1',
     borderWidth: 1.5,
   },
   saveText: {
-    color: '#004E6A',
+    color: '#0888B1',
     fontSize: 20,
     fontFamily: 'Gotham-Rounded-Bold',
   },

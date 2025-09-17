@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   saveButton: {
-    backgroundColor: '#004E6A',
+    backgroundColor: '#0888B1',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     height: 20,
     width: 20,
     borderWidth: 1,
-    borderColor: '#004E6A',
+    borderColor: '#0888B1',
     borderRadius: 4,
     marginRight: 8,
     justifyContent: 'center',
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   checkboxTick: {
     width: 16,
     height: 16,
-    backgroundColor: '#004E6A',
+    backgroundColor: '#0888B1',
     borderRadius: 2,
   },
   checkboxLabel: {

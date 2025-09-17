@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, View, ActivityIndicator, Text } from 'react-native';
 import { getAdBanner } from '../../apis/getAdBanner';
+import BannerShimmer from '../../ui/Shimmer/BannerShimmer';
 
 const Banner = () => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -28,6 +29,14 @@ const Banner = () => {
   useEffect(() => {
     fetchBanner();
   }, []);
+
+  if (loadingBanner) {
+    return (
+      <View style={styles.container}>
+        <BannerShimmer />
+      </View>
+    );
+  }
 
   if (error) {
     return (
@@ -63,7 +72,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
   },
   bannerImage: {
     width: '100%',

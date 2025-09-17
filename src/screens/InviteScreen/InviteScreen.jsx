@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#004E6A',
+    backgroundColor: '#0888B1',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

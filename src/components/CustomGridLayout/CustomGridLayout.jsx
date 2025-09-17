@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,17 +12,28 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+const splitTitle = title => {
+  if (!title || typeof title !== 'string') return { first: '', second: '' };
+  const index = title.indexOf(' ');
+  if (index === -1) return { first: title, second: '' };
+  return {
+    first: title.substring(0, index),
+    second: title.substring(index + 1),
+  };
+};
+
 const CustomGridLayout = ({ gridData, onItemPress }) => {
   const navigation = useNavigation();
 
   if (!gridData) return null;
 
   const { grid, title, contentItems, backgroundImage, bannerImage } = gridData;
-  const { mobileColumns, mobileRows } = grid || {};
+  const { mobileColumns } = grid || {};
+  const GAP = 8;
   const screenWidth = Dimensions.get('window').width;
-  const itemWidth = screenWidth / mobileColumns;
-  const itemHeight =
-    (screenWidth / mobileColumns) * (mobileRows / mobileColumns);
+  const totalGapsWidth = GAP * ((mobileColumns || 1) + 1);
+  const itemWidth = (screenWidth - totalGapsWidth) / (mobileColumns || 1);
+  const itemHeight = itemWidth * 1.15;
 
   const handleItemClick = item => {
     if (onItemPress) {
@@ -39,6 +50,11 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
       navigation.navigate('Product', { id: item.itemId._id });
     }
   };
+
+  const [firstPart, secondPart] = useMemo(() => {
+    const { first, second } = splitTitle(title || '');
+    return [first, second];
+  }, [title]);
 
   return (
     <View style={styles.container}>
@@ -58,7 +74,14 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
                 style={styles.titleImage}
                 resizeMode="contain"
               />
-              <Text style={styles.titleText}>{title}</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                <Text style={[styles.titleText, { color: '#f39c12' }]}>
+                  {firstPart}
+                </Text>
+                <Text style={[styles.titleText, { color: '#3498db' }]}>
+                  {secondPart ? ' ' + secondPart : ''}
+                </Text>
+              </View>
             </View>
           </View>
         )}
@@ -75,24 +98,25 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
               style={{
                 flexDirection: 'row',
                 flexWrap: 'wrap',
-                justifyContent: 'space-between',
+                width: '100%',
               }}
             >
               {contentItems?.map((item, index) => (
                 <TouchableOpacity
                   key={item._id || index}
-                  style={[
-                    styles.gridItem,
-                    {
-                      width: itemWidth - 16,
-                    },
-                  ]}
+                  style={{
+                    width: itemWidth,
+                    height: itemHeight,
+                    marginLeft: GAP,
+                    borderRadius: 6,
+                    overflow: 'hidden',
+                  }}
                   onPress={() => handleItemClick(item)}
                   activeOpacity={0.8}
                 >
                   <Image
                     source={{ uri: item.imageUrl }}
-                    style={styles.itemImage}
+                    style={{ width: '100%', height: '100%' }}
                     resizeMode="contain"
                   />
                 </TouchableOpacity>
@@ -123,8 +147,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   titleContainer: {
-    marginBottom: 12,
-    marginHorizontal: 16,
+    marginHorizontal: 8,
   },
   titleWithImage: {
     flexDirection: 'row',
@@ -143,17 +166,6 @@ const styles = StyleSheet.create({
   gridContainer: {
     overflow: 'hidden',
     width: '100%',
-  },
-  gridItem: {
-    margin: 8,
-    backgroundColor: 'transparent',
-    overflow: 'hidden',
-    aspectRatio: 0.96,
-    // borderRadius: 6,
-  },
-  itemImage: {
-    width: '100%',
-    height: '100%',
   },
 });
 

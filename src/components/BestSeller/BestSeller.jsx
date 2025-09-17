@@ -128,24 +128,26 @@ const BestSeller = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    // paddingVertical: 10,
+    paddingHorizontal: 8,
     backgroundColor: 'white',
     marginBottom: 16,
   },
   headingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    // marginBottom: 12,
   },
   iconImage: {
-    width: 35,
-    height: 35,
+    width: 40,
+    height: 40,
     marginRight: 8,
+    marginBottom: 10,
   },
   headingText: {
     fontSize: 20,
     fontFamily: 'Gotham-Rounded-Bold',
+    paddingBottom: 10,
   },
   orange: {
     color: '#f39c12',

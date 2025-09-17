@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Light',
   },
   saveButton: {
-    backgroundColor: '#004E6A',
+    backgroundColor: '#0888B1',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

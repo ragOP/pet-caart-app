@@ -9,6 +9,7 @@ import {
   Text,
 } from 'react-native';
 import { getSliders } from '../../apis/getSliders';
+import BannerShimmer from '../../ui/Shimmer/BannerShimmer';
 
 const INTERVAL_MS = 4000;
 const FADE_MS = 1000;
@@ -81,7 +82,15 @@ export default function AdBanner() {
   }, []);
 
   const { width } = Dimensions.get('window');
-  const height = Math.round(width * 0.55);
+  const height = Math.round(width * 0.45);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { height }]}>
+        <BannerShimmer />
+      </View>
+    );
+  }
 
   if (error || !sliderData || sliderData.length === 0) {
     return (
@@ -119,6 +128,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
   },
   image: {
     ...StyleSheet.absoluteFillObject,

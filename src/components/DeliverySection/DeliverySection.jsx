@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     fontFamily: 'gotham-rounded-book',
   },
   checkButton: {
-    backgroundColor: '#F59A11',
+    backgroundColor: '#0888B1',
     borderRadius: 7,
     paddingHorizontal: 18,
     paddingVertical: 8,

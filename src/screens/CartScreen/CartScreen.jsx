@@ -264,7 +264,7 @@ const CartScreen = () => {
   const handleCouponApply = (coupon, isSelected) => {
     if (coupon && totalMRP >= coupon.minPurchase) {
       setAppliedCoupon(coupon);
-      setCouponCode(coupon.code); // Update input with selected code
+      setCouponCode(coupon.code);
       setCouponError('');
       couponSheetRef.current.close();
     } else if (!coupon) {
@@ -926,7 +926,7 @@ const styles = StyleSheet.create({
     bottom: '10%',
     left: 0,
     right: 0,
-    backgroundColor: '#004E6A',
+    backgroundColor: '#0888B1',
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',

@@ -8,8 +8,6 @@ import {
   StatusBar,
   Platform,
   ScrollView,
-  ActivityIndicator,
-  TextInput,
   Text,
 } from 'react-native';
 import { MapPin, Search } from 'lucide-react-native';
@@ -24,13 +22,14 @@ import { getPageConfig } from '../../apis/getPageConfig';
 import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
 import CatLifeScreen from '../../components/CatLife/CatLifeScreen';
 import Footer from '../../components/Footer/Footer';
+import PinBottomSheet from '../../components/PinBottomSheet/PinBottomSheet';
+import BannerSlider from '../../components/BannerSlider/BannerSlider';
 
 const staticComponents = {
   main_banner: Banner,
-  slider: AdBannner,
+  slider: BannerSlider,
   grid: CustomGridLayout,
   best_sellers: BestSeller,
-  product_banner_ads: EssentialSlider,
   day_in_cats_life: CatLifeScreen,
 };
 
@@ -52,9 +51,9 @@ const HomeScreen = () => {
   const [sections, setSections] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingdel, setLoadingdel] = useState(false);
-  const [locationFocus, setLocationFocus] = useState(false);
-  const [pincode, setPincode] = useState('');
+
   const [deliveryDate, setDeliveryDate] = useState('');
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
   const productId = 'nnn';
 
   useEffect(() => {
@@ -74,16 +73,18 @@ const HomeScreen = () => {
     fetchPageConfig();
   }, []);
 
-  const handleCheckDelivery = async () => {
+  const handleCheckDelivery = async submittedPincode => {
     try {
       setLoadingdel(true);
-      const response = await checkDelivery({ pincode, productId });
-      console.log('Delivery check response:', response);
+      const response = await checkDelivery({
+        pincode: submittedPincode,
+        productId,
+      });
       setDeliveryDate(response.data || '');
     } catch (error) {
       console.error('Delivery check error:', error);
-      alert(error.message || 'Error checking delivery');
       setDeliveryDate('');
+      alert(error.message || 'Error checking delivery');
     } finally {
       setLoadingdel(false);
     }
@@ -93,9 +94,9 @@ const HomeScreen = () => {
     const Component = staticComponents[section.key];
     if (!Component) return null;
     if (section.key === 'grid') {
-      return <Component key={section._id} gridData={section.id} />;
+      return <Component gridData={section.id} />;
     }
-    return <Component key={section._id} {...sectionProps[section.key]} />;
+    return <Component {...sectionProps[section.key]} />;
   };
 
   return (
@@ -113,70 +114,14 @@ const HomeScreen = () => {
               style={styles.logo}
               resizeMode="contain"
             />
-            {!locationFocus ? (
-              <>
-                <SearchBar style={{ flex: 1, marginRight: 10 }} />
-                <TouchableOpacity
-                  style={styles.locationButton}
-                  activeOpacity={0.6}
-                  onPress={() => setLocationFocus(true)}
-                >
-                  <MapPin color="#FFA500" size={24} />
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={styles.locationButton}
-                  onPress={() => setLocationFocus(false)}
-                  activeOpacity={1}
-                >
-                  <Search color="#165174" size={24} />
-                </TouchableOpacity>
-                <View style={styles.pincodeContainer}>
-                  <View style={styles.iconWithSeparator}>
-                    <MapPin
-                      color="#FFA500"
-                      size={24}
-                      style={styles.mapPinIcon}
-                    />
-                    <View style={styles.divider} />
-                  </View>
-                  <TextInput
-                    style={[
-                      styles.pincodeInput,
-                      { fontSize: 9.5, fontWeight: 'bold' },
-                    ]}
-                    placeholder="Enter PINCODE"
-                    keyboardType="default"
-                    maxLength={deliveryDate ? undefined : 6}
-                    value={
-                      deliveryDate
-                        ? `Expected delivery: ${deliveryDate}`
-                        : pincode
-                    }
-                    onChangeText={text => {
-                      setDeliveryDate('');
-                      setPincode(text);
-                    }}
-                    autoFocus={!deliveryDate}
-                    editable={true}
-                  />
-                  <TouchableOpacity
-                    style={styles.searchButton}
-                    onPress={handleCheckDelivery}
-                    disabled={loadingdel}
-                    activeOpacity={1}
-                  >
-                    {loadingdel ? (
-                      <ActivityIndicator size="small" color="#165174" />
-                    ) : (
-                      <Search color="#165174" size={20} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              </>
-            )}
+            <SearchBar style={{ flex: 1, marginRight: 10 }} />
+            <TouchableOpacity
+              style={styles.locationButton}
+              activeOpacity={0.6}
+              onPress={() => setShowBottomSheet(true)}
+            >
+              <MapPin color="#FFA500" size={24} />
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
       </View>
@@ -185,9 +130,22 @@ const HomeScreen = () => {
         {!loading && !sections && (
           <Text style={styles.errorText}>Error loading sections</Text>
         )}
-        {!loading && sections?.map(section => renderSection(section))}
+        {!loading &&
+          sections?.map((section, idx) => (
+            <React.Fragment key={section._id || idx}>
+              {renderSection(section)}
+            </React.Fragment>
+          ))}
         <Footer />
       </ScrollView>
+
+      <PinBottomSheet
+        visible={showBottomSheet}
+        onClose={() => setShowBottomSheet(false)}
+        onSubmit={handleCheckDelivery}
+        loading={loadingdel}
+        deliveryDate={deliveryDate}
+      />
     </View>
   );
 };
@@ -235,42 +193,6 @@ const styles = StyleSheet.create({
     padding: 16,
     textAlign: 'center',
     color: 'red',
-  },
-  pincodeContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    marginLeft: 10,
-    paddingHorizontal: 10,
-    elevation: 2,
-    height: 50,
-  },
-  mapPinIcon: {
-    marginRight: 8,
-  },
-  pincodeInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    fontFamily: 'gotham-rounded-book',
-  },
-  searchButton: {
-    padding: 2,
-    borderRadius: 8,
-    marginLeft: 6,
-  },
-  iconWithSeparator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  divider: {
-    width: 1,
-    height: 50,
-    backgroundColor: '#ccc',
-    marginLeft: 1,
   },
 });
 

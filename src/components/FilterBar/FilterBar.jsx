@@ -398,14 +398,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   applyButton: {
-    backgroundColor: '#FFA500',
+    backgroundColor: '#0888B1',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
   },
   clearText: {
     fontSize: 16,
-    color: '#FFA500',
+    color: '#0888B1',
     fontWeight: 'bold',
   },
   applyText: {
