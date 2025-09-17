@@ -29,7 +29,7 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
 
   const { grid, title, contentItems, backgroundImage, bannerImage } = gridData;
   const { mobileColumns } = grid || {};
-  const GAP = 8;
+  const GAP = 11;
   const screenWidth = Dimensions.get('window').width;
   const totalGapsWidth = GAP * ((mobileColumns || 1) + 1);
   const itemWidth = (screenWidth - totalGapsWidth) / (mobileColumns || 1);
@@ -108,6 +108,7 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
                     width: itemWidth,
                     height: itemHeight,
                     marginLeft: GAP,
+
                     borderRadius: 6,
                     overflow: 'hidden',
                   }}
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionContainer: {
-    marginBottom: 16,
+    marginBottom: 10,
     width: '100%',
   },
   scrollView: {

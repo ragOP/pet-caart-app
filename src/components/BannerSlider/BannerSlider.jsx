@@ -109,7 +109,7 @@ const BannerSlider = () => {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },

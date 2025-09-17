@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, View, ActivityIndicator, Text } from 'react-native';
 import { getAdBanner } from '../../apis/getAdBanner';
 import BannerShimmer from '../../ui/Shimmer/BannerShimmer';
+import BannerSliderShimmer from '../../ui/Shimmer/BannerSliderShimmer';
 
 const Banner = () => {
   const [bannerImageUrl, setBannerImageUrl] = useState(null);
@@ -33,7 +34,7 @@ const Banner = () => {
   if (loadingBanner) {
     return (
       <View style={styles.container}>
-        <BannerShimmer />
+        <BannerSliderShimmer />
       </View>
     );
   }

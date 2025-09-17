@@ -32,7 +32,7 @@ const PinBottomSheet = ({
         <View style={styles.backdrop}>
           <TouchableWithoutFeedback>
             <View style={styles.container}>
-              <Text style={styles.headerText}>Check Delivery</Text>
+              <Text style={styles.headerText}>Check Delivery by Pincode</Text>
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <X color="#666" size={24} />
               </TouchableOpacity>
@@ -52,7 +52,6 @@ const PinBottomSheet = ({
                 />
               </View>
 
-              {/* Only render resultContainer if deliveryDate is available */}
               {deliveryDate && visible ? (
                 <View style={styles.resultContainer}>
                   <Text style={styles.resultTitle}>Delivery Available!</Text>
