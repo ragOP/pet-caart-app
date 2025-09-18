@@ -30,12 +30,13 @@ const FilterBar = ({
   const [tempBrandSlug, setTempBrandSlug] = useState(selectedBrand);
   const [tempBreedSlug, setTempBreedSlug] = useState(selectedBreed);
   const [showCollectionChip, setShowCollectionChip] = useState(true);
+  const [sortOrder, setSortOrder] = useState(null);
+  const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
+
   const sortOptions = [
     { label: 'High to Low', value: 'highToLow' },
     { label: 'Low to High', value: 'lowToHigh' },
   ];
-
-  const [sortOrder, setSortOrder] = useState(null);
 
   useEffect(() => {
     const fetchBrands = async () => {
@@ -62,9 +63,7 @@ const FilterBar = ({
   useEffect(() => setTempBreedSlug(selectedBreed || null), [selectedBreed]);
 
   const filterOptions = [
-    // { label: 'BRAND', isActive: true },
-    // { label: 'BREED', isActive: true },
-    // { label: 'RATING', isActive: true },
+    // Extend if needed
   ];
 
   const openBottomSheet = () => {
@@ -267,21 +266,17 @@ const FilterBar = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 5,
-    backgroundColor: '#FFFBF6',
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-    paddingRight: 20,
+    paddingVertical: 2,
+    backgroundColor: '#FFFFFF',
   },
   scrollView: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    // paddingHorizontal: 20,
     marginHorizontal: 5,
   },
   activeButton: {

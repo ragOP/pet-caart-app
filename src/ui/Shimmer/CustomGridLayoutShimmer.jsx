@@ -67,13 +67,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   shimmerWave: {
+    width: '40%',
+    height: '100%',
+    opacity: 0.3,
     position: 'absolute',
     top: 0,
     left: 0,
-    height: '100%',
-    width: '60%',
     backgroundColor: '#f6f7f9',
-    opacity: 0.6,
     borderRadius: 12,
   },
   titleBar: {

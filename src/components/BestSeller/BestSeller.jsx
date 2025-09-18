@@ -131,17 +131,17 @@ const styles = StyleSheet.create({
     // paddingVertical: 10,
     paddingHorizontal: 8,
     backgroundColor: 'white',
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   headingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    // marginBottom: 12,
+    marginBottom: 8,
   },
   iconImage: {
     width: 40,
     height: 40,
-    marginRight: 8,
+    marginRight: 4,
     marginBottom: 10,
   },
   headingText: {
