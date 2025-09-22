@@ -38,21 +38,18 @@ const WhiskasShimmer = () => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        {/* Image Placeholder */}
         <View style={styles.imagePlaceholder} />
-        {/* Text placeholders */}
-        <View style={styles.titlePlaceholder} />
         <View style={styles.subTitlePlaceholder} />
-        <View style={styles.deliveryBoxPlaceholder} />
-        {/* Price and Add to Cart */}
+
         <View style={styles.titlePlaceholder} />
+        <View style={styles.deliveryBoxPlaceholder} />
+        <View style={styles.offerPlaceholder} />
         <View style={styles.titlePlaceholder} />
 
         <View style={styles.pricePlaceholder} />
 
         <View style={styles.addToCartPlaceholder} />
 
-        {/* Pulse shimmer overlay */}
         <Animated.View
           pointerEvents="none"
           style={[
@@ -64,8 +61,6 @@ const WhiskasShimmer = () => {
             },
           ]}
         />
-
-        {/* Moving wave shimmer */}
         <Animated.View
           pointerEvents="none"
           style={[
@@ -89,15 +84,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
     marginTop: '15%',
+    paddingHorizontal: 10,
   },
   imagePlaceholder: {
     height: 340,
     backgroundColor: '#929292',
     marginBottom: 18,
+    borderRadius: 12,
   },
   titlePlaceholder: {
     height: 30,
-    width: '65%',
+    width: '75%',
     backgroundColor: '#929292',
     borderRadius: 6,
     marginBottom: 10,
@@ -113,8 +110,15 @@ const styles = StyleSheet.create({
     height: 208,
     width: '100%',
     backgroundColor: '#929292',
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 20,
+  },
+  offerPlaceholder: {
+    height: 50,
+    width: '100%',
+    backgroundColor: '#929292',
+    borderRadius: 8,
+    marginBottom: 10,
   },
   pricePlaceholder: {
     height: 22,

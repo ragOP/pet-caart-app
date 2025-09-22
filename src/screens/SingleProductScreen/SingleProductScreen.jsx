@@ -24,13 +24,18 @@ import { getProductById } from '../../apis/getProductById';
 import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
 import Banner from '../../components/Banner/Banner';
 import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
-
 const { width: screenWidth } = Dimensions.get('window');
 const getDiscountPercent = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
 };
-
+const formatWeight = grams => {
+  if (grams >= 1000) {
+    const kg = grams / 1000;
+    return kg % 1 === 0 ? `${kg}kg` : `${kg.toFixed(1)}kg`;
+  }
+  return `${grams}g`;
+};
 const SingleProductScreen = ({ navigation, dispatch }) => {
   const route = useRoute();
   const { productId } = route.params;
@@ -41,11 +46,9 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [bestSellerData, setBestSellerData] = useState([]);
   const offersSheetRef = useRef();
-
   const toggleSection = section => {
     setExpandedSection(prev => (prev === section ? null : section));
   };
-
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
@@ -65,7 +68,6 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
       fetchProductDetails();
     }
   }, [productId]);
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -97,7 +99,6 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
     };
     fetchProducts();
   }, []);
-
   const handleAddToCart = () => {
     if (stockToShow <= 0) return;
     const productData = {
@@ -131,12 +132,14 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
       </View>
     );
   }
-
   const currentVariant = selectedVariant || product;
   const shouldShowWeight = selectedVariant && !selectedVariant.isMain;
   const shownWeight = shouldShowWeight ? currentVariant?.weight : null;
   const stockToShow = currentVariant?.stock || 0;
-
+  const displayedImages =
+    selectedVariant?.images?.length > 0
+      ? selectedVariant.images
+      : product.images;
   const Chip = ({ variant, isSelected, onPress }) => (
     <TouchableOpacity
       onPress={onPress}
@@ -144,12 +147,11 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
       activeOpacity={0.8}
     >
       <Text style={[styles.chipText, isSelected && styles.selectedChipText]}>
-        {variant.weight}g |{' '}
+        {formatWeight(variant.weight)} |{' '}
         {getDiscountPercent(variant.price, variant.salePrice)}% OFF
       </Text>
     </TouchableOpacity>
   );
-
   const renderVariantChips = (variants = []) => {
     if (!variants || variants.length === 0) return null;
     return variants.map(variant => (
@@ -165,7 +167,6 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
       />
     ));
   };
-
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -184,10 +185,10 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
         style={styles.content}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {product.images && (
+        {displayedImages?.length > 0 && (
           <FlatList
             horizontal
-            data={product.images}
+            data={displayedImages}
             renderItem={({ item }) => (
               <Image
                 source={{ uri: item }}
@@ -195,7 +196,7 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
                 resizeMode="contain"
               />
             )}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={item => item}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.imagesContainer}
             snapToInterval={screenWidth}
@@ -204,6 +205,7 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
               offset: screenWidth * index,
               index,
             })}
+            initialNumToRender={displayedImages.length}
           />
         )}
         <View style={styles.pad}>
@@ -281,7 +283,7 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
                 <View>
                   {shownWeight != null && (
                     <Text style={styles.accordionInlineText}>
-                      Weight: {shownWeight}g
+                      Weight: {formatWeight(shownWeight)}
                     </Text>
                   )}
                   <Text style={styles.accordionInlineText}>
