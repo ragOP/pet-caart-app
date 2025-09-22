@@ -26,6 +26,8 @@ export default function ProductListScreen({ route, navigation }) {
   const [allCollectionProducts, setAllCollectionProducts] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState(null);
+  const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
+
   useEffect(() => {
     fetchProducts();
   }, [categorySlug, collectionSlug, selectedBrand, selectedBreed, searchQuery]);
@@ -94,7 +96,28 @@ export default function ProductListScreen({ route, navigation }) {
   const handleBreedChange = breedSlug => {
     setSelectedBreed(breedSlug);
   };
-
+  const GreenSwitchButton = ({ value, onValueChange }) => (
+    <TouchableOpacity
+      onPress={() => onValueChange(!value)}
+      activeOpacity={0.8}
+      style={styles.switchWrapper}
+    >
+      <View style={[styles.track]} />
+      <View
+        style={[
+          styles.thumb,
+          { left: value ? 34 : 4, borderColor: value ? '#0a0' : '#bbb' },
+        ]}
+      >
+        <View
+          style={[
+            styles.thumbInner,
+            { backgroundColor: value ? '#0a0' : '#bbb' },
+          ]}
+        />
+      </View>
+    </TouchableOpacity>
+  );
   return (
     <View style={styles.container}>
       <StatusBar
@@ -122,13 +145,19 @@ export default function ProductListScreen({ route, navigation }) {
         <ActivityIndicator size="large" color="#F5A500" />
       ) : (
         <ScrollView style={styles.screen}>
-          <FilterBar
-            collectionName={collectionName}
-            selectedBrand={selectedBrand}
-            selectedBreed={selectedBreed}
-            setSelectedBrand={handleBrandChange}
-            setSelectedBreed={handleBreedChange}
-          />
+          <View style={styles.filterBarWrapper}>
+            <GreenSwitchButton
+              value={isGreenSwitchOn}
+              onValueChange={setIsGreenSwitchOn}
+            />
+            <FilterBar
+              collectionName={collectionName}
+              selectedBrand={selectedBrand}
+              selectedBreed={selectedBreed}
+              setSelectedBrand={handleBrandChange}
+              setSelectedBreed={handleBreedChange}
+            />
+          </View>
           {products.length > 0 ? (
             <View style={styles.productContainer}>
               {products.map((product, index) => (
@@ -151,6 +180,8 @@ export default function ProductListScreen({ route, navigation }) {
                     productId={product._id}
                     variantId={product.variants?.[0]?._id || null}
                     variants={product.variants}
+                    isVeg={product.isVeg}
+                    isBestSeller={product.isBestSeller}
                   />
                 </View>
               ))}
@@ -165,10 +196,10 @@ export default function ProductListScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
-    paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -179,7 +210,7 @@ const styles = StyleSheet.create({
   },
   backButton: { paddingRight: 15 },
   searchBar: { flex: 1 },
-  screen: { backgroundColor: '#fff', marginTop: '5%' },
+  screen: { backgroundColor: '#fff' },
   noProductsText: {
     textAlign: 'center',
     marginTop: 20,
@@ -189,7 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   productContainer: {
-    padding: 15,
+    padding: 10,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
@@ -197,5 +228,44 @@ const styles = StyleSheet.create({
   productCardWrapper: {
     width: '48%',
     marginBottom: 20,
+  },
+  filterBarWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 15,
+    marginTop: 15,
+    // justifyContent: 'space-between',
+  },
+  switchWrapper: {
+    width: 64,
+    height: 36,
+    justifyContent: 'center',
+  },
+  track: {
+    position: 'absolute',
+    width: 56,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#eee',
+    left: 4,
+    top: 6,
+  },
+  thumb: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    borderWidth: 2,
+    backgroundColor: '#fff',
+    top: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  thumbInner: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#0a0',
   },
 });

@@ -1,34 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Image,
-  Animated,
-  ScrollView,
   ActivityIndicator,
   StatusBar,
   StyleSheet,
   Platform,
   ImageBackground,
+  Dimensions,
+  Animated,
+  ScrollView,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
-import AdBannner from '../../components/AdBannner/AdBanner';
 import { getSubCategories } from '../../apis/getSubCategories';
 import { getCollection } from '../../apis/getCollection';
+import { getCategories } from '../../apis/getCategories';
+import CollectionShimmer from '../../ui/Shimmer/CollectionShimmer';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 function AccordionSection({ category, children, isOpen, onToggle }) {
-  const [heightAnim] = useState(new Animated.Value(0));
-
-  useEffect(() => {
-    Animated.timing(heightAnim, {
-      toValue: isOpen ? 'auto' : 0,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  }, [isOpen]);
+  const handleToggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    onToggle(category._id);
+  };
 
   return (
     <View style={styles.accordionRoot}>
@@ -38,10 +46,7 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
         end={{ x: 1, y: 1 }}
         style={styles.accordionBorder}
       >
-        <TouchableOpacity
-          onPress={() => onToggle(category._id)}
-          activeOpacity={1}
-        >
+        <TouchableOpacity onPress={handleToggle} activeOpacity={1}>
           <ImageBackground
             source={require('../../assets/images/profilebg.png')}
             style={styles.accordionHeader}
@@ -73,9 +78,7 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
           </ImageBackground>
         </TouchableOpacity>
       </LinearGradient>
-      <Animated.View style={[styles.accordionBody, { height: heightAnim }]}>
-        {isOpen && children}
-      </Animated.View>
+      {isOpen && <View style={styles.accordionBody}>{children}</View>}
     </View>
   );
 }
@@ -90,73 +93,138 @@ function FoodCard({ label, image }) {
 }
 
 export default function AllCategoriesScreen({ navigation }) {
-  const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubCategories] = useState([]);
   const [collections, setCollections] = useState({});
-  const [loadingCollections, setLoadingCollections] = useState({});
+  const [loading, setLoading] = useState(true);
   const [activeAccordionId, setActiveAccordionId] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const underlineAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    fetchSubCategories();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const apiResponse = await getCategories();
+        const filteredCats = apiResponse.data.data.categories
+          .filter(c => c.name === 'Dogs' || c.name === 'Cats')
+          .sort((a, b) => (a.name === 'Dogs' ? -1 : 1));
+        setCategories(filteredCats);
+
+        const res = await getSubCategories();
+        if (res?.data?.data) {
+          setSubCategories(res.data.data);
+        }
+        const newCollections = {};
+        if (res?.data?.data) {
+          const allSubcatIds = res.data.data.map(subcat => subcat._id);
+          for (const subcatId of allSubcatIds) {
+            try {
+              const collectionRes = await getCollection();
+              newCollections[subcatId] = collectionRes.data.data.filter(
+                item => item.subCategoryId === subcatId,
+              );
+            } catch (error) {
+              newCollections[subcatId] = [];
+            }
+          }
+          setCollections(newCollections);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
-
-  const fetchSubCategories = async () => {
-    try {
-      setLoading(true);
-      const res = await getSubCategories();
-      if (res?.data?.data) {
-        setCategories(res.data.data);
-      }
-    } catch (error) {
-      console.log('Error fetching subcategories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCollections = async subCategoryId => {
-    try {
-      setLoadingCollections(prev => ({ ...prev, [subCategoryId]: true }));
-      const res = await getCollection();
-      if (res?.data?.data) {
-        const filtered = res.data.data.filter(
-          item => item.subCategoryId === subCategoryId,
-        );
-        setCollections(prev => ({ ...prev, [subCategoryId]: filtered }));
-      }
-    } catch (error) {
-      console.log('Error fetching collections:', error);
-    } finally {
-      setLoadingCollections(prev => ({ ...prev, [subCategoryId]: false }));
-    }
-  };
 
   const handleAccordionToggle = subCategoryId => {
     if (activeAccordionId === subCategoryId) {
       setActiveAccordionId(null);
     } else {
       setActiveAccordionId(subCategoryId);
-      fetchCollections(subCategoryId);
     }
   };
+
   const handleCollectionClick = (
     categorySlug,
     collectionSlug,
     collectionName,
   ) => {
-    console.log('Category Slug:', categorySlug);
-    console.log('Collection Slug:', collectionSlug);
     navigation.navigate('ProductListScreen', {
       categorySlug,
       collectionSlug,
       collectionName,
     });
   };
+
+  const filteredSubcategories =
+    categories.length > 0
+      ? subcategories.filter(
+          subcat => subcat.categoryId === categories[activeTab]?._id,
+        )
+      : [];
+
+  const TAB_LABELS = categories.map(c => c.name);
+  const TAB_COUNT = TAB_LABELS.length;
+  const underlineWidth = SCREEN_WIDTH / Math.max(TAB_COUNT, 1);
+  const underlineTranslate = underlineAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, underlineWidth],
+  });
+
+  const handleTabPress = index => {
+    if (index < TAB_COUNT) {
+      setActiveTab(index);
+      setActiveAccordionId(null);
+      Animated.timing(underlineAnim, {
+        toValue: index,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  const renderRow = items => (
+    <View style={styles.row}>
+      {items.map(item => (
+        <TouchableOpacity
+          key={item._id}
+          style={styles.foodCardContainer}
+          onPress={() =>
+            handleCollectionClick(
+              filteredSubcategories.find(sub => sub._id === item.subCategoryId)
+                ?.slug || '',
+              item.slug,
+              item.name,
+            )
+          }
+        >
+          <FoodCard label={item.name} image={item.image} />
+        </TouchableOpacity>
+      ))}
+      {items.length < 3 && (
+        <View style={[styles.foodCardContainer, styles.emptyCard]} />
+      )}
+    </View>
+  );
+
+  const renderRows = items => {
+    const rows = [];
+    for (let i = 0; i < items.length; i += 3) {
+      rows.push(items.slice(i, i + 3));
+    }
+    return rows.map((row, idx) => <View key={idx}>{renderRow(row)}</View>);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#FFF5E1"
+        backgroundColor="#FFFFFF"
         translucent={false}
       />
       <View style={styles.headerWrapper}>
@@ -172,70 +240,79 @@ export default function AllCategoriesScreen({ navigation }) {
       </View>
 
       {loading ? (
-        <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <ActivityIndicator size="large" color="#F5A500" />
+        <View>
+          <CollectionShimmer />
         </View>
       ) : (
-        <ScrollView style={styles.screen}>
-          <AdBannner />
-
-          {categories.map(category => (
-            <AccordionSection
-              key={category._id}
-              category={category}
-              isOpen={activeAccordionId === category._id}
-              onToggle={handleAccordionToggle}
-            >
-              {loadingCollections[category._id] ? (
-                <ActivityIndicator size="small" color="#F5A500" />
-              ) : collections[category._id]?.length > 0 ? (
-                <View style={styles.foodCategories}>
-                  {collections[category._id].map(item => (
-                    <TouchableOpacity
-                      key={item._id}
-                      onPress={() =>
-                        handleCollectionClick(
-                          category.slug,
-                          item.slug,
-                          item.name,
-                        )
-                      }
+        <>
+          {TAB_COUNT > 0 && (
+            <>
+              <View style={styles.tabRow}>
+                {TAB_LABELS.map((label, index) => (
+                  <TouchableOpacity
+                    key={`tab-${index}`}
+                    style={styles.tab}
+                    activeOpacity={0.8}
+                    onPress={() => handleTabPress(index)}
+                  >
+                    <Text
+                      style={[
+                        styles.tabText,
+                        activeTab === index && styles.tabTextActive,
+                      ]}
                     >
-                      <FoodCard
-                        key={item._id}
-                        label={item.name}
-                        image={item.image}
-                      />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ) : (
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    color: '#888',
-                    marginTop: 20,
-                    fontFamily: 'Gotham-Rounded-Medium',
-                  }}
-                >
-                  No collections found
-                </Text>
-              )}
-            </AccordionSection>
-          ))}
-        </ScrollView>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <View style={styles.underlineContainer}>
+                <Animated.View
+                  style={[
+                    styles.underline,
+                    {
+                      width: underlineWidth,
+                      transform: [{ translateX: underlineTranslate }],
+                    },
+                  ]}
+                />
+              </View>
+            </>
+          )}
+
+          <ScrollView
+            style={{ flex: 1, backgroundColor: 'transparent' }}
+            contentContainerStyle={{ paddingBottom: 0, marginBottom: 0 }}
+          >
+            {filteredSubcategories.map(category => (
+              <AccordionSection
+                key={category._id}
+                category={category}
+                isOpen={activeAccordionId === category._id}
+                onToggle={handleAccordionToggle}
+              >
+                {collections[category._id]?.length > 0 ? (
+                  <View style={styles.foodCategories}>
+                    {renderRows(collections[category._id])}
+                  </View>
+                ) : (
+                  <Text style={styles.noCollectionsText}>
+                    No collections found
+                  </Text>
+                )}
+              </AccordionSection>
+            ))}
+          </ScrollView>
+        </>
       )}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
-    paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -245,8 +322,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   backButton: { paddingRight: 15 },
-  screen: { backgroundColor: '#fff' },
-  accordionRoot: { marginVertical: 10 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  accordionRoot: { marginVertical: 2 },
   accordionBorder: { padding: 5 },
   accordionHeader: {
     backgroundColor: '#fff',
@@ -274,33 +351,87 @@ const styles = StyleSheet.create({
   },
   icon: { width: 100, height: 90, resizeMode: 'contain', marginLeft: 8 },
   accordionBody: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#FFF',
     marginTop: 0,
+    padding: 8,
+    overflow: 'hidden',
   },
   foodCategories: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 1,
+    marginBottom: 8,
+  },
+  foodCardContainer: {
+    width: '33%',
+    paddingHorizontal: 4,
+  },
+  emptyCard: {
+    backgroundColor: 'transparent',
   },
   foodCardOuter: {
     alignItems: 'center',
-    marginVertical: 12,
-    marginHorizontal: 10,
-    width: '90%',
-    padding: 5,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    padding: 8,
+    borderColor: '#EEE',
+    borderWidth: 1,
+    width: '100%',
   },
   foodImg: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     resizeMode: 'contain',
     marginBottom: 8,
   },
   cardLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Gotham-Rounded-Bold',
     color: '#181818',
     textAlign: 'center',
+  },
+  tabRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 48,
+    backgroundColor: '#fff',
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+  },
+  tabText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#222',
+    letterSpacing: 0.5,
+  },
+  tabTextActive: {
+    color: '#222',
+  },
+  underlineContainer: {
+    height: 3,
+    backgroundColor: '#f6f6f6',
+    width: '100%',
+    marginBottom: 8,
+  },
+  underline: {
+    height: 3,
+    backgroundColor: '#0888B1',
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    borderRadius: 2,
+  },
+  noCollectionsText: {
+    textAlign: 'center',
+    color: '#888',
+    marginTop: 20,
+    fontFamily: 'Gotham-Rounded-Medium',
   },
 });

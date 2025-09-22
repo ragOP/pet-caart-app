@@ -14,7 +14,7 @@ import BannerSliderShimmer from '../../ui/Shimmer/BannerSliderShimmer';
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.5;
 const CARD_HEIGHT = 140;
-const CARD_MARGIN_RIGHT = 16;
+const CARD_MARGIN_RIGHT = 10;
 
 const BannerSlider = () => {
   const flatListRef = useRef(null);

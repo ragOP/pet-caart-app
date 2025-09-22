@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,21 +13,25 @@ import {
   Platform,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { getProductById } from '../../apis/getProductById';
-import { ArrowLeft, Minus, Plus } from 'lucide-react-native';
+import { ArrowLeft, Minus, Plus, Tag } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import DeliverySection from '../../components/DeliverySection/DeliverySection';
-import AdBannner from '../../components/AdBannner/AdBanner';
-import { getProducts } from '../../apis/getProducts';
 import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
 import ProductSlider from '../../components/ProductSlider/ProductSlider';
 import { addItemToCart } from '../../redux/cartSlice';
+import { getProducts } from '../../apis/getProducts';
+import { getProductById } from '../../apis/getProductById';
+import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
+import Banner from '../../components/Banner/Banner';
+import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
+
 const { width: screenWidth } = Dimensions.get('window');
 const getDiscountPercent = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
 };
-const SingleProductScreen = ({ navigation }) => {
+
+const SingleProductScreen = ({ navigation, dispatch }) => {
   const route = useRoute();
   const { productId } = route.params;
   const [expandedSection, setExpandedSection] = useState(null);
@@ -36,6 +40,7 @@ const SingleProductScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [bestSellerData, setBestSellerData] = useState([]);
+  const offersSheetRef = useRef();
 
   const toggleSection = section => {
     setExpandedSection(prev => (prev === section ? null : section));
@@ -84,7 +89,6 @@ const SingleProductScreen = ({ navigation }) => {
                 brandId: item.brandId,
               };
             });
-
           setBestSellerData(bestSellers);
         }
       } catch (error) {
@@ -93,30 +97,25 @@ const SingleProductScreen = ({ navigation }) => {
     };
     fetchProducts();
   }, []);
-  const handleAddToCart = () => {
-    if (stockToShow <= 0) return; // Prevent adding out-of-stock items
 
+  const handleAddToCart = () => {
+    if (stockToShow <= 0) return;
     const productData = {
       productId: currentVariant._id || product._id,
       productTitle: product.title,
       price: currentVariant.price,
       salePrice: currentVariant.salePrice,
-      images: product.images, // Send all images for the product
+      images: product.images,
       weight: shownWeight,
       quantity: 1,
       brandName: product.brandId?.name,
-      variantId: currentVariant._id === product._id ? null : currentVariant._id, // Null if no variant selected
+      variantId: currentVariant._id === product._id ? null : currentVariant._id,
     };
-
     dispatch(addItemToCart(productData));
   };
 
   if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#F5A500" />
-      </View>
-    );
+    return <SingleProductShimmer />;
   }
   if (error) {
     return (
@@ -136,6 +135,8 @@ const SingleProductScreen = ({ navigation }) => {
   const currentVariant = selectedVariant || product;
   const shouldShowWeight = selectedVariant && !selectedVariant.isMain;
   const shownWeight = shouldShowWeight ? currentVariant?.weight : null;
+  const stockToShow = currentVariant?.stock || 0;
+
   const Chip = ({ variant, isSelected, onPress }) => (
     <TouchableOpacity
       onPress={onPress}
@@ -165,10 +166,9 @@ const SingleProductScreen = ({ navigation }) => {
     ));
   };
 
-  const stockToShow = currentVariant?.stock || 0;
   return (
-    <View style={{ flex: 1, backgroundColor: '#FFFBF6' }}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.headerWrapper}>
         <View style={styles.headerRow}>
           <TouchableOpacity
@@ -224,6 +224,18 @@ const SingleProductScreen = ({ navigation }) => {
             <View style={styles.chipWrap}>
               {renderVariantChips(product.variants)}
             </View>
+          </View>
+          <View style={styles.cardContainer}>
+            <View style={styles.iconLabelRow}>
+              <Tag size={20} color="#00A86B" />
+              <Text style={styles.labelText}>Offers and coupons</Text>
+            </View>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => offersSheetRef.current.open()}
+            >
+              <Text style={styles.actionText}>Check offers {'>'}</Text>
+            </TouchableOpacity>
           </View>
           <DeliverySection />
           <View style={{ marginTop: 20, marginBottom: 50 }}>
@@ -283,7 +295,7 @@ const SingleProductScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <AdBannner />
+        <Banner />
         {bestSellerData.length === 0 ? (
           <ProductSliderShimmer />
         ) : (
@@ -312,6 +324,7 @@ const SingleProductScreen = ({ navigation }) => {
               styles.stickyAddToCartButton,
               stockToShow === 0 && styles.disabledButton,
             ]}
+            onPress={handleAddToCart}
             disabled={stockToShow === 0}
           >
             <Text style={styles.stickyAddToCartText}>
@@ -320,15 +333,16 @@ const SingleProductScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       )}
+      <OffersBottomSheet innerRef={offersSheetRef} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
-    paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -350,9 +364,7 @@ const styles = StyleSheet.create({
   pad: {
     paddingHorizontal: 15,
   },
-  imagesContainer: {
-    paddingBottom: 10,
-  },
+  imagesContainer: {},
   productImage: {
     width: screenWidth,
     height: screenWidth * 0.6,
@@ -493,7 +505,7 @@ const styles = StyleSheet.create({
   },
   stickyAddToCartButton: {
     backgroundColor: '#0888B1',
-    borderRadius: 6,
+    borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 34,
     marginLeft: 15,
@@ -506,6 +518,34 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Gotham-Rounded-Bold',
     letterSpacing: 1.2,
+  },
+  cardContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ededed',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    justifyContent: 'space-between',
+  },
+  iconLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  labelText: {
+    fontFamily: 'Gotham-Rounded-Medium',
+    fontSize: 16,
+    color: '#101010',
+    marginLeft: 10,
+  },
+  actionText: {
+    color: '#F48C20',
+    fontSize: 14,
+    fontFamily: 'Gotham-Rounded-Medium',
+    letterSpacing: 0.2,
   },
 });
 

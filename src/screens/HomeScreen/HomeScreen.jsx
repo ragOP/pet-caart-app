@@ -24,13 +24,15 @@ import CatLifeScreen from '../../components/CatLife/CatLifeScreen';
 import Footer from '../../components/Footer/Footer';
 import PinBottomSheet from '../../components/PinBottomSheet/PinBottomSheet';
 import BannerSlider from '../../components/BannerSlider/BannerSlider';
+import BakedProduct from '../../components/BakedProduct/BakedProduct';
 
 const staticComponents = {
   main_banner: Banner,
-  slider: BannerSlider,
+  // slider: BannerSlider,
   grid: CustomGridLayout,
   best_sellers: BestSeller,
   day_in_cats_life: CatLifeScreen,
+  product_banner_ads: BakedProduct,
 };
 
 const sectionProps = {

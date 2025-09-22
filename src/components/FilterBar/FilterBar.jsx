@@ -31,7 +31,6 @@ const FilterBar = ({
   const [tempBreedSlug, setTempBreedSlug] = useState(selectedBreed);
   const [showCollectionChip, setShowCollectionChip] = useState(true);
   const [sortOrder, setSortOrder] = useState(null);
-  const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
 
   const sortOptions = [
     { label: 'High to Low', value: 'highToLow' },
@@ -114,21 +113,7 @@ const FilterBar = ({
           <SlidersHorizontal size={20} color="#333" />
           <Text style={[styles.buttonText, styles.activeText]}>FILTERS</Text>
         </TouchableOpacity>
-        <Dropdown
-          data={sortOptions}
-          style={[styles.dropdown, sortOrder && styles.activeButton]}
-          labelField="label"
-          valueField="value"
-          placeholder="Sort By"
-          value={sortOrder}
-          onChange={item => setSortOrder(item.value)}
-          placeholderStyle={{ color: '#333', fontSize: 14 }}
-          selectedTextStyle={{
-            color: sortOrder ? '#000' : '#333',
-            fontSize: 16,
-          }}
-          activeColor="#6A68681A"
-        />
+
         {!!collectionName && showCollectionChip && (
           <View style={styles.chip}>
             <Text
@@ -157,7 +142,21 @@ const FilterBar = ({
             </TouchableOpacity>
           </View>
         ))}
-
+        <Dropdown
+          data={sortOptions}
+          style={[styles.dropdown, sortOrder && styles.activeButton]}
+          labelField="label"
+          valueField="value"
+          placeholder="Sort By"
+          value={sortOrder}
+          onChange={item => setSortOrder(item.value)}
+          placeholderStyle={{ color: '#333', fontSize: 14 }}
+          selectedTextStyle={{
+            color: sortOrder ? '#000' : '#333',
+            fontSize: 16,
+          }}
+          activeColor="#6A68681A"
+        />
         {filterOptions.map((option, index) => (
           <TouchableOpacity
             key={index}
@@ -275,7 +274,7 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    // paddingVertical: 10,
     // paddingHorizontal: 20,
     marginHorizontal: 5,
   },
@@ -298,14 +297,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 9,
     marginRight: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
     borderColor: 'black',
     borderWidth: 0.5,
   },
   chipText: {
     color: '#000',
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'Gotham-Rounded-Medium',
   },
   chipRemoveText: {

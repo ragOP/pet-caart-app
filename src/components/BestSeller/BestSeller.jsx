@@ -46,6 +46,7 @@ const BestSeller = ({
               stock: item.stock,
               brandId: item.brandId,
               variants: item.variants || [],
+              isBestSeller: item.isBestSeller,
             };
           });
         setProducts(bestSellers);
@@ -115,6 +116,7 @@ const BestSeller = ({
                 productId={item._id}
                 variantId={item.variants?.[0]?._id || null}
                 variants={item.variants}
+                isBestSeller={item.isBestSeller}
               />
             </View>
           ))}

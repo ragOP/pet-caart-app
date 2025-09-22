@@ -1,74 +1,119 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, StatusBar, SafeAreaView, Platform, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+  Platform,
+} from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
-import Banner from '../../components/Banner/Banner';
-import { getProductBanner } from '../../apis/getProductBanner';
-import ProductBanner from '../../components/ProductBanner/ProductBanner';
-import CategoryCard from '../../components/CategoryCard/CategoryCard';
-import BannerShimmer from '../../ui/Shimmer/BannerShimmer';
+import { getCategories } from '../../apis/getCategories';
 
-const CategoryScreen = ({ navigation }) => {
-  const [bannerImageUrl, setBannerImageUrl] = useState(null);
-  const [loadingBanner, setLoadingBanner] = useState(true);
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
+export default function CategoryScreen({ navigation }) {
+  const [categories, setCategories] = useState([]);
+  const [activeTab, setActiveTab] = useState(0);
+  const underlineAnim = React.useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    const fetchBanner = async () => {
+    const fetchCategories = async () => {
       try {
-        const response = await getProductBanner({ params: {} });
-        const imageUrl = response?.data?.data?.image;
-       if (imageUrl) {
-          setBannerImageUrl(imageUrl);
-        } else {
-          throw new Error("No image URL found");
-        }
+        const apiResponse = await getCategories();
+        const filteredCats = apiResponse.data.data.categories
+          .filter(c => c.name === 'Dogs' || c.name === 'Cats')
+          .sort((a, b) => (a.name === 'Dogs' ? -1 : 1));
+        setCategories(filteredCats);
       } catch (error) {
-        console.error("Error fetching banner image:", error.message);
-        console.error("Full error object:", error);
-      } finally {
-        setLoadingBanner(false);
+        console.error('Error:', error);
       }
     };
-    fetchBanner();
+    fetchCategories();
   }, []);
+
+  const TAB_LABELS = categories.map(c => c.name);
+  const TAB_COUNT = TAB_LABELS.length;
+  const underlineWidth = SCREEN_WIDTH / Math.max(TAB_COUNT, 1);
+
+  const underlineTranslate = underlineAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, underlineWidth],
+  });
+
+  const handleTabPress = index => {
+    if (index < TAB_COUNT) {
+      setActiveTab(index);
+      Animated.timing(underlineAnim, {
+        toValue: index,
+        duration: 220,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" translucent={false} />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFF5E1"
+        translucent={false}
+      />
       <View style={styles.headerWrapper}>
-        <SafeAreaView>
-          <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <ArrowLeft size={30} color="#000" />
-            </TouchableOpacity>
-            <SearchBar style={styles.searchBar} />
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={30} color="#000" />
+          </TouchableOpacity>
+          <SearchBar />
+        </View>
+      </View>
+      {TAB_COUNT > 0 && (
+        <>
+          <View style={styles.tabRow}>
+            {TAB_LABELS.map((label, index) => (
+              <TouchableOpacity
+                key={`tab-${index}`}
+                style={styles.tab}
+                activeOpacity={0.8}
+                onPress={() => handleTabPress(index)}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === index && styles.tabTextActive,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        </SafeAreaView>
-      </View>
-
-      <View style={styles.content}>
-        {loadingBanner ? (
-          <BannerShimmer/>
-        ) : bannerImageUrl ? (
-         <ProductBanner source={{ uri: bannerImageUrl }}  style={{ paddingLeft: 20, paddingRight: 20 }} />
-
-        ) : (
-          <Text>No banner image found</Text>
-        )}
-      </View>
-      <CategoryCard/>
+          <View style={styles.underlineContainer}>
+            <Animated.View
+              style={[
+                styles.underline,
+                {
+                  width: underlineWidth,
+                  transform: [{ translateX: underlineTranslate }],
+                },
+              ]}
+            />
+          </View>
+        </>
+      )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1 ,
-    backgroundColor: '#FFFBF6',
-
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
-    paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -77,15 +122,39 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
   },
-  backButton: {
-    paddingRight: 15,
+  backButton: { paddingRight: 15 },
+  tabRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: 48,
   },
-  searchBar: {
+  tab: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
   },
-  content: {
-paddingTop:10
+  tabText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: '#222',
+    letterSpacing: 0.5,
+  },
+  tabTextActive: {
+    color: '#222',
+  },
+  underlineContainer: {
+    height: 3,
+    backgroundColor: '#f6f6f6',
+    width: '100%',
+  },
+  underline: {
+    height: 3,
+    backgroundColor: '#0888B1',
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    borderRadius: 2,
   },
 });
-
-export default CategoryScreen;

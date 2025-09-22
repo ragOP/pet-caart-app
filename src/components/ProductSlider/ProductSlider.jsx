@@ -61,6 +61,7 @@ const ProductSlider = ({
                 productId={item._id}
                 variantId={item.variants?.[0]?._id || null}
                 variants={item.variants}
+                isBestSeller={item.isBestSeller}
               />
             </View>
           );

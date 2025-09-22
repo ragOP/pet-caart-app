@@ -33,6 +33,7 @@ const ProductCard = ({
   stock,
   cardWidth = 110,
   brandId,
+  isBestSeller,
   productId,
   variantId,
   variants = [],
@@ -41,7 +42,17 @@ const ProductCard = ({
   const discountPercent = parseInt(discount);
   const hasDiscount = !isNaN(discountPercent) && discountPercent > 0;
   const [loading, setLoading] = useState(false);
-
+  const getFormattedWeight = weight => {
+    const numericWeight = Number(weight) || 0;
+    if (numericWeight >= 1000) {
+      const kg = numericWeight / 1000;
+      return kg % 1 === 0 ? `${kg} kg` : `${kg.toFixed(1)} kg`;
+    } else if (numericWeight > 0) {
+      return `${numericWeight} g`;
+    } else {
+      return 'N/A';
+    }
+  };
   const discountedPrice = hasDiscount
     ? Math.round(originalPrice * (1 - discountPercent / 100))
     : originalPrice;
@@ -95,14 +106,16 @@ const ProductCard = ({
       {/* Content wrapper */}
       <View style={styles.cardInner}>
         <View style={styles.imageSection}>
-          <LinearGradient
-            colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
-            style={styles.bestsellerContainer}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.bestsellerText}>BESTSELLER</Text>
-          </LinearGradient>
+          {isBestSeller && (
+            <LinearGradient
+              colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
+              style={styles.bestsellerContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.bestsellerText}>BESTSELLER</Text>
+            </LinearGradient>
+          )}
           <Swiper
             style={styles.swiper}
             dotStyle={styles.dot}
@@ -139,12 +152,14 @@ const ProductCard = ({
               resizeMode="contain"
             />
           </View> */}
-          <View style={styles.vegMark}>
-            <View style={styles.vegBox}>
-              <View style={styles.vegDot} />
+          {isVeg && (
+            <View style={styles.vegMark}>
+              <View style={styles.vegBox}>
+                <View style={styles.vegDot} />
+              </View>
+              <Text style={styles.vegText}>VEG</Text>
             </View>
-            <Text style={styles.vegText}>VEG</Text>
-          </View>
+          )}
         </View>
         {brandId && brandId.name && (
           <Text style={styles.brandText}>{brandId.name}</Text>
@@ -159,7 +174,7 @@ const ProductCard = ({
               ]}
             >
               <Text style={styles.variantChipText}>
-                {variant.weight} |{' '}
+                {getFormattedWeight(variant.weight)} |{' '}
                 {getVariantDiscount(variant.price, variant.salePrice)}% OFF
               </Text>
             </View>

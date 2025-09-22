@@ -38,7 +38,7 @@ const CollectionScreen = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#FFF5E1"
+        backgroundColor="#FFFFFF"
         translucent={false}
       />
       <View style={styles.headerWrapper}>
@@ -80,17 +80,16 @@ const CollectionScreen = ({ navigation }) => {
 export default CollectionScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
-    paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    paddingVertical: 5,
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingVertical: 5,
   },
   backButton: {
     paddingRight: 15,

@@ -384,7 +384,7 @@ const CartScreen = () => {
                 </View>
                 {showDog && (
                   <Image
-                    source={require('../../assets/images/dogw.png')}
+                    source={require('../../assets/images/dogrun.gif')}
                     style={[
                       styles.dogImage,
                       {
