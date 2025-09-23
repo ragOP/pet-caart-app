@@ -10,9 +10,11 @@ import {
   ScrollView,
   FlatList,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { ArrowLeft, Minus, Plus, Tag } from 'lucide-react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import DeliverySection from '../../components/DeliverySection/DeliverySection';
 import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
@@ -20,11 +22,13 @@ import ProductSlider from '../../components/ProductSlider/ProductSlider';
 import { addItemToCart } from '../../redux/cartSlice';
 import { getProducts } from '../../apis/getProducts';
 import { getProductById } from '../../apis/getProductById';
+import { addProductToCart } from '../../apis/addProductToCart';
 import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
 import Banner from '../../components/Banner/Banner';
 import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
+
 const getDiscountPercent = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
@@ -38,7 +42,6 @@ const formatWeight = grams => {
   return `${grams}g`;
 };
 
-// Safely coerce any stock-like value to a number (supports multiple keys)
 const coerceStockNumber = obj => {
   const candidates = [
     obj?.stock,
@@ -54,7 +57,6 @@ const coerceStockNumber = obj => {
   return 0;
 };
 
-/* ---------- Price Cards Row (replaces chips) ---------- */
 const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
   const PriceCard = ({ item, isSelected, onPress }) => {
     const discount = getDiscountPercent(item.price, item.salePrice);
@@ -70,9 +72,10 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
               {item.titleOverride || `${formatWeight(item.weight)}`}
             </Text>
           </View>
-
           <View style={styles.middleRow}>
-            <Text style={styles.saleText}>₹ {item.salePrice}</Text>
+            <Text style={styles.saleText}>
+              {'₹'} {item.salePrice}
+            </Text>
             {item.price > item.salePrice && (
               <Text style={styles.mrpText}>MRP {item.price}</Text>
             )}
@@ -105,23 +108,28 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
   );
 };
 
-const SingleProductScreen = ({ navigation, dispatch }) => {
+const SingleProductScreen = () => {
   const route = useRoute();
   const { productId } = route.params;
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
 
   const [expandedSection, setExpandedSection] = useState(null);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [bestSellerData, setBestSellerData] = useState([]);
+  const [cartLoading, setCartLoading] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   const offersSheetRef = useRef();
 
   const toggleSection = section => {
     setExpandedSection(prev => (prev === section ? null : section));
   };
+
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
@@ -139,6 +147,7 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
     };
     if (productId) fetchProductDetails();
   }, [productId]);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -171,23 +180,7 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
     fetchProducts();
   }, []);
 
-  if (loading) return <SingleProductShimmer />;
-  if (error) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
-  if (!product) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>No product data available</Text>
-      </View>
-    );
-  }
-  const currentVariant =
-    selectedVariant && selectedVariant._id ? selectedVariant : product;
+  const currentVariant = selectedVariant?._id ? selectedVariant : product;
   const stockToShow = coerceStockNumber(currentVariant);
   const inStockFlag =
     typeof currentVariant?.isInStock === 'boolean'
@@ -201,22 +194,84 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
   const displayedImages =
     selectedVariant?.images?.length > 0
       ? selectedVariant.images
-      : product.images;
+      : product?.images || [];
 
-  const handleAddToCart = () => {
-    if (!effectiveInStock) return;
-    const productData = {
-      productId: currentVariant._id || product._id,
-      productTitle: product.title,
-      price: currentVariant.price,
-      salePrice: currentVariant.salePrice,
-      images: product.images,
-      weight: shownWeight,
-      quantity: 1,
-      brandName: product.brandId?.name,
-      variantId: currentVariant._id === product._id ? null : currentVariant._id,
-    };
-    dispatch(addItemToCart(productData));
+  const inCartItem = cartItems.find(
+    item =>
+      item.productId === product?._id &&
+      item.variantId ===
+        (selectedVariant?._id === product?._id ? null : selectedVariant?._id),
+  );
+  const isInCart = Boolean(inCartItem);
+
+  useEffect(() => {
+    if (isInCart) {
+      setQuantity(inCartItem.quantity || 1);
+    } else {
+      setQuantity(1);
+    }
+  }, [isInCart, inCartItem]);
+
+  const handleAddToCart = async () => {
+    if (!effectiveInStock || cartLoading || !product) return;
+    setCartLoading(true);
+    try {
+      const variantId =
+        selectedVariant?._id === product._id ? null : selectedVariant?._id;
+      const productData = {
+        productId: product._id,
+        productTitle: product.title,
+        variantId,
+        price: currentVariant.price,
+        salePrice: currentVariant.salePrice,
+        images: product.images,
+        weight: shownWeight,
+        quantity: 1,
+        brandName: product.brandId?.name,
+      };
+      dispatch(addItemToCart(productData));
+      await addProductToCart({
+        productId: product._id,
+        variantId,
+        quantity: 1,
+      });
+    } catch (error) {
+      console.warn('Failed to add to cart:', error);
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
+  const updateCartQuantity = async newQuantity => {
+    if (!isInCart || cartLoading || !product) return;
+    setCartLoading(true);
+    const variantId =
+      selectedVariant?._id === product._id ? null : selectedVariant?._id;
+    try {
+      await addProductToCart({
+        productId: product._id,
+        variantId,
+        quantity: newQuantity,
+      });
+      dispatch(
+        addItemToCart({
+          productId: product._id,
+          variantId,
+          quantity: newQuantity,
+          productTitle: product.title,
+          price: currentVariant.price,
+          salePrice: currentVariant.salePrice,
+          images: product.images,
+          weight: shownWeight,
+          brandName: product.brandId?.name,
+        }),
+      );
+      setQuantity(newQuantity);
+    } catch (err) {
+      console.warn('Failed to update cart quantity:', err);
+    } finally {
+      setCartLoading(false);
+    }
   };
 
   const priceCardsData = (product?.variants || []).map(v => ({
@@ -225,6 +280,26 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
     packInfo: v.packInfo,
     titleOverride: v.title || undefined,
   }));
+
+  const isAddToCartButtonDisabled = () => {
+    if (!effectiveInStock) return true;
+    if (cartLoading) return true;
+    return false;
+  };
+
+  if (loading) return <SingleProductShimmer />;
+  if (error)
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  if (!product)
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>No product data available</Text>
+      </View>
+    );
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
@@ -245,7 +320,6 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
         style={styles.content}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
-        {/* Images */}
         {displayedImages?.length > 0 && (
           <FlatList
             horizontal
@@ -289,7 +363,6 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
             />
           </View>
 
-          {/* Offers card */}
           <View style={styles.cardContainer}>
             <View style={styles.iconLabelRow}>
               <Tag size={20} color="#00A86B" />
@@ -304,6 +377,7 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
           </View>
 
           <DeliverySection />
+
           <View style={{ marginTop: 20, marginBottom: 50 }}>
             <TouchableOpacity
               style={styles.accordionHeader}
@@ -337,32 +411,29 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
                   Additional Information
                 </Text>
                 <View>
-                  {expandedSection === 'additionalInfo' ? (
-                    <Minus size={20} color="#0B0B0B" />
-                  ) : (
-                    <Plus size={20} color="#0B0B0B" />
+                  {expandedSection === 'additionalInfo' && (
+                    <>
+                      {selectedVariant?.weight != null && (
+                        <Text style={styles.accordionInlineText}>
+                          Weight: {formatWeight(selectedVariant.weight)}
+                        </Text>
+                      )}
+                      <Text style={styles.accordionInlineText}>
+                        Stock:{' '}
+                        {effectiveInStock
+                          ? `In Stock (${stockToShow})`
+                          : 'Out of Stock'}
+                      </Text>
+                    </>
                   )}
                 </View>
               </View>
-              {expandedSection === 'additionalInfo' && (
-                <View>
-                  {selectedVariant?.weight != null && (
-                    <Text style={styles.accordionInlineText}>
-                      Weight: {formatWeight(selectedVariant.weight)}
-                    </Text>
-                  )}
-                  <Text style={styles.accordionInlineText}>
-                    Stock:{' '}
-                    {effectiveInStock
-                      ? `In Stock (${stockToShow})`
-                      : 'Out of Stock'}
-                  </Text>
-                </View>
-              )}
             </TouchableOpacity>
           </View>
         </View>
+
         <Banner />
+
         {bestSellerData.length === 0 ? (
           <ProductSliderShimmer />
         ) : (
@@ -374,30 +445,73 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
           />
         )}
       </ScrollView>
+
       {product && (
         <View style={styles.stickyPriceBar}>
           <View style={{ flex: 1 }}>
             <Text style={styles.stickyPriceText}>
-              ₹{currentVariant.salePrice}
+              {'₹'}
+              {currentVariant.salePrice}
             </Text>
             {currentVariant.price > currentVariant.salePrice && (
               <Text style={styles.stickyStrikePrice}>
-                MRP ₹{currentVariant.price}
+                MRP {'₹'}
+                {currentVariant.price}
               </Text>
             )}
           </View>
-          <TouchableOpacity
-            style={[
-              styles.stickyAddToCartButton,
-              !effectiveInStock && styles.disabledButton,
-            ]}
-            onPress={handleAddToCart}
-            disabled={!effectiveInStock}
-          >
-            <Text style={styles.stickyAddToCartText}>
-              {effectiveInStock ? 'ADD TO CART' : 'OUT OF STOCK'}
-            </Text>
-          </TouchableOpacity>
+
+          {cartLoading ? (
+            <ActivityIndicator
+              size="small"
+              color="#F59A11"
+              style={{ marginLeft: 15 }}
+            />
+          ) : !isInCart ? (
+            <TouchableOpacity
+              style={[
+                styles.stickyAddToCartButton,
+                isAddToCartButtonDisabled() && styles.disabledButton,
+              ]}
+              disabled={isAddToCartButtonDisabled()}
+              onPress={() => {
+                handleAddToCart();
+                setQuantity(1);
+              }}
+            >
+              <Text style={styles.stickyAddToCartText}>ADD TO CART</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (quantity > 1) {
+                    const newQty = quantity - 1;
+                    setQuantity(newQty);
+                    updateCartQuantity(newQty);
+                  }
+                }}
+                style={styles.qtyButton}
+              >
+                <Text style={styles.qtyButtonText}>-</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.qtyText}>{quantity}</Text>
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (quantity < stockToShow) {
+                    const newQty = quantity + 1;
+                    setQuantity(newQty);
+                    updateCartQuantity(newQty);
+                  }
+                }}
+                style={styles.qtyButton}
+              >
+                <Text style={styles.qtyButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
 
@@ -405,7 +519,6 @@ const SingleProductScreen = ({ navigation, dispatch }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
@@ -458,8 +571,6 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 12,
     borderRadius: 14,
-    // borderColor: '#F59A11',
-    // borderWidth: 0.7,
   },
   accordionRow: {
     flexDirection: 'row',
@@ -482,45 +593,6 @@ const styles = StyleSheet.create({
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { fontSize: 16, color: 'red', padding: 10 },
 
-  stickyPriceBar: {
-    position: 'absolute',
-    left: 0,
-    bottom: 0,
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderColor: '#ebebeb',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    zIndex: 20,
-  },
-  stickyPriceText: {
-    fontSize: 24,
-    color: '#000',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
-  stickyStrikePrice: {
-    fontSize: 16,
-    color: '#888',
-    textDecorationLine: 'line-through',
-    fontFamily: 'Gotham-Rounded-Medium',
-  },
-  stickyAddToCartButton: {
-    backgroundColor: '#F59A11',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 34,
-    marginLeft: 15,
-  },
-  disabledButton: { backgroundColor: '#cccccc' },
-  stickyAddToCartText: {
-    color: '#fff',
-    fontSize: 18,
-    fontFamily: 'Gotham-Rounded-Bold',
-    letterSpacing: 1.2,
-  },
   cardContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -594,6 +666,74 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#258329',
     fontFamily: 'Gotham-Rounded-Medium',
+  },
+  stickyPriceBar: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderColor: '#ebebeb',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    zIndex: 20,
+  },
+  stickyPriceText: {
+    fontSize: 24,
+    color: '#000',
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+  stickyStrikePrice: {
+    fontSize: 16,
+    color: '#888',
+    textDecorationLine: 'line-through',
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
+  stickyAddToCartButton: {
+    backgroundColor: '#F59A11',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 34,
+    marginLeft: 15,
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+  },
+  stickyAddToCartText: {
+    color: '#fff',
+    fontSize: 18,
+    fontFamily: 'Gotham-Rounded-Bold',
+    letterSpacing: 1.2,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F59A11',
+    borderRadius: 8,
+    justifyContent: 'space-around',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    minWidth: 110,
+  },
+  qtyButton: {
+    paddingHorizontal: 40,
+    paddingVertical: 2,
+  },
+  qtyButtonText: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#F59A11',
+  },
+  qtyText: {
+    fontSize: 20,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#000',
+    minWidth: 15,
+    textAlign: 'center',
   },
 });
 
