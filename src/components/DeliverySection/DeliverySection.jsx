@@ -74,7 +74,7 @@ const DeliverySection = () => {
       {error && <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>}
 
       <View style={styles.infoRow}>
-        <Truck size={32} color="#FFA600" style={styles.infoIcon} />
+        <Truck size={24} color="#FFA600" style={styles.infoIcon} />
         <View style={{ flex: 1 }}>
           <Text style={styles.infoText}>
             Expected delivery date -{' '}
@@ -82,12 +82,9 @@ const DeliverySection = () => {
           </Text>
         </View>
       </View>
+
       <View style={styles.infoRow}>
-        <Ban size={32} color="#FFA600" style={styles.infoIcon} />
-        <Text style={styles.infoText}>No Exchange & Returns</Text>
-      </View>
-      <View style={styles.infoRow}>
-        <BadgePercent size={32} color="#349AFE" style={styles.infoIcon} />
+        <BadgePercent size={24} color="#349AFE" style={styles.infoIcon} />
         <Text style={styles.infoText}>
           Enjoy Free Delivery above <Text style={styles.bold}>₹699</Text>
         </Text>
@@ -135,7 +132,7 @@ const styles = StyleSheet.create({
     fontFamily: 'gotham-rounded-book',
   },
   checkButton: {
-    backgroundColor: '#0888B1',
+    backgroundColor: '#F59A11',
     borderRadius: 7,
     paddingHorizontal: 18,
     paddingVertical: 8,

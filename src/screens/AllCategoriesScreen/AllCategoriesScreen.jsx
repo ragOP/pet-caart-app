@@ -68,9 +68,9 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
                   />
                 )}
               </View>
-              <Text style={styles.accordionSubtitle}>
+              {/* <Text style={styles.accordionSubtitle}>
                 {category.description}
-              </Text>
+              </Text> */}
             </View>
             {category.image && (
               <Image source={{ uri: category.image }} style={styles.icon} />
@@ -154,7 +154,7 @@ export default function AllCategoriesScreen({ navigation }) {
     collectionSlug,
     collectionName,
   ) => {
-    navigation.navigate('ProductListScreen', {
+    navigation.navigate('ProductCollectionScreeen', {
       categorySlug,
       collectionSlug,
       collectionName,
@@ -309,7 +309,7 @@ export default function AllCategoriesScreen({ navigation }) {
   );
 }
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 10 },
   headerWrapper: {
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
@@ -324,12 +324,12 @@ const styles = StyleSheet.create({
   backButton: { paddingRight: 15 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   accordionRoot: { marginVertical: 2 },
-  accordionBorder: { padding: 5 },
+  accordionBorder: { padding: 5, borderRadius: 16 },
   accordionHeader: {
     backgroundColor: '#fff',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
@@ -366,7 +366,6 @@ const styles = StyleSheet.create({
   },
   foodCardContainer: {
     width: '33%',
-    paddingHorizontal: 4,
   },
   emptyCard: {
     backgroundColor: 'transparent',
@@ -376,7 +375,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 8,
     padding: 8,
-    borderColor: '#EEE',
+    borderColor: 'red',
     borderWidth: 1,
     width: '100%',
   },

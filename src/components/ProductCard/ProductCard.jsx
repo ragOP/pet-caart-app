@@ -1,25 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
   Image,
   StyleSheet,
   TouchableOpacity,
-  Platform,
   Dimensions,
+  ScrollView,
+  Pressable,
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addProductToCart } from '../../apis/addProductToCart';
-import { addItemToCart, removeItemFromCart } from '../../redux/cartSlice';
+import { addItemToCart } from '../../redux/cartSlice';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const PARENT_CARD_WIDTH = Math.round(screenWidth * 0.48);
+const VAR_CARD_FRACTION = 0.52;
+const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * VAR_CARD_FRACTION);
+const VAR_CARD_GAP = 5;
+const VAR_CARD_HEIGHT = 50;
 
 const getVariantDiscount = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
+};
+const formatWeight = w => {
+  const n = Number(w) || 0;
+  if (n >= 1000) {
+    const kg = n / 1000;
+    return Number.isInteger(kg) ? `${kg}kg` : `${kg.toFixed(1)}kg`;
+  }
+  return `${n}g`;
 };
 
 const CARD_HEIGHT = 425;
@@ -42,17 +56,8 @@ const ProductCard = ({
   const discountPercent = parseInt(discount);
   const hasDiscount = !isNaN(discountPercent) && discountPercent > 0;
   const [loading, setLoading] = useState(false);
-  const getFormattedWeight = weight => {
-    const numericWeight = Number(weight) || 0;
-    if (numericWeight >= 1000) {
-      const kg = numericWeight / 1000;
-      return kg % 1 === 0 ? `${kg} kg` : `${kg.toFixed(1)} kg`;
-    } else if (numericWeight > 0) {
-      return `${numericWeight} g`;
-    } else {
-      return 'N/A';
-    }
-  };
+  const [selectedVariantId, setSelectedVariantId] = useState(variantId || null);
+
   const discountedPrice = hasDiscount
     ? Math.round(originalPrice * (1 - discountPercent / 100))
     : originalPrice;
@@ -62,25 +67,33 @@ const ProductCard = ({
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
   const isProductInCart = cartItems.some(
-    item => item.productId === productId && item.variantId === variantId,
+    item =>
+      item.productId === productId && item.variantId === selectedVariantId,
   );
 
-  const handleAddToCart = async () => {
-    if (loading) return;
+  const handleAddToCart = async v => {
+    if (loading || !v) return;
     setLoading(true);
     try {
+      const sale = Number(v?.salePrice ?? v?.price ?? discountedPrice);
       const productData = {
         productId,
-        variantId,
+        variantId: v?._id ?? selectedVariantId,
         quantity: 1,
         title,
-        price: discountedPrice,
+        price: sale,
         image: images && images.length > 0 ? images[0] : '',
-        discount,
+        discount: `${getVariantDiscount(
+          Number(v?.price),
+          Number(v?.salePrice),
+        )}%`,
       };
       dispatch(addItemToCart(productData));
-      console.log('productData', productData);
-      await addProductToCart({ productId, variantId, quantity: 1 });
+      await addProductToCart({
+        productId,
+        variantId: productData.variantId,
+        quantity: 1,
+      });
       navigation.navigate('Cart');
     } catch (error) {
       console.warn('Failed to add to cart:', error.message);
@@ -89,13 +102,24 @@ const ProductCard = ({
     }
   };
 
-  const handleGoToCart = () => {
-    navigation.navigate('Cart');
-  };
-
-  const handleCardPress = () => {
+  const handleGoToCart = () => navigation.navigate('Cart');
+  const handleCardPress = () =>
     navigation.navigate('SingleProductScreen', { productId });
-  };
+
+  const normalizedVariants = useMemo(() => {
+    return (variants || []).map(v => {
+      const mrp = Number(v.price);
+      const sale = Number(v.salePrice ?? v.price);
+      return {
+        ...v,
+        _id: v._id ?? `${v.weight}-${v.price}`,
+        weightLabel: formatWeight(v.weight),
+        sale,
+        mrp,
+        off: getVariantDiscount(mrp, sale),
+      };
+    });
+  }, [variants]);
 
   return (
     <TouchableOpacity
@@ -103,7 +127,6 @@ const ProductCard = ({
       style={[styles.card, { width: cardWidth }]}
       onPress={handleCardPress}
     >
-      {/* Content wrapper */}
       <View style={styles.cardInner}>
         <View style={styles.imageSection}>
           {isBestSeller && (
@@ -116,6 +139,7 @@ const ProductCard = ({
               <Text style={styles.bestsellerText}>BESTSELLER</Text>
             </LinearGradient>
           )}
+
           <Swiper
             style={styles.swiper}
             dotStyle={styles.dot}
@@ -145,13 +169,6 @@ const ProductCard = ({
           <Text style={styles.titleText} numberOfLines={2}>
             {title}
           </Text>
-          {/* <View style={styles.vegWrapper}>
-            <Image
-              source={require('../../assets/images/vegg.png')}
-              style={styles.vegIcon}
-              resizeMode="contain"
-            />
-          </View> */}
           {isVeg && (
             <View style={styles.vegMark}>
               <View style={styles.vegBox}>
@@ -161,24 +178,54 @@ const ProductCard = ({
             </View>
           )}
         </View>
+
         {brandId && brandId.name && (
           <Text style={styles.brandText}>{brandId.name}</Text>
         )}
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
-          {variants.map((variant, index) => (
-            <View
-              key={variant._id || index}
-              style={[
-                styles.variantChipContainer,
-                { marginRight: 8, marginBottom: 4 },
-              ]}
+        <View>
+          {normalizedVariants?.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.vRow}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              snapToInterval={VAR_CARD_WIDTH + VAR_CARD_GAP}
             >
-              <Text style={styles.variantChipText}>
-                {getFormattedWeight(variant.weight)} |{' '}
-                {getVariantDiscount(variant.price, variant.salePrice)}% OFF
-              </Text>
-            </View>
-          ))}
+              {normalizedVariants.map(v => {
+                const active = selectedVariantId === v._id;
+                return (
+                  <Pressable
+                    key={v._id}
+                    style={[
+                      styles.vCard,
+                      {
+                        width: VAR_CARD_WIDTH,
+                        height: VAR_CARD_HEIGHT,
+                        marginRight: VAR_CARD_GAP,
+                      },
+                    ]}
+                  >
+                    <View style={styles.vHead}>
+                      <Text style={styles.vHeadTxt}>{v.weightLabel}</Text>
+                    </View>
+
+                    <View style={styles.vBody}>
+                      <View
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                      >
+                        <Text style={styles.vSale}>₹ {v.sale}</Text>
+                        {v.mrp > v.sale && (
+                          <Text style={styles.vMrp}>MRP {v.mrp}</Text>
+                        )}
+                      </View>
+                      <Text style={styles.vOff}>{v.off}% OFF</Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
         </View>
         <Text style={styles.priceLabel}>PRICE</Text>
         <View style={styles.priceDiscountRow}>
@@ -193,6 +240,7 @@ const ProductCard = ({
           )}
         </View>
       </View>
+
       <View style={styles.cartButtonRow}>
         {isOutOfStock ? (
           <View style={styles.outOfStockButton}>
@@ -202,7 +250,7 @@ const ProductCard = ({
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.cartButton}
-            onPress={handleGoToCart}
+            onPress={() => navigation.navigate('Cart')}
           >
             <Text style={styles.cartButtonText}>GO TO CART</Text>
           </TouchableOpacity>
@@ -210,7 +258,12 @@ const ProductCard = ({
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.cartButton}
-            onPress={handleAddToCart}
+            onPress={() => {
+              const v =
+                normalizedVariants.find(x => x._id === selectedVariantId) ||
+                normalizedVariants[0];
+              if (v) handleAddToCart(v);
+            }}
           >
             <Text style={styles.cartButtonText}>
               {loading ? 'ADDING…' : 'ADD TO CART'}
@@ -228,22 +281,27 @@ const styles = StyleSheet.create({
   card: {
     width: screenWidth * 0.64,
     alignSelf: 'center',
-    paddingHorizontal: 5,
+    paddingHorizontal: 6,
     height: CARD_HEIGHT,
     backgroundColor: '#fff',
+    borderColor: '#F59A11',
+    borderWidth: 1.5,
+    borderRadius: 8,
+    marginBottom: 15,
   },
-  cardInner: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
+  cardInner: { flex: 1, justifyContent: 'flex-start' },
   imageSection: {
     alignItems: 'center',
     marginBottom: 5,
     position: 'relative',
     backgroundColor: '#F6F6F6',
     borderRadius: 6,
-    padding: 1,
+    padding: 10,
     height: screenHeight * 0.22,
+    borderColor: '#F59A11',
+    borderWidth: 0.8,
+    marginHorizontal: 1,
+    marginTop: 7,
   },
   bestsellerContainer: {
     borderRadius: 5,
@@ -253,37 +311,15 @@ const styles = StyleSheet.create({
     top: 0,
     left: 1,
     zIndex: 1,
-    height: 22,
+    height: 24,
   },
   bestsellerText: {
     color: '#fff',
     fontSize: 11,
     fontFamily: 'Gotham-Rounded-Bold',
   },
-  swiper: {
-    width: '100%',
-  },
-  productImage: {
-    width: '100%',
-    height: '100%',
-  },
-  dot: {
-    backgroundColor: '#ccc',
-    width: 4,
-    height: 4,
-    borderRadius: 3,
-    margin: 3,
-  },
-  activeDot: {
-    backgroundColor: '#333',
-    width: 6,
-    height: 6,
-    borderRadius: 4,
-    margin: 3,
-  },
-  pagination: {
-    bottom: -5,
-  },
+  swiper: { width: '100%' },
+  productImage: { width: '100%', height: '100%' },
   ratingText: {
     fontSize: 10,
     color: '#333',
@@ -298,51 +334,66 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   titleText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '̀',
+    fontSize: 14,
+    color: '#181818',
     flex: 1,
     flexWrap: 'wrap',
     fontFamily: 'gotham-rounded-book',
-  },
-  vegWrapper: {
-    alignItems: 'center',
-    marginLeft: 4,
-    width: 22,
-  },
-  vegIcon: {
-    width: 14,
-    height: 16,
-    marginRight: 3,
+    lineHeight: 18,
   },
   brandText: {
-    fontSize: 12,
-    color: '#6A6868',
+    fontSize: 13,
+    color: '#F59A11',
     marginTop: 5,
-    fontFamily: 'gotham-rounded-book',
+    fontFamily: 'Gotham-Rounded-Bold',
   },
-  variantChipContainer: {
-    backgroundColor: '#6A68681A',
+  vRow: { paddingVertical: 6 },
+  vCard: {
     borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    alignSelf: 'flex-start',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    overflow: 'hidden',
+    borderColor: '#014e6a',
   },
-  variantChipText: {
-    color: '#19191c',
-    fontSize: 11,
+  vHead: {
+    height: 16,
+    backgroundColor: '#0A4B5F',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  vHeadTxt: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+  vBody: {
+    paddingHorizontal: 4,
+    paddingTop: 1,
+    paddingBottom: 6,
+    flex: 1,
+  },
+  vSale: { color: '#014e6a', fontSize: 11, fontFamily: 'Gotham-Rounded-Bold' },
+  vMrp: {
+    marginLeft: 6,
+    color: '#6a6a6a',
+    fontSize: 9,
+    textDecorationLine: 'line-through',
     fontFamily: 'Gotham-Rounded-Medium',
-    letterSpacing: 0.2,
   },
+  vOff: {
+    color: '#007d17',
+    fontSize: 9,
+    fontFamily: 'Gotham-Rounded-Bold',
+    textAlign: 'center',
+  },
+
   priceLabel: {
     fontSize: 12,
     color: '#6A6868',
-    marginTop: 6,
     fontFamily: 'Gotham-Rounded-Medium',
   },
   priceDiscountRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
     alignItems: 'center',
     marginTop: 3,
   },
@@ -371,6 +422,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Gotham-Rounded-Bold',
   },
+
   cartButtonRow: {
     position: 'absolute',
     bottom: 8,
@@ -378,7 +430,7 @@ const styles = StyleSheet.create({
     right: 5,
   },
   cartButton: {
-    backgroundColor: '#0888B1',
+    backgroundColor: '#F59A11',
     borderRadius: 6,
     width: '100%',
     height: 36,
@@ -405,6 +457,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'Gotham-Rounded-Bold',
   },
+
   vegMark: { alignItems: 'center', marginLeft: 12 },
   vegBox: {
     width: 18,
