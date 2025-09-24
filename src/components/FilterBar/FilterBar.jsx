@@ -62,7 +62,9 @@ const FilterBar = ({
   useEffect(() => setTempBreedSlug(selectedBreed || null), [selectedBreed]);
 
   const filterOptions = [
-    // Extend if needed
+    { label: 'BRAND', isActive: true },
+    { label: 'BREED', isActive: true },
+    { label: 'RATING', isActive: true },
   ];
 
   const openBottomSheet = () => {
@@ -108,11 +110,15 @@ const FilterBar = ({
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollViewContent,
+          { paddingRight: '40%' },
+        ]}
       >
-        <TouchableOpacity style={[styles.button]} onPress={openBottomSheet}>
+        {/* <TouchableOpacity style={[styles.button]} onPress={openBottomSheet}>
           <SlidersHorizontal size={20} color="#333" />
           <Text style={[styles.buttonText, styles.activeText]}>FILTERS</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {!!collectionName && showCollectionChip && (
           <View style={styles.chip}>
@@ -142,6 +148,21 @@ const FilterBar = ({
             </TouchableOpacity>
           </View>
         ))}
+
+        {filterOptions.map((option, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.button, option.isActive && styles.activeButton]}
+            onPress={openBottomSheet}
+            activeOpacity={0.8}
+          >
+            <Text
+              style={[styles.buttonText, option.isActive && styles.activeText]}
+            >
+              {option.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
         <Dropdown
           data={sortOptions}
           style={[styles.dropdown, sortOrder && styles.activeButton]}
@@ -157,19 +178,6 @@ const FilterBar = ({
           }}
           activeColor="#6A68681A"
         />
-        {filterOptions.map((option, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.button, option.isActive && styles.activeButton]}
-            onPress={openBottomSheet}
-          >
-            <Text
-              style={[styles.buttonText, option.isActive && styles.activeText]}
-            >
-              {option.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
       </ScrollView>
 
       <RBSheet
@@ -201,6 +209,7 @@ const FilterBar = ({
               {brands.length > 0 ? (
                 brands.map(brand => (
                   <TouchableOpacity
+                    activeOpacity={1}
                     key={brand._id}
                     style={[
                       styles.brandButton,
@@ -211,6 +220,7 @@ const FilterBar = ({
                     <Image
                       source={{ uri: brand.logo }}
                       style={styles.brandLogo}
+                      resizeMode="cover"
                     />
                     <Text style={styles.brandText}>{brand.name}</Text>
                   </TouchableOpacity>
@@ -227,6 +237,7 @@ const FilterBar = ({
               {breeds.length > 0 ? (
                 breeds.map(breed => (
                   <TouchableOpacity
+                    activeOpacity={1}
                     key={breed._id}
                     style={[
                       styles.optionButton,
@@ -245,12 +256,14 @@ const FilterBar = ({
 
           <View style={styles.buttonsContainer}>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.clearButton}
               onPress={handleClearAll}
             >
               <Text style={styles.clearText}>CLEAR ALL</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.applyButton}
               onPress={handleApplyFilters}
             >
@@ -274,8 +287,7 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    // paddingVertical: 10,
-    // paddingHorizontal: 20,
+    paddingHorizontal: 20,
     marginHorizontal: 5,
   },
   activeButton: {
@@ -348,10 +360,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 10,
     alignItems: 'center',
+    borderColor: '#bcdde9',
+    borderWidth: 1,
   },
   brandLogo: {
-    width: 50,
-    height: 50,
+    width: 80,
+    height: 80,
     marginBottom: 5,
   },
   brandText: {
@@ -360,7 +374,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
   },
   selectedBrand: {
-    backgroundColor: '#0888B1',
+    backgroundColor: '#0988b1',
   },
   optionRow: {
     flexDirection: 'row',
@@ -372,13 +386,17 @@ const styles = StyleSheet.create({
     marginRight: 10,
     borderRadius: 10,
     marginBottom: 10,
+    borderColor: '#bcdde9',
+    borderWidth: 1,
+    paddingHorizontal: 20,
   },
   selectedBreed: {
-    backgroundColor: '#0888B1',
+    backgroundColor: '#0988b1',
   },
   optionText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#333',
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   buttonsContainer: {
     flexDirection: 'row',

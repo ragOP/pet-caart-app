@@ -62,9 +62,13 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
     const discount = getDiscountPercent(item.price, item.salePrice);
     return (
       <TouchableOpacity
-        activeOpacity={0.9}
+        activeOpacity={1}
         onPress={onPress}
-        style={[styles.cardShadow, isSelected && styles.cardShadowSelected]}
+        style={[
+          styles.cardShadow,
+          isSelected && styles.cardShadowSelected,
+          { opacity: isSelected ? 0.8 : 1 },
+        ]}
       >
         <View style={[styles.card, isSelected && styles.cardSelected]}>
           <View style={styles.topBand}>
@@ -309,6 +313,7 @@ const SingleProductScreen = () => {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            activeOpacity={1}
           >
             <ArrowLeft size={30} color="#000" />
           </TouchableOpacity>
@@ -369,7 +374,7 @@ const SingleProductScreen = () => {
               <Text style={styles.labelText}>Offers and coupons</Text>
             </View>
             <TouchableOpacity
-              activeOpacity={0.8}
+              activeOpacity={1}
               onPress={() => offersSheetRef.current.open()}
             >
               <Text style={styles.actionText}>Check offers</Text>
@@ -382,7 +387,7 @@ const SingleProductScreen = () => {
             <TouchableOpacity
               style={styles.accordionHeader}
               onPress={() => toggleSection('productDetails')}
-              activeOpacity={0.9}
+              activeOpacity={1}
             >
               <View style={styles.accordionRow}>
                 <Text style={styles.accordionTitle}>Product Details</Text>
@@ -400,34 +405,38 @@ const SingleProductScreen = () => {
                 </Text>
               )}
             </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.accordionHeader}
               onPress={() => toggleSection('additionalInfo')}
-              activeOpacity={0.9}
+              activeOpacity={1}
             >
               <View style={styles.accordionRow}>
                 <Text style={styles.accordionTitle}>
                   Additional Information
                 </Text>
                 <View>
-                  {expandedSection === 'additionalInfo' && (
-                    <>
-                      {selectedVariant?.weight != null && (
-                        <Text style={styles.accordionInlineText}>
-                          Weight: {formatWeight(selectedVariant.weight)}
-                        </Text>
-                      )}
-                      <Text style={styles.accordionInlineText}>
-                        Stock:{' '}
-                        {effectiveInStock
-                          ? `In Stock (${stockToShow})`
-                          : 'Out of Stock'}
-                      </Text>
-                    </>
+                  {expandedSection === 'additionalInfo' ? (
+                    <Minus size={20} color="#0B0B0B" />
+                  ) : (
+                    <Plus size={20} color="#0B0B0B" />
                   )}
                 </View>
               </View>
+              {expandedSection === 'additionalInfo' && (
+                <View style={{ marginTop: 12 }}>
+                  {shouldShowWeight && (
+                    <Text style={styles.accordionInlineText}>
+                      Weight: {formatWeight(currentVariant.weight)}
+                    </Text>
+                  )}
+                  <Text style={styles.accordionInlineText}>
+                    Stock:{' '}
+                    {effectiveInStock
+                      ? `In Stock (${stockToShow})`
+                      : 'Out of Stock'}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -442,6 +451,7 @@ const SingleProductScreen = () => {
             headingTextOrange="Handpicked"
             headingTextBlue="For You"
             products={bestSellerData}
+            navigation={navigation}
           />
         )}
       </ScrollView>
@@ -469,6 +479,7 @@ const SingleProductScreen = () => {
             />
           ) : !isInCart ? (
             <TouchableOpacity
+              activeOpacity={1}
               style={[
                 styles.stickyAddToCartButton,
                 isAddToCartButtonDisabled() && styles.disabledButton,
@@ -484,6 +495,7 @@ const SingleProductScreen = () => {
           ) : (
             <View style={styles.quantityContainer}>
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   if (quantity > 1) {
                     const newQty = quantity - 1;
@@ -514,7 +526,6 @@ const SingleProductScreen = () => {
           )}
         </View>
       )}
-
       <OffersBottomSheet innerRef={offersSheetRef} />
     </View>
   );
@@ -551,7 +562,7 @@ const styles = StyleSheet.create({
   },
   brand: {
     fontSize: 14,
-    color: '#007bff',
+    color: '#F48C20',
     fontFamily: 'Gotham-Rounded-Medium',
   },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },

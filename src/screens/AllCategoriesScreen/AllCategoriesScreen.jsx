@@ -68,9 +68,6 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
                   />
                 )}
               </View>
-              {/* <Text style={styles.accordionSubtitle}>
-                {category.description}
-              </Text> */}
             </View>
             {category.image && (
               <Image source={{ uri: category.image }} style={styles.icon} />
@@ -116,6 +113,7 @@ export default function AllCategoriesScreen({ navigation }) {
         if (res?.data?.data) {
           setSubCategories(res.data.data);
         }
+
         const newCollections = {};
         if (res?.data?.data) {
           const allSubcatIds = res.data.data.map(subcat => subcat._id);
@@ -153,11 +151,16 @@ export default function AllCategoriesScreen({ navigation }) {
     categorySlug,
     collectionSlug,
     collectionName,
+    subCategoryId,
   ) => {
+    const subcategory =
+      filteredSubcategories.find(sub => sub._id === subCategoryId) || {};
     navigation.navigate('ProductCollectionScreeen', {
       categorySlug,
       collectionSlug,
       collectionName,
+      subcategoryName: subcategory.name || '',
+      subcategoryId: subcategory._id || '',
     });
   };
 
@@ -188,38 +191,6 @@ export default function AllCategoriesScreen({ navigation }) {
     }
   };
 
-  const renderRow = items => (
-    <View style={styles.row}>
-      {items.map(item => (
-        <TouchableOpacity
-          key={item._id}
-          style={styles.foodCardContainer}
-          onPress={() =>
-            handleCollectionClick(
-              filteredSubcategories.find(sub => sub._id === item.subCategoryId)
-                ?.slug || '',
-              item.slug,
-              item.name,
-            )
-          }
-        >
-          <FoodCard label={item.name} image={item.image} />
-        </TouchableOpacity>
-      ))}
-      {items.length < 3 && (
-        <View style={[styles.foodCardContainer, styles.emptyCard]} />
-      )}
-    </View>
-  );
-
-  const renderRows = items => {
-    const rows = [];
-    for (let i = 0; i < items.length; i += 3) {
-      rows.push(items.slice(i, i + 3));
-    }
-    return rows.map((row, idx) => <View key={idx}>{renderRow(row)}</View>);
-  };
-
   return (
     <View style={styles.container}>
       <StatusBar
@@ -232,6 +203,7 @@ export default function AllCategoriesScreen({ navigation }) {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            activeOpacity={1}
           >
             <ArrowLeft size={30} color="#000" />
           </TouchableOpacity>
@@ -292,9 +264,31 @@ export default function AllCategoriesScreen({ navigation }) {
                 onToggle={handleAccordionToggle}
               >
                 {collections[category._id]?.length > 0 ? (
-                  <View style={styles.foodCategories}>
-                    {renderRows(collections[category._id])}
-                  </View>
+                  <ScrollView
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.foodCardsHorizontal}
+                  >
+                    {collections[category._id].map(item => (
+                      <TouchableOpacity
+                        key={item._id}
+                        style={styles.foodCardContainer}
+                        onPress={() =>
+                          handleCollectionClick(
+                            filteredSubcategories.find(
+                              sub => sub._id === item.subCategoryId,
+                            )?.slug || '',
+                            item.slug,
+                            item.name,
+                            item.subCategoryId,
+                          )
+                        }
+                        activeOpacity={1}
+                      >
+                        <FoodCard label={item.name} image={item.image} />
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
                 ) : (
                   <Text style={styles.noCollectionsText}>
                     No collections found
@@ -308,6 +302,7 @@ export default function AllCategoriesScreen({ navigation }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 10 },
   headerWrapper: {
@@ -341,6 +336,7 @@ const styles = StyleSheet.create({
     color: '#181818',
     marginRight: 10,
     marginTop: 10,
+    // fontWeight: 'bold',
   },
   chevronIcon: { marginTop: 10 },
   accordionSubtitle: {
@@ -356,28 +352,22 @@ const styles = StyleSheet.create({
     padding: 8,
     overflow: 'hidden',
   },
-  foodCategories: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  row: {
+  foodCardsHorizontal: {
     flexDirection: 'row',
-    marginBottom: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
   },
   foodCardContainer: {
-    width: '33%',
-  },
-  emptyCard: {
-    backgroundColor: 'transparent',
+    width: 120,
+    marginRight: 12,
   },
   foodCardOuter: {
     alignItems: 'center',
     backgroundColor: '#FFF',
     borderRadius: 8,
     padding: 8,
-    borderColor: 'red',
+    borderColor: '#F59A11',
     borderWidth: 1,
-    width: '100%',
   },
   foodImg: {
     width: 80,

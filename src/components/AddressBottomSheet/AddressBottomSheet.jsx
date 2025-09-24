@@ -64,7 +64,7 @@ export const AddressBottomSheet = React.forwardRef(
             onSelectAddress(item);
             ref.current.close();
           }}
-          activeOpacity={0.85}
+          activeOpacity={1}
         >
           <View style={styles.row}>
             <MapPin
@@ -133,6 +133,7 @@ export const AddressBottomSheet = React.forwardRef(
           </View>
         )}
         <TouchableOpacity
+          activeOpacity={1}
           style={styles.addButton}
           onPress={() => {
             ref.current.close();

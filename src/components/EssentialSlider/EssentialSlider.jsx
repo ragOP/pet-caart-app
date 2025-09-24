@@ -6,8 +6,10 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { getProducts } from '../../apis/getProducts';
+import { useNavigation } from '@react-navigation/native';
 
 const EssentialSlider = ({
   headingIcon,
@@ -17,6 +19,8 @@ const EssentialSlider = ({
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigation = useNavigation(); // <-- use this!
+
   const fetchProducts = async () => {
     try {
       const response = await getProducts();
@@ -77,26 +81,43 @@ const EssentialSlider = ({
       )}
       {groupedProducts.map((row, rowIndex) => (
         <FlatList
-          key={rowIndex}
+          key={`row_${rowIndex}`}
           horizontal
           data={row}
           renderItem={({ item }) => (
-            <View style={styles.itemContainer}>
-              <Image
-                source={{
-                  uri:
-                    item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
-                }}
-                style={styles.image}
-                resizeMode="contain"
-                onError={() => console.warn('Failed to load image', item.title)}
-              />
-              <Text style={styles.text} numberOfLines={2} ellipsizeMode="tail">
-                {item.title}
-              </Text>
-            </View>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() =>
+                navigation.navigate('SingleProductScreen', {
+                  productId: item._id,
+                })
+              }
+            >
+              <View style={styles.itemContainer}>
+                <Image
+                  source={{
+                    uri:
+                      item.images?.[0] || item.variants?.[0]?.images?.[0] || '',
+                  }}
+                  style={styles.image}
+                  resizeMode="contain"
+                  onError={() =>
+                    console.warn('Failed to load image', item.title)
+                  }
+                />
+                <Text
+                  style={styles.text}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {item.title}
+                </Text>
+              </View>
+            </TouchableOpacity>
           )}
-          keyExtractor={(item, index) => item._id || `${rowIndex}_${index}`}
+          keyExtractor={(item, index) =>
+            item._id || `row_${rowIndex}_item_${index}`
+          }
           showsHorizontalScrollIndicator={false}
           style={styles.sliderRow}
         />
@@ -104,7 +125,6 @@ const EssentialSlider = ({
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 5,

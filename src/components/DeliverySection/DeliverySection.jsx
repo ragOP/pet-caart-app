@@ -59,7 +59,7 @@ const DeliverySection = () => {
         />
         <TouchableOpacity
           style={styles.checkButton}
-          activeOpacity={0.8}
+          activeOpacity={1}
           onPress={handleCheckDelivery}
           disabled={isLoading}
         >

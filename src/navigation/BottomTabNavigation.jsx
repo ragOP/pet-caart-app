@@ -52,7 +52,7 @@ const CustomTabBar = ({ state, navigation }) => {
                   key={index}
                   onPress={() => navigation.navigate(tab.route)}
                   style={styles.centerButton}
-                  activeOpacity={0.8}
+                  activeOpacity={1}
                 >
                   <View
                     style={[
@@ -72,7 +72,7 @@ const CustomTabBar = ({ state, navigation }) => {
                 key={index}
                 style={[styles.tab, isBreedTab && { marginRight: 30 }]}
                 onPress={() => navigation.navigate(tab.route)}
-                activeOpacity={0.7}
+                activeOpacity={1}
               >
                 <Icon size={26} color={isSelected ? '#0888B1' : '#4B4B4B'} />
                 <Text

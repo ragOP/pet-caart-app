@@ -46,6 +46,7 @@ const CollectionScreen = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            activeOpacity={1}
           >
             <ArrowLeft size={30} color="#000" />
           </TouchableOpacity>
@@ -58,7 +59,7 @@ const CollectionScreen = ({ navigation }) => {
             key={item.label}
             style={styles.banner}
             onPress={() => navigation.navigate(item.nav)}
-            activeOpacity={0.8}
+            activeOpacity={1}
           >
             <Image
               source={item.image}

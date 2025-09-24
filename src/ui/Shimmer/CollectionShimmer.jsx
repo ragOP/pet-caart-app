@@ -12,10 +12,9 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function CollectionShimmer() {
   const shimmerAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
-  const pulseAnim = useRef(new Animated.Value(0.8)).current; // Pulse animation value
+  const pulseAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
-    // Shimmer wave (चमक की लहर)
     Animated.loop(
       Animated.timing(shimmerAnim, {
         toValue: SCREEN_WIDTH,
@@ -24,7 +23,6 @@ export default function CollectionShimmer() {
       }),
     ).start();
 
-    // Pulse effect (चमक-गुम, हल्का-गहरा)
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -44,13 +42,7 @@ export default function CollectionShimmer() {
   return (
     <View style={styles.listContainer}>
       {[...Array(6)].map((_, i) => (
-        <Animated.View
-          key={i}
-          style={[
-            styles.card,
-            { opacity: pulseAnim }, // पूरी कार्ड पर पल्स
-          ]}
-        >
+        <Animated.View key={i} style={[styles.card, { opacity: pulseAnim }]}>
           <View style={styles.textContainer}>
             <Animated.View
               style={[styles.titlePlaceholder, { opacity: pulseAnim }]}
@@ -90,9 +82,7 @@ export default function CollectionShimmer() {
 }
 
 const styles = StyleSheet.create({
-  listContainer: {
-    margin: 16,
-  },
+  listContainer: {},
   card: {
     flexDirection: 'row',
     backgroundColor: '#f3f3f3',
@@ -109,7 +99,7 @@ const styles = StyleSheet.create({
   },
   titlePlaceholder: {
     height: 24,
-    width: '30%',
+    width: '100%',
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
     marginBottom: 8,
