@@ -18,12 +18,19 @@ import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import FilterBar from '../../components/FilterBar/FilterBar';
 import { getCollection } from '../../apis/getCollection';
+import ProductCollectionShimmer from '../../ui/Shimmer/ProductCollectionShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function ProductCollectionScreeen({ route, navigation }) {
-  const { categorySlug, collectionSlug, collectionName, searchQuery } =
-    route.params;
+  const {
+    categorySlug,
+    collectionSlug,
+    collectionName,
+    searchQuery,
+    subcategoryName,
+    subcategoryId,
+  } = route.params;
   const [loading, setLoading] = useState(true);
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [products, setProducts] = useState([]);
@@ -39,13 +46,20 @@ export default function ProductCollectionScreeen({ route, navigation }) {
 
   useEffect(() => {
     fetchProducts();
-  }, [categorySlug, collectionSlug, selectedBrand, selectedBreed, searchQuery]);
+  }, [
+    categorySlug,
+    collectionSlug,
+    selectedBrand,
+    selectedBreed,
+    searchQuery,
+    isGreenSwitchOn,
+  ]);
 
   const fetchCollections = async () => {
     try {
       setLoadingCollections(true);
       const collectionData = await getCollection();
-      if (collectionData && collectionData.data && collectionData.data.data) {
+      if (collectionData?.data?.data) {
         setCollections(collectionData.data.data);
       }
     } catch (err) {
@@ -54,6 +68,13 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       setLoadingCollections(false);
     }
   };
+  const filteredCollections = collections
+    .filter(coll => coll.subCategoryId === subcategoryId)
+    .sort((a, b) => {
+      if (a.slug === collectionSlug) return -1;
+      if (b.slug === collectionSlug) return 1;
+      return 0;
+    });
 
   const fetchProducts = async () => {
     try {
@@ -61,13 +82,10 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       const params = { categorySlug, collectionSlug };
       if (selectedBrand) params.brandSlug = selectedBrand;
       if (selectedBreed) params.breedSlug = selectedBreed;
-
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
-
       let filtered = fetchedProducts;
-
       if (searchQuery && searchQuery.trim() !== '') {
         const searchTerm = searchQuery.toLowerCase();
         filtered = fetchedProducts.filter(product => {
@@ -99,6 +117,9 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           );
         });
       }
+      if (isGreenSwitchOn) {
+        filtered = filtered.filter(product => product.isVeg === true);
+      }
       setProducts(filtered);
     } catch (error) {
       console.error('Product fetch error:', error);
@@ -123,20 +144,20 @@ export default function ProductCollectionScreeen({ route, navigation }) {
   const GreenSwitchButton = ({ value, onValueChange }) => (
     <TouchableOpacity
       onPress={() => onValueChange(!value)}
-      activeOpacity={0.8}
+      activeOpacity={1}
       style={styles.switchWrapper}
     >
       <View style={[styles.track]} />
       <View
         style={[
           styles.thumb,
-          { left: value ? 34 : 4, borderColor: value ? '#0a0' : '#bbb' },
+          { left: value ? 34 : 4, borderColor: value ? '#0a0' : '#9f9f9f' },
         ]}
       >
         <View
           style={[
             styles.thumbInner,
-            { backgroundColor: value ? '#0a0' : '#bbb' },
+            { backgroundColor: value ? '#0a0' : '#9f9f9f' },
           ]}
         />
       </View>
@@ -153,6 +174,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       <View style={styles.headerWrapper}>
         <View style={styles.headerRow}>
           <TouchableOpacity
+            activeOpacity={1}
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
@@ -165,8 +187,8 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           />
         </View>
       </View>
-
       <View style={styles.filterBarWrapper}>
+        <Text style={styles.subcategoryNameText}>{subcategoryName}</Text>
         <GreenSwitchButton
           value={isGreenSwitchOn}
           onValueChange={setIsGreenSwitchOn}
@@ -179,11 +201,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
         />
       </View>
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#F5A500"
-          style={{ marginTop: 20 }}
-        />
+        <ProductCollectionShimmer />
       ) : (
         <ScrollView style={styles.screen}>
           {loadingCollections ? (
@@ -201,7 +219,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
               <FlatList
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                data={collections}
+                data={filteredCollections}
                 keyExtractor={item => item._id}
                 contentContainerStyle={{
                   paddingLeft: 12,
@@ -212,7 +230,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
                   const selected = item.slug === collectionSlug;
                   return (
                     <TouchableOpacity
-                      activeOpacity={0.7}
+                      activeOpacity={1}
                       style={[
                         styles.touchable,
                         {
@@ -255,7 +273,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
               />
             </View>
           )}
-
           {products.length > 0 ? (
             <View style={styles.productContainer}>
               {products.map((product, index) => (
@@ -325,7 +342,7 @@ const styles = StyleSheet.create({
   },
   productCardWrapper: {
     width: '48%',
-    marginBottom: 20,
+    // marginBottom: 10,
   },
   filterBarWrapper: {
     flexDirection: 'row',
@@ -334,14 +351,14 @@ const styles = StyleSheet.create({
   },
   switchWrapper: {
     width: 64,
-    height: 36,
+    height: 30,
     justifyContent: 'center',
   },
   track: {
     position: 'absolute',
     width: 56,
     height: 24,
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: '#eee',
     left: 4,
     top: 6,
@@ -350,7 +367,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 28,
     height: 28,
-    borderRadius: 6,
     borderWidth: 2,
     backgroundColor: '#fff',
     top: 4,
@@ -395,10 +411,16 @@ const styles = StyleSheet.create({
   underline: {
     position: 'absolute',
     bottom: -8,
-    // left: 15,
     width: 100,
     height: 3,
     backgroundColor: '#F17521',
     borderRadius: 4,
+  },
+  subcategoryNameText: {
+    color: '#181818',
+    fontSize: 16,
+    fontFamily: 'Gotham-Rounded-Bold',
+    marginLeft: 8,
+    marginRight: 8,
   },
 });

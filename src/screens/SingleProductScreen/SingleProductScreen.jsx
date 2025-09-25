@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -128,6 +128,7 @@ const SingleProductScreen = () => {
   const [bestSellerData, setBestSellerData] = useState([]);
   const [cartLoading, setCartLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const offersSheetRef = useRef();
 
@@ -292,6 +293,12 @@ const SingleProductScreen = () => {
     return false;
   };
 
+  const onScroll = useCallback(event => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const index = Math.round(scrollPosition / screenWidth);
+    setCurrentImageIndex(index);
+  }, []);
+
   if (loading) return <SingleProductShimmer />;
   if (error)
     return (
@@ -327,27 +334,45 @@ const SingleProductScreen = () => {
         contentContainerStyle={{ paddingBottom: 100 }}
       >
         {displayedImages?.length > 0 && (
-          <FlatList
-            horizontal
-            data={displayedImages}
-            renderItem={({ item }) => (
-              <Image
-                source={{ uri: item }}
-                style={styles.productImage}
-                resizeMode="contain"
-              />
-            )}
-            keyExtractor={item => item}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.imagesContainer}
-            snapToInterval={screenWidth}
-            getItemLayout={(data, index) => ({
-              length: screenWidth,
-              offset: screenWidth * index,
-              index,
-            })}
-            initialNumToRender={displayedImages.length}
-          />
+          <>
+            <FlatList
+              horizontal
+              data={displayedImages}
+              renderItem={({ item }) => (
+                <Image
+                  source={{ uri: item }}
+                  style={styles.productImage}
+                  resizeMode="contain"
+                />
+              )}
+              keyExtractor={item => item}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imagesContainer}
+              snapToInterval={screenWidth}
+              getItemLayout={(data, index) => ({
+                length: screenWidth,
+                offset: screenWidth * index,
+                index,
+              })}
+              initialNumToRender={displayedImages.length}
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              decelerationRate="fast"
+            />
+            <View style={styles.dotsContainer}>
+              {displayedImages.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    index === currentImageIndex
+                      ? styles.activeDot
+                      : styles.inactiveDot,
+                  ]}
+                />
+              ))}
+            </View>
+          </>
         )}
 
         <View style={styles.pad}>
@@ -541,6 +566,7 @@ const SingleProductScreen = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
@@ -719,8 +745,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     width: '55%',
-
-    // marginLeft: 15,
   },
   disabledButton: {
     backgroundColor: '#cccccc',
@@ -758,6 +782,24 @@ const styles = StyleSheet.create({
     color: '#000',
     minWidth: 15,
     textAlign: 'center',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: '#F59A11',
+  },
+  inactiveDot: {
+    backgroundColor: '#CCCCCC',
   },
 });
 
