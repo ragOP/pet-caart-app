@@ -76,7 +76,7 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
@@ -155,11 +155,11 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFBF6',
+    backgroundColor: '#FFFFFF',
   },
   headerWrapper: {
     paddingVertical: 10,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     paddingRight: 15,
   },
   locationButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     padding: 10,
     borderRadius: 10,
     marginLeft: 10,
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   guestHeaderBox: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     margin: 12,
     borderRadius: 12,
     padding: 16,

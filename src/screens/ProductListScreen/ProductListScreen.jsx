@@ -15,6 +15,7 @@ import { getProducts } from '../../apis/getProducts';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import FilterBar from '../../components/FilterBar/FilterBar';
+import ProductListShimmer from '../../ui/Shimmer/ProductListShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -30,7 +31,14 @@ export default function ProductListScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchProducts();
-  }, [categorySlug, collectionSlug, selectedBrand, selectedBreed, searchQuery]);
+  }, [
+    categorySlug,
+    collectionSlug,
+    selectedBrand,
+    selectedBreed,
+    searchQuery,
+    isGreenSwitchOn,
+  ]);
 
   const fetchProducts = async () => {
     try {
@@ -77,6 +85,9 @@ export default function ProductListScreen({ route, navigation }) {
           );
         });
       }
+      if (isGreenSwitchOn) {
+        filtered = filtered.filter(product => product.isVeg === true);
+      }
       setProducts(filtered);
     } catch (error) {
       console.error('Product fetch error:', error);
@@ -85,6 +96,7 @@ export default function ProductListScreen({ route, navigation }) {
       setLoading(false);
     }
   };
+
   const handleSearchChange = query => {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
@@ -99,7 +111,7 @@ export default function ProductListScreen({ route, navigation }) {
   const GreenSwitchButton = ({ value, onValueChange }) => (
     <TouchableOpacity
       onPress={() => onValueChange(!value)}
-      activeOpacity={0.8}
+      activeOpacity={1}
       style={styles.switchWrapper}
     >
       <View style={[styles.track]} />
@@ -112,7 +124,7 @@ export default function ProductListScreen({ route, navigation }) {
         <View
           style={[
             styles.thumbInner,
-            { backgroundColor: value ? '#0a0' : '#bbb' },
+            { backgroundColor: value ? '#0a0' : '#9f9f9f' },
           ]}
         />
       </View>
@@ -130,6 +142,7 @@ export default function ProductListScreen({ route, navigation }) {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
+            activeOpacity={1}
           >
             <ArrowLeft size={30} color="#000" />
           </TouchableOpacity>
@@ -142,7 +155,7 @@ export default function ProductListScreen({ route, navigation }) {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#F5A500" />
+        <ProductListShimmer />
       ) : (
         <ScrollView style={styles.screen}>
           <View style={styles.filterBarWrapper}>
@@ -227,13 +240,12 @@ const styles = StyleSheet.create({
   },
   productCardWrapper: {
     width: '48%',
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   filterBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 15,
-    marginTop: 15,
     // justifyContent: 'space-between',
   },
   switchWrapper: {
@@ -254,7 +266,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 28,
     height: 28,
-    borderRadius: 6,
     borderWidth: 2,
     backgroundColor: '#fff',
     top: 4,

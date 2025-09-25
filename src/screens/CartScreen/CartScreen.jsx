@@ -26,6 +26,7 @@ import SpecialDeals from '../../components/SpecialDeals/SpecialDeals';
 import { AddressBottomSheet } from '../../components/AddressBottomSheet/AddressBottomSheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CouponSheet from '../../components/CouponBottomSheet/CouponBottomSheet';
+import Lottie from 'lottie-react-native';
 
 const CartScreen = () => {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
@@ -293,7 +294,7 @@ const CartScreen = () => {
     setCouponError('');
   };
 
-  const PROGRESS_TARGET = 800;
+  const PROGRESS_TARGET = 2000;
   const progress = Math.min(totalPayable / PROGRESS_TARGET, 1);
   const showProgress = totalPayable > 0;
   const showDog = totalPayable > 0 && totalPayable < PROGRESS_TARGET;
@@ -343,7 +344,7 @@ const CartScreen = () => {
           <TouchableOpacity
             onPress={() => addressSheetRef.current.open()}
             style={styles.changeButton}
-            activeOpacity={0.7}
+            activeOpacity={1}
           >
             <Text style={styles.changeButtonText}>Change</Text>
           </TouchableOpacity>
@@ -383,8 +384,7 @@ const CartScreen = () => {
                   />
                 </View>
                 {showDog && (
-                  <Image
-                    source={require('../../assets/images/dogrun.gif')}
+                  <Lottie
                     style={[
                       styles.dogImage,
                       {
@@ -392,7 +392,9 @@ const CartScreen = () => {
                         transform: [{ translateX: -20 }],
                       },
                     ]}
-                    resizeMode="contain"
+                    source={require('../../lottie/Dogwalking.json')}
+                    autoPlay
+                    loop
                   />
                 )}
               </View>
@@ -974,9 +976,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   dogImage: {
-    width: 50,
-    height: 80,
+    width: 60,
+    height: 90,
     position: 'absolute',
-    top: -33,
+    top: -42,
   },
 });

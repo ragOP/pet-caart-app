@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addProductToCart } from '../../apis/addProductToCart';
 import { addItemToCart } from '../../redux/cartSlice';
+import Lottie from 'lottie-react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const PARENT_CARD_WIDTH = Math.round(screenWidth * 0.48);
@@ -246,28 +247,34 @@ const ProductCard = ({
           <View style={styles.outOfStockButton}>
             <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
           </View>
-        ) : isProductInCart ? (
-          <TouchableOpacity
-            activeOpacity={0.9}
-            style={styles.cartButton}
-            onPress={() => navigation.navigate('Cart')}
-          >
-            <Text style={styles.cartButtonText}>GO TO CART</Text>
-          </TouchableOpacity>
         ) : (
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.cartButton}
             onPress={() => {
-              const v =
-                normalizedVariants.find(x => x._id === selectedVariantId) ||
-                normalizedVariants[0];
-              if (v) handleAddToCart(v);
+              if (isProductInCart) {
+                handleGoToCart();
+              } else {
+                const v =
+                  normalizedVariants.find(x => x._id === selectedVariantId) ||
+                  normalizedVariants[0];
+                if (v) handleAddToCart(v);
+              }
             }}
+            disabled={loading}
           >
-            <Text style={styles.cartButtonText}>
-              {loading ? 'ADDING…' : 'ADD TO CART'}
-            </Text>
+            {loading ? (
+              <Lottie
+                source={require('../../lottie/loading.json')}
+                autoPlay
+                loop
+                style={{ width: 25, height: 25, alignSelf: 'center' }}
+              />
+            ) : (
+              <Text style={styles.cartButtonText}>
+                {isProductInCart ? 'GO TO CART' : 'ADD TO CART'}
+              </Text>
+            )}
           </TouchableOpacity>
         )}
       </View>

@@ -26,6 +26,7 @@ import { addProductToCart } from '../../apis/addProductToCart';
 import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
 import Banner from '../../components/Banner/Banner';
 import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
+import Lottie from 'lottie-react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -472,11 +473,21 @@ const SingleProductScreen = () => {
           </View>
 
           {cartLoading ? (
-            <ActivityIndicator
-              size="small"
-              color="#F59A11"
-              style={{ marginLeft: 15 }}
-            />
+            <TouchableOpacity
+              style={[
+                styles.stickyAddToCartButton,
+                { justifyContent: 'center', alignItems: 'center' },
+              ]}
+              activeOpacity={1}
+              disabled
+            >
+              <Lottie
+                source={require('../../lottie/loading.json')}
+                autoPlay
+                loop
+                style={{ width: 30, height: 30 }}
+              />
+            </TouchableOpacity>
           ) : !isInCart ? (
             <TouchableOpacity
               activeOpacity={1}
@@ -707,8 +718,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59A11',
     borderRadius: 12,
     paddingVertical: 14,
-    paddingHorizontal: 34,
-    marginLeft: 15,
+    width: '55%',
+
+    // marginLeft: 15,
   },
   disabledButton: {
     backgroundColor: '#cccccc',
@@ -718,6 +730,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Gotham-Rounded-Bold',
     letterSpacing: 1.2,
+    textAlign: 'center',
   },
   quantityContainer: {
     flexDirection: 'row',
