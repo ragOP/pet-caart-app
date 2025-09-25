@@ -22,6 +22,10 @@
       "sha1": "82de63e1cedb8743310a6dd4b31d150d3bbd9ab6"
     },
     {
+      "path": "src/assets/fonts/HoltwoodOneSC.ttf",
+      "sha1": "b5b6192952d130c578fcd856434759387a5e7f95"
+    },
+    {
       "path": "src/assets/fonts/gotham-rounded-book.otf",
       "sha1": "eef7adef9ae4cd0aef444d9e448608e3f4d55dbd"
     }

@@ -49,39 +49,47 @@ const CouponBottomSheet = ({
     onSheetClose();
   };
 
-  const renderCoupon = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.couponItem,
-        appliedCoupon?.id === item.id && styles.selectedCoupon,
-      ]}
-      onPress={() => handleCouponPress(item)}
-    >
-      <ImageBackground
-        source={require('../../assets/images/cpnbg.png')}
-        style={styles.couponBackground}
-        imageStyle={styles.couponImage}
+  const renderCoupon = ({ item }) => {
+    const isApplied = appliedCoupon?.id === item.id;
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        style={[styles.couponItem, isApplied && styles.selectedCoupon]}
+        onPress={() => handleCouponPress(item)}
       >
-        <View style={styles.couponInner}>
-          <Text style={styles.couponDesc}>
-            {item.discountType === 'fixed'
-              ? `${item.discountValue} off`
-              : `${item.discountValue}% off`}
-            {item.maxDiscount ? `, max ₹${item.maxDiscount}` : ''}
-          </Text>
-          <Text style={styles.couponCondition}>
-            {item.minPurchase
-              ? `Above ₹${item.minPurchase}`
-              : 'No minimum order'}
-          </Text>
-        </View>
+        <ImageBackground
+          source={require('../../assets/images/cpnbg.png')}
+          style={styles.couponBackground}
+          imageStyle={styles.couponImage}
+        >
+          <View style={styles.ticketWrapper}>
+            <View style={styles.leftTicket}>
+              <View style={styles.leftInner}>
+                <Text style={styles.discountBig}>DISCOUNT{'\n'}COUPON</Text>
+                <Text style={styles.validText}>
+                  VALID UNTIL <Text style={styles.bold}>JULY 12</Text>TH
+                </Text>
+              </View>
+            </View>
 
-        <TouchableOpacity style={styles.applyButton}>
-          <Text style={styles.applyButtonText}>APPLY</Text>
-        </TouchableOpacity>
-      </ImageBackground>
-    </TouchableOpacity>
-  );
+            <View style={styles.rightTicket}>
+              <Text style={styles.voucherText}>VOUCHER</Text>
+              <Text style={styles.discountPercent}>{item.discountValue}%</Text>
+              <Text style={styles.discountWord}>DISCOUNT</Text>
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={() => handleCouponPress(item)}
+              >
+                <Text style={styles.applyButtonText}>
+                  {isApplied ? 'REMOVE' : 'APPLY'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ImageBackground>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <BottomSheet
@@ -109,14 +117,10 @@ const CouponBottomSheet = ({
           placeholderTextColor="#999"
           editable={true}
         />
-
         <TouchableOpacity activeOpacity={1}>
           <Text style={styles.applyBtn}>APPLY</Text>
         </TouchableOpacity>
       </View>
-      {/* <TouchableOpacity style={styles.applyButton}>
-        <Text style={styles.applyButtonText}>APPLY</Text>
-      </TouchableOpacity> */}
 
       {loading ? (
         <View style={styles.center}>
@@ -152,7 +156,6 @@ const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-
   couponHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,24 +195,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
     marginLeft: 12,
   },
-  couponError: {
-    color: 'red',
-    marginTop: 6,
-  },
   applyButton: {
-    backgroundColor: '#0888B1',
-    paddingVertical: 12,
-    borderRadius: 30,
-    marginBottom: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
   applyButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
+    color: '#005973',
+    fontFamily: 'Gotham-Rounded-Medium',
+    fontSize: 14,
   },
   couponItem: {
     marginBottom: 12,
     overflow: 'hidden',
+    borderRadius: 16,
   },
   selectedCoupon: {
     borderColor: '#FFA500',
@@ -219,35 +217,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 14,
     alignItems: 'center',
-
     height: 120,
     justifyContent: 'space-between',
+    borderRadius: 16,
   },
   couponImage: {
-    resizeMode: 'contain',
+    resizeMode: 'stretch',
+    borderRadius: 16,
   },
-  couponInner: {
+  ticketWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  leftTicket: {
     flex: 1,
     justifyContent: 'center',
+    paddingRight: 10,
   },
-  couponTitle: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: 'bold',
-    marginBottom: 4,
+  rightTicket: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  couponDesc: {
-    color: '#fff',
-    marginBottom: 2,
+  discountBig: {
+    fontSize: 25,
+    color: '#4E3B02',
+    fontFamily: 'HoltwoodOneSC',
+    textAlign: 'center',
   },
-  couponCondition: {
-    color: '#fff',
-    fontSize: 13,
+  validText: {
+    color: '#4E3B02',
+    textAlign: 'center',
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
+  bold: {},
+  voucherText: {
+    color: '#222',
+    fontFamily: 'Gotham-Rounded-Medium',
+    marginTop: 20,
+  },
+  discountPercent: {
+    fontFamily: 'HoltwoodOneSC',
+    fontSize: 16,
+    color: '#4E3B02',
+    justifyContent: 'center',
+    alignContent: 'center',
+  },
+  discountWord: {
+    color: '#4E3B02',
+    fontFamily: 'HoltwoodOneSC',
+    fontSize: 12,
+    color: '#4E3B02',
   },
   center: {
-    marginTop: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // marginTop: 24,
+    // justifyContent: 'center',
+    // alignItems: 'center',
   },
   error: {
     color: 'red',

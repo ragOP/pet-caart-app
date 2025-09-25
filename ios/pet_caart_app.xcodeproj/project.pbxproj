@@ -18,6 +18,7 @@
 		FFD8E6D3C3D74A9B80C04788 /* Gotham-Rounded-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 37D159CC9CA244EAA17604B9 /* Gotham-Rounded-Medium.ttf */; };
 		423A4930492D4060958AB177 /* Gotham-Book.otf in Resources */ = {isa = PBXBuildFile; fileRef = 098607D39503439DA4CD04CD /* Gotham-Book.otf */; };
 		B3E91CA50D14424C88664B7B /* gotham-rounded-book.otf in Resources */ = {isa = PBXBuildFile; fileRef = 5AC7FFCD70DF4AC996ED6B57 /* gotham-rounded-book.otf */; };
+		9590C741CE154DEDAD407EB2 /* HoltwoodOneSC.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4DE87FBB0E494F339A5A9F3B /* HoltwoodOneSC.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		F93A64A970504A6BBD526751 /* Gotham-Rounded-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Gotham-Rounded-Bold.ttf"; path = "../src/assets/fonts/Gotham-Rounded-Bold.ttf"; sourceTree = "<group>"; };
 		098607D39503439DA4CD04CD /* Gotham-Book.otf */ = {isa = PBXFileReference; name = "Gotham-Book.otf"; path = "../src/assets/fonts/Gotham-Book.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		5AC7FFCD70DF4AC996ED6B57 /* gotham-rounded-book.otf */ = {isa = PBXFileReference; name = "gotham-rounded-book.otf"; path = "../src/assets/fonts/gotham-rounded-book.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		4DE87FBB0E494F339A5A9F3B /* HoltwoodOneSC.ttf */ = {isa = PBXFileReference; name = "HoltwoodOneSC.ttf"; path = "../src/assets/fonts/HoltwoodOneSC.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +83,7 @@
 				37D159CC9CA244EAA17604B9 /* Gotham-Rounded-Medium.ttf */,
 				098607D39503439DA4CD04CD /* Gotham-Book.otf */,
 				5AC7FFCD70DF4AC996ED6B57 /* gotham-rounded-book.otf */,
+				4DE87FBB0E494F339A5A9F3B /* HoltwoodOneSC.ttf */,
 			);
 			name = Resources;
 			path = "";
@@ -194,6 +197,7 @@
 				FFD8E6D3C3D74A9B80C04788 /* Gotham-Rounded-Medium.ttf in Resources */,
 				423A4930492D4060958AB177 /* Gotham-Book.otf in Resources */,
 				B3E91CA50D14424C88664B7B /* gotham-rounded-book.otf in Resources */,
+				9590C741CE154DEDAD407EB2 /* HoltwoodOneSC.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
