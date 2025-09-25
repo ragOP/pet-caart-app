@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     height: 120,
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     borderRadius: 16,
   },
   couponImage: {
