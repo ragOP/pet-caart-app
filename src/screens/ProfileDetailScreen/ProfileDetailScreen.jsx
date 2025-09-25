@@ -56,13 +56,14 @@ const ProfileDetailScreen = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#FFF5E1"
+        backgroundColor="#FFFFFF"
         translucent={false}
       />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
             <TouchableOpacity
+              activeOpacity={1}
               onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {

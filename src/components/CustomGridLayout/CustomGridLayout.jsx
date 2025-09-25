@@ -27,9 +27,16 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
 
   if (!gridData) return null;
 
-  const { grid, title, contentItems, backgroundImage, bannerImage } = gridData;
+  const {
+    grid,
+    title,
+    contentItems,
+    backgroundImage,
+    bannerImage,
+    isTitleShow,
+  } = gridData;
   const { mobileColumns } = grid || {};
-  const GAP = 12;
+  const GAP = 8;
   const screenWidth = Dimensions.get('window').width;
   const totalGapsWidth = GAP * ((mobileColumns || 1) + 1);
   const itemWidth = (screenWidth - totalGapsWidth) / (mobileColumns || 1);
@@ -66,7 +73,7 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
             resizeMode="cover"
           />
         )}
-        {title && (
+        {title && isTitleShow === true && (
           <View style={styles.titleContainer}>
             <View style={styles.titleWithImage}>
               <Image

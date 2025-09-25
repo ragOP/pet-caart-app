@@ -88,9 +88,9 @@ const ProfileScreen = ({ navigation }) => {
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <SearchBar />
-            <TouchableOpacity style={styles.locationButton} activeOpacity={1}>
+            {/* <TouchableOpacity style={styles.locationButton} activeOpacity={1}>
               <MapPin color="#FFA500" size={24} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </SafeAreaView>
       </View>
