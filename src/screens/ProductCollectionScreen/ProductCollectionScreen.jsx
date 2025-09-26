@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   productContainer: {
-    padding: 10,
+    padding: 15,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',

@@ -615,10 +615,23 @@ const styles = StyleSheet.create({
   },
 
   accordionHeader: {
-    backgroundColor: '#EBEBEB99',
+    backgroundColor: '#FFFFFF',
     padding: 20,
     marginTop: 12,
     borderRadius: 14,
+    borderColor: '#F59A11',
+    borderWidth: 0.8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4040400D',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   accordionRow: {
     flexDirection: 'row',
@@ -651,6 +664,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     justifyContent: 'space-between',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4040400D',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   iconLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   labelText: {

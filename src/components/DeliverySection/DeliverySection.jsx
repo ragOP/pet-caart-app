@@ -95,10 +95,23 @@ const DeliverySection = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#EBEBEB99',
-    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     padding: 10,
     marginTop: 12,
+    borderColor: '#F59A11',
+    borderWidth: 0.8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4040400D',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   heading: {
     fontSize: 19,

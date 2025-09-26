@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addProductToCart } from '../../apis/addProductToCart';
-import { addItemToCart } from '../../redux/cartSlice';
+import { addItemToCart, removeItemFromCart } from '../../redux/cartSlice';
 import Lottie from 'lottie-react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -23,12 +23,10 @@ const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * 0.52);
 const VAR_CARD_GAP = 5;
 const VAR_CARD_HEIGHT = 50;
 const CARD_HEIGHT = 425;
-
 const getVariantDiscount = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
 };
-
 const formatWeight = w => {
   const n = Number(w) || 0;
   if (n >= 1000) {
@@ -37,7 +35,6 @@ const formatWeight = w => {
   }
   return `${n}g`;
 };
-
 const ProductCard = ({
   images,
   title,
@@ -53,9 +50,6 @@ const ProductCard = ({
   variants = [],
 }) => {
   const [loading, setLoading] = useState(false);
-  const [selectedVariantId, setSelectedVariantId] = useState(
-    variants.length > 0 ? variants[0]._id : null,
-  );
 
   const originalPrice = Number(price);
   const discountPercent = parseInt(discount);
@@ -68,41 +62,74 @@ const ProductCard = ({
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
-  const isProductInCart = cartItems.some(item => item.productId === productId);
 
-  const handleAddToCart = async () => {
-    if (loading || isOutOfStock) return;
-    setLoading(true);
-    try {
-      const productData = {
-        productId,
-        variantId: null,
-        quantity: 1,
-        title,
-        price: discountedPrice,
-        image: images?.length > 0 ? images[0] : '',
-        discount: hasDiscount ? `${discountPercent}%` : '0%',
-      };
-      dispatch(addItemToCart(productData));
+  const currentQty = useMemo(() => {
+    const found = cartItems.find(
+      it => it.productId === productId && it.variantId == null,
+    );
+    return found?.quantity ?? 0;
+  }, [cartItems, productId]);
+
+  const buildCartItem = useCallback(
+    qty => ({
+      productId,
+      variantId: null,
+      quantity: qty,
+      title,
+      price: discountedPrice,
+      image: images?.length > 0 ? images[0] : '',
+      discount: hasDiscount ? `${discountPercent}%` : '0%',
+    }),
+    [productId, title, discountedPrice, images, hasDiscount, discountPercent],
+  );
+
+  const syncServerQty = useCallback(
+    async absQty => {
       await addProductToCart({
         productId,
         variantId: null,
-        quantity: 1,
+        quantity: absQty,
       });
-      navigation.navigate('Cart');
-    } catch (error) {
-      console.warn('Failed to add to cart:', error.message);
+    },
+    [productId],
+  );
+
+  const handleIncrement = async () => {
+    if (loading || isOutOfStock) return;
+    const newQty = currentQty + 1;
+    setLoading(true);
+    try {
+      dispatch(addItemToCart(buildCartItem(1)));
+      await syncServerQty(newQty);
+    } catch (e) {
+      console.warn('Increment failed:', e?.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoToCart = () => navigation.navigate('Cart');
+  const handleDecrement = async () => {
+    if (loading || isOutOfStock) return;
+    if (currentQty <= 0) return;
+    const newQty = currentQty - 1;
+    setLoading(true);
+    try {
+      if (newQty === 0) {
+        dispatch(removeItemFromCart({ productId, variantId: null }));
+        await syncServerQty(0);
+      } else {
+        dispatch(addItemToCart({ ...buildCartItem(-1) }));
+        await syncServerQty(newQty);
+      }
+    } catch (e) {
+      console.warn('Decrement failed:', e?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCardPress = () =>
     navigation.navigate('SingleProductScreen', { productId });
-
-  const handleVariantSelect = id => setSelectedVariantId(id);
-
   const normalizedVariants = useMemo(
     () =>
       variants.map(v => ({
@@ -178,6 +205,7 @@ const ProductCard = ({
         {brandId?.name && <Text style={styles.brandText}>{brandId.name}</Text>}
 
         <View>
+          {' '}
           {normalizedVariants?.length > 0 && (
             <ScrollView
               horizontal
@@ -187,6 +215,7 @@ const ProductCard = ({
               decelerationRate="fast"
               snapToInterval={VAR_CARD_WIDTH + VAR_CARD_GAP}
             >
+              {' '}
               {normalizedVariants.map(v => {
                 return (
                   <Pressable
@@ -200,30 +229,33 @@ const ProductCard = ({
                       },
                     ]}
                   >
+                    {' '}
                     <View style={styles.vHead}>
-                      <Text style={styles.vHeadTxt}>{v.weightLabel}</Text>
-                    </View>
-
+                      {' '}
+                      <Text style={styles.vHeadTxt}>{v.weightLabel}</Text>{' '}
+                    </View>{' '}
                     <View style={styles.vBody}>
+                      {' '}
                       <View
                         style={{ flexDirection: 'row', alignItems: 'center' }}
                       >
-                        <Text style={styles.vSale}>₹{v.salePrice}</Text>
+                        {' '}
+                        <Text style={styles.vSale}>₹{v.salePrice}</Text>{' '}
                         {v.mrpPrice > v.salePrice && (
                           <Text style={styles.vMrp}>MRP ₹{v.mrpPrice}</Text>
-                        )}
-                      </View>
+                        )}{' '}
+                      </View>{' '}
                       <Text style={styles.vOff}>
-                        {v.discountPercentage}% OFF
-                      </Text>
-                    </View>
+                        {' '}
+                        {v.discountPercentage}% OFF{' '}
+                      </Text>{' '}
+                    </View>{' '}
                   </Pressable>
                 );
-              })}
+              })}{' '}
             </ScrollView>
-          )}
+          )}{' '}
         </View>
-
         <Text style={styles.priceLabel}>PRICE</Text>
         <View style={styles.priceDiscountRow}>
           <Text style={styles.priceValue}>₹{discountedPrice}</Text>
@@ -238,30 +270,72 @@ const ProductCard = ({
         </View>
 
         <View style={styles.cartButtonRow}>
-          {isOutOfStock ? (
+          {!isOutOfStock ? (
+            currentQty > 0 ? (
+              <View style={styles.stepperFullWidth}>
+                <TouchableOpacity
+                  style={styles.stepperSide}
+                  onPress={handleDecrement}
+                  disabled={loading}
+                  activeOpacity={1}
+                >
+                  {loading ? (
+                    <Lottie
+                      source={require('../../lottie/loading.json')}
+                      autoPlay
+                      loop
+                      style={{ width: 22, height: 22, alignSelf: 'center' }}
+                    />
+                  ) : (
+                    <Text style={styles.stepperSymbol}>−</Text>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.stepperMiddle}>
+                  <Text style={styles.stepperQtyText}>{currentQty}</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.stepperSide}
+                  onPress={handleIncrement}
+                  disabled={loading}
+                  activeOpacity={1}
+                >
+                  {loading ? (
+                    <Lottie
+                      source={require('../../lottie/loading.json')}
+                      autoPlay
+                      loop
+                      style={{ width: 22, height: 22, alignSelf: 'center' }}
+                    />
+                  ) : (
+                    <Text style={styles.stepperSymbol}>+</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={styles.cartButton}
+                onPress={handleIncrement}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Lottie
+                    source={require('../../lottie/loading.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 25, height: 25, alignSelf: 'center' }}
+                  />
+                ) : (
+                  <Text style={styles.cartButtonText}>ADD TO CART</Text>
+                )}
+              </TouchableOpacity>
+            )
+          ) : (
             <View style={styles.outOfStockButton}>
               <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
             </View>
-          ) : (
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.cartButton}
-              onPress={isProductInCart ? handleGoToCart : handleAddToCart}
-              disabled={loading}
-            >
-              {loading ? (
-                <Lottie
-                  source={require('../../lottie/loading.json')}
-                  autoPlay
-                  loop
-                  style={{ width: 25, height: 25, alignSelf: 'center' }}
-                />
-              ) : (
-                <Text style={styles.cartButtonText}>
-                  {isProductInCart ? 'GO TO CART' : 'ADD TO CART'}
-                </Text>
-              )}
-            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -391,25 +465,45 @@ const styles = StyleSheet.create({
   },
   cartButtonText: {
     color: '#fff',
-    fontWeight: '600',
     fontSize: 13,
     textAlign: 'center',
     fontFamily: 'Gotham-Rounded-Bold',
   },
-  outOfStockButton: {
-    backgroundColor: '#99a1ad',
-    borderRadius: 8,
-    width: '100%',
+
+  stepperFullWidth: {
+    flexDirection: 'row',
+    alignItems: 'center',
     height: 36,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#F59A11',
+    overflow: 'hidden',
+  },
+  stepperSide: {
+    width: 64,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F59A11',
+    height: '100%',
+  },
+  stepperMiddle: {
+    flex: 1,
+    backgroundColor: '#F59A11',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  outOfStockButtonText: {
-    color: '#ffffff',
-    fontSize: 11,
-    textAlign: 'center',
+  stepperSymbol: {
+    color: '#FFFFFF',
+    fontSize: 18,
     fontFamily: 'Gotham-Rounded-Bold',
   },
+  stepperQtyText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+
   vegMark: { alignItems: 'center', marginLeft: 12 },
   vegBox: {
     width: 18,
@@ -429,7 +523,6 @@ const styles = StyleSheet.create({
   vRow: { paddingVertical: 6 },
   vCard: {
     borderRadius: 10,
-
     backgroundColor: '#ffffff',
     borderWidth: 1,
     overflow: 'hidden',
@@ -446,12 +539,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'Gotham-Rounded-Bold',
   },
-  vBody: {
-    paddingHorizontal: 4,
-    paddingTop: 1,
-    paddingBottom: 6,
-    flex: 1,
-  },
+  vBody: { paddingHorizontal: 4, paddingTop: 1, paddingBottom: 6, flex: 1 },
   vSale: { color: '#014e6a', fontSize: 11, fontFamily: 'Gotham-Rounded-Bold' },
   vMrp: {
     marginLeft: 6,
