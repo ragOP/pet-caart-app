@@ -50,9 +50,11 @@ const CartScreen = () => {
   const addressSheetRef = useRef();
 
   const SELECTED_ADDRESS_KEY = '@selectedAddressId';
+
   const onSheetClose = () => {
     couponSheetRef.current?.close();
   };
+
   const loadSelectedAddressId = async () => {
     try {
       const savedId = await AsyncStorage.getItem(SELECTED_ADDRESS_KEY);
@@ -74,63 +76,52 @@ const CartScreen = () => {
     } catch (e) {
       console.error('Failed to save selected address ID', e);
     }
+    await fetchAndSetCurrentCart(address.id);
+  };
+
+  const fetchAndSetCurrentCart = async addressId => {
+    try {
+      setLoading(true);
+      const effectiveAddressId =
+        addressId ?? (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
+      const cartResponse = await getCart({
+        params: { address_id: effectiveAddressId },
+      });
+      if (cartResponse.success) {
+        const formattedItems = cartResponse.data.items.map(item => ({
+          id: item._id || item.productId,
+          title: item.productId?.title || 'No Title',
+          price: item.price || 0,
+          quantity: item.quantity || 1,
+          total: item.total || item.price * item.quantity,
+          cgst: item.cgst || 0,
+          sgst: item.sgst || 0,
+          cess: item.cess || 0,
+          igst: item.igst || 0,
+          image: item.productId?.images?.[0] || 'default-image-url',
+          productId: item.productId._id || item.productId,
+          variantId: item.variantId?._id || null,
+        }));
+        dispatch(setCart(formattedItems));
+        setShippingCost(cartResponse.data.shippingDetails?.totalCost || 0);
+        setShippingDate(cartResponse.data.shippingDetails?.estimatedDate || '');
+      }
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchCartData = async () => {
+    if (!isLoggedIn) return;
+    const fetchAllData = async () => {
       try {
         setLoading(true);
-        const addressId =
-          selectedAddress?.id ||
-          (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
-        const response = await getCart({ params: { address_id: addressId } });
-        if (response.success) {
-          const fetchedItems = response.data.items.map(item => ({
-            id: item._id || item.productId,
-            title: item.productId?.title || 'No Title',
-            price: item.price || 0,
-            quantity: item.quantity || 1,
-            total: item.total || item.price * item.quantity,
-            cgst: item.cgst || 0,
-            sgst: item.sgst || 0,
-            cess: item.cess || 0,
-            igst: item.igst || 0,
-            image: item.productId?.images[0] || 'default-image-url',
-            productId: item.productId._id || item.productId,
-            variantId: item.variantId?._id || null,
-          }));
-          dispatch(setCart(fetchedItems));
-          setShippingCost(response.data.shippingDetails?.totalCost || 0);
-          setShippingDate(response.data.shippingDetails?.estimatedDate || '');
-          setLoading(false);
-        } else {
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error(' Error fetching cart data:', error?.message || error);
-        setLoading(false);
-      }
-    };
-
-    const fetchCoupons = async () => {
-      try {
-        const couponsResponse = await getCoupons();
-        if (
-          couponsResponse?.data?.data &&
-          Array.isArray(couponsResponse.data.data)
-        ) {
-          setCoupons(couponsResponse.data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching coupons:', error);
-      }
-    };
-
-    const fetchAddresses = async () => {
-      try {
-        const response = await getAddresses();
-        if (response?.success) {
-          const formattedAddresses = response.data.map(item => ({
+        const addrResponse = await getAddresses();
+        let formattedAddresses = [];
+        if (addrResponse?.success) {
+          formattedAddresses = addrResponse.data.map(item => ({
             id: item._id,
             name: `${item.firstName} ${item.lastName}`,
             address: item.address,
@@ -143,64 +134,51 @@ const CartScreen = () => {
             type: item.type,
           }));
           setAddresses(formattedAddresses);
-          const defaultAddr = formattedAddresses.find(addr => addr.isDefault);
-          if (defaultAddr) {
-            console.log('Default address found on load:', defaultAddr);
-          }
+          await loadSelectedAddressId(formattedAddresses);
         }
+        const couponsResponse = await getCoupons();
+        if (couponsResponse?.success) {
+          setCoupons(couponsResponse.data.data || []);
+        }
+        const addressId =
+          selectedAddress?.id ??
+          (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
+        await fetchAndSetCurrentCart(addressId);
       } catch (error) {
-        console.error('Error fetching addresses:', error);
+        console.error('Error in initial fetch:', error);
       }
     };
-
-    fetchAddresses();
-    fetchCartData();
-    fetchCoupons();
-    loadSelectedAddressId();
+    fetchAllData();
   }, [isLoggedIn, dispatch]);
 
-  const increaseQuantity = async id => {
+  const updateQuantity = async (id, newQuantity) => {
     const item = cartItems.find(i => i.id === id);
     if (!item) return;
-    const newQuantity = item.quantity + 1;
     setUpdatingId(id);
     try {
       await addProductToCart({
         productId: item.productId,
-        variantId: item.variantId || undefined,
+        variantId: item.variantId,
         quantity: newQuantity,
       });
-      const updatedItems = cartItems.map(i =>
-        i.id === id ? { ...i, quantity: newQuantity } : i,
-      );
-      dispatch(setCart(updatedItems));
+      await fetchAndSetCurrentCart();
     } catch (error) {
-      console.error('Error while increasing quantity:', error);
+      console.error('Error updating quantity:', error);
     } finally {
       setUpdatingId(null);
     }
   };
 
-  const decreaseQuantity = async id => {
+  const increaseQuantity = id => {
+    const item = cartItems.find(i => i.id === id);
+    if (!item) return;
+    updateQuantity(id, item.quantity + 1);
+  };
+
+  const decreaseQuantity = id => {
     const item = cartItems.find(i => i.id === id);
     if (!item || item.quantity <= 1) return;
-    const newQuantity = item.quantity - 1;
-    setUpdatingId(id);
-    try {
-      await addProductToCart({
-        productId: item.productId,
-        variantId: item.variantId || undefined,
-        quantity: newQuantity,
-      });
-      const updatedItems = cartItems.map(i =>
-        i.id === id ? { ...i, quantity: newQuantity } : i,
-      );
-      dispatch(setCart(updatedItems));
-    } catch (error) {
-      console.error('Error while decreasing quantity:', error);
-    } finally {
-      setUpdatingId(null);
-    }
+    updateQuantity(id, item.quantity - 1);
   };
 
   const deleteItem = async id => {
@@ -208,19 +186,14 @@ const CartScreen = () => {
     if (!item) return;
     setDeletingId(id);
     try {
-      const response = await addProductToCart({
+      await addProductToCart({
         productId: item.productId,
-        variantId: item.variantId || undefined,
+        variantId: item.variantId,
         quantity: 0,
       });
-      if (response.success) {
-        const updatedItems = cartItems.filter(i => i.id !== id);
-        dispatch(setCart(updatedItems));
-      } else {
-        console.error('Failed to delete item:', response);
-      }
+      await fetchAndSetCurrentCart();
     } catch (error) {
-      console.error('Error while deleting item:', error);
+      console.error('Error deleting item:', error);
     } finally {
       setDeletingId(null);
     }
@@ -493,7 +466,6 @@ const CartScreen = () => {
                   onChangeText={setCouponCode}
                   editable={true}
                 />
-
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={handleManualCouponApply}
@@ -513,7 +485,6 @@ const CartScreen = () => {
               </TouchableOpacity>
             </View>
 
-            {/* GST Invoice Section */}
             <View style={styles.gstContainer}>
               <View style={styles.gstHeader}>
                 <Image
@@ -582,18 +553,22 @@ const CartScreen = () => {
               </View>
             </View>
           </ScrollView>
+
+          {/* This button appears only when cart items are loaded! */}
+          <TouchableOpacity
+            style={styles.payNowButton}
+            activeOpacity={0.9}
+            onPress={() => {
+              /* TODO: Connect to your checkout or payment screen */
+              // navigation.navigate('CheckoutScreen');
+            }}
+          >
+            <Text style={styles.payNowButtonText}>
+              PAY ₹{totalPayable.toFixed(2)}
+            </Text>
+          </TouchableOpacity>
         </>
       )}
-
-      <TouchableOpacity
-        style={styles.payNowButton}
-        activeOpacity={0.9}
-        onPress={() => {}}
-      >
-        <Text style={styles.payNowButtonText}>
-          PAY ₹{totalPayable.toFixed(2)}
-        </Text>
-      </TouchableOpacity>
 
       <AddressBottomSheet
         ref={addressSheetRef}
@@ -611,8 +586,6 @@ const CartScreen = () => {
     </View>
   );
 };
-
-export default CartScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -982,3 +955,5 @@ const styles = StyleSheet.create({
     top: -42,
   },
 });
+
+export default CartScreen;

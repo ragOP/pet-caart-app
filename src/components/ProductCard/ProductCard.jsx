@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   cartButtonRow: {
     position: 'absolute',
     bottom: 8,
-    left: 5,
+    left: 4,
     right: 5,
   },
   cartButton: {
