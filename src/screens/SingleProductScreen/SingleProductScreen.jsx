@@ -603,8 +603,7 @@ const styles = StyleSheet.create({
   imagesContainer: {},
   productImage: {
     width: screenWidth,
-    height: screenWidth * 0.6,
-    borderRadius: 10,
+    height: screenWidth * 0.8,
   },
   brandRatingRow: {
     flexDirection: 'row',

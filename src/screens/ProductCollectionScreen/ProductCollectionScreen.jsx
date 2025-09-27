@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   StyleSheet,
   Dimensions,
   StatusBar,
@@ -27,17 +26,21 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     categorySlug,
     collectionSlug,
     collectionName,
-    searchQuery,
+    searchQuery = '',
     subcategoryName,
     subcategoryId,
   } = route.params;
+
   const [loading, setLoading] = useState(true);
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [products, setProducts] = useState([]);
   const [allCollectionProducts, setAllCollectionProducts] = useState([]);
   const [collections, setCollections] = useState([]);
-  const [selectedBrand, setSelectedBrand] = useState([]); // array of slugs [web:24]
-  const [selectedBreed, setSelectedBreed] = useState([]);
+
+  // Multi-select arrays
+  const [selectedBrand, setSelectedBrand] = useState([]); // array of brand slugs
+  const [selectedBreed, setSelectedBreed] = useState([]); // array of breed slugs
+
   const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
 
   useEffect(() => {
@@ -46,11 +49,12 @@ export default function ProductCollectionScreeen({ route, navigation }) {
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     categorySlug,
     collectionSlug,
-    selectedBrand,
-    selectedBreed,
+    JSON.stringify(selectedBrand), // ensure effect triggers on array changes
+    JSON.stringify(selectedBreed),
     searchQuery,
     isGreenSwitchOn,
   ]);
@@ -68,6 +72,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       setLoadingCollections(false);
     }
   };
+
   const filteredCollections = collections
     .filter(coll => coll.subCategoryId === subcategoryId)
     .sort((a, b) => {
@@ -80,15 +85,22 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     try {
       setLoading(true);
       const params = { categorySlug, collectionSlug };
-      if (selectedBrand) params.brandSlug = selectedBrand;
-      if (selectedBreed) params.breedSlug = selectedBreed;
+
+      // If API expects CSV strings, join arrays; if it accepts arrays, assign directly
+      if (selectedBrand?.length) params.brandSlug = selectedBrand.join(',');
+      if (selectedBreed?.length) params.breedSlug = selectedBreed.join(',');
+
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
+
+      // Local filtering pipeline
       let filtered = fetchedProducts;
+
+      // Text search
       if (searchQuery && searchQuery.trim() !== '') {
-        const searchTerm = searchQuery.toLowerCase();
-        filtered = fetchedProducts.filter(product => {
+        const searchTerm = String(searchQuery).toLowerCase();
+        filtered = filtered.filter(product => {
           const matchesTitle = product.title
             ?.toLowerCase()
             .includes(searchTerm);
@@ -117,9 +129,26 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           );
         });
       }
+
+      // Multi-select brand/breed filter
+      filtered = filtered.filter(product => {
+        const brandMatches =
+          !selectedBrand?.length ||
+          (product.brandId?.slug &&
+            selectedBrand.includes(product.brandId.slug));
+
+        const breedMatches =
+          !selectedBreed?.length ||
+          product.breedId?.some(b => selectedBreed.includes(b.slug));
+
+        return brandMatches && breedMatches;
+      });
+
+      // Veg-only toggle
       if (isGreenSwitchOn) {
         filtered = filtered.filter(product => product.isVeg === true);
       }
+
       setProducts(filtered);
     } catch (error) {
       console.error('Product fetch error:', error);
@@ -133,12 +162,13 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
 
-  const handleBrandChange = brandSlug => {
-    setSelectedBrand(brandSlug);
+  // Receive arrays from FilterBar after Apply
+  const handleBrandChange = brandSlugs => {
+    setSelectedBrand(Array.isArray(brandSlugs) ? brandSlugs : []);
   };
 
-  const handleBreedChange = breedSlug => {
-    setSelectedBreed(breedSlug);
+  const handleBreedChange = breedSlugs => {
+    setSelectedBreed(Array.isArray(breedSlugs) ? breedSlugs : []);
   };
 
   const GreenSwitchButton = ({ value, onValueChange }) => (
@@ -171,6 +201,8 @@ export default function ProductCollectionScreeen({ route, navigation }) {
         backgroundColor="#FFF5E1"
         translucent={false}
       />
+
+      {/* Header with back + search */}
       <View style={styles.headerWrapper}>
         <View style={styles.headerRow}>
           <TouchableOpacity
@@ -187,6 +219,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           />
         </View>
       </View>
+
       <View style={styles.filterBarWrapper}>
         <Text style={styles.subcategoryNameText}>{subcategoryName}</Text>
         <GreenSwitchButton
@@ -198,8 +231,11 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           selectedBreed={selectedBreed}
           setSelectedBrand={handleBrandChange}
           setSelectedBreed={handleBreedChange}
+          collectionName={collectionName}
         />
       </View>
+
+      {/* Body */}
       {loading ? (
         <ProductCollectionShimmer />
       ) : (
@@ -273,6 +309,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
               />
             </View>
           )}
+
           {products.length > 0 ? (
             <View style={styles.productContainer}>
               {products.map((product, index) => (
@@ -312,6 +349,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
+
   headerWrapper: {
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
@@ -325,7 +363,9 @@ const styles = StyleSheet.create({
   },
   backButton: { paddingRight: 15 },
   searchBar: { flex: 1 },
+
   screen: { backgroundColor: '#fff' },
+
   noProductsText: {
     textAlign: 'center',
     marginTop: 20,
@@ -334,6 +374,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontSize: 16,
   },
+
   productContainer: {
     padding: 15,
     flexDirection: 'row',
@@ -342,13 +383,15 @@ const styles = StyleSheet.create({
   },
   productCardWrapper: {
     width: '48%',
-    // marginBottom: 10,
   },
+
   filterBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 15,
   },
+
+  // Green switch
   switchWrapper: {
     width: 64,
     height: 30,
@@ -380,6 +423,8 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: '#0a0',
   },
+
+  // Collections row
   touchable: { alignItems: 'center' },
   circle: {
     width: 72,
@@ -416,6 +461,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F17521',
     borderRadius: 4,
   },
+
   subcategoryNameText: {
     color: '#181818',
     fontSize: 16,
