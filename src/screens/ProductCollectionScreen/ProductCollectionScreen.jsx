@@ -18,9 +18,7 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import FilterBar from '../../components/FilterBar/FilterBar';
 import { getCollection } from '../../apis/getCollection';
 import ProductCollectionShimmer from '../../ui/Shimmer/ProductCollectionShimmer';
-
 const { width: screenWidth } = Dimensions.get('window');
-
 export default function ProductCollectionScreeen({ route, navigation }) {
   const {
     categorySlug,
@@ -36,12 +34,10 @@ export default function ProductCollectionScreeen({ route, navigation }) {
   const [products, setProducts] = useState([]);
   const [allCollectionProducts, setAllCollectionProducts] = useState([]);
   const [collections, setCollections] = useState([]);
-
-  // Multi-select arrays
-  const [selectedBrand, setSelectedBrand] = useState([]); // array of brand slugs
-  const [selectedBreed, setSelectedBreed] = useState([]); // array of breed slugs
-
+  const [selectedBrand, setSelectedBrand] = useState([]);
+  const [selectedBreed, setSelectedBreed] = useState([]);
   const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
+  const [sortOrder, setSortOrder] = useState(null);
 
   useEffect(() => {
     fetchCollections();
@@ -49,14 +45,14 @@ export default function ProductCollectionScreeen({ route, navigation }) {
 
   useEffect(() => {
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     categorySlug,
     collectionSlug,
-    JSON.stringify(selectedBrand), // ensure effect triggers on array changes
+    JSON.stringify(selectedBrand),
     JSON.stringify(selectedBreed),
     searchQuery,
     isGreenSwitchOn,
+    sortOrder,
   ]);
 
   const fetchCollections = async () => {
@@ -85,19 +81,13 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     try {
       setLoading(true);
       const params = { categorySlug, collectionSlug };
-
-      // If API expects CSV strings, join arrays; if it accepts arrays, assign directly
       if (selectedBrand?.length) params.brandSlug = selectedBrand.join(',');
       if (selectedBreed?.length) params.breedSlug = selectedBreed.join(',');
 
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
-
-      // Local filtering pipeline
       let filtered = fetchedProducts;
-
-      // Text search
       if (searchQuery && searchQuery.trim() !== '') {
         const searchTerm = String(searchQuery).toLowerCase();
         filtered = filtered.filter(product => {
@@ -129,8 +119,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           );
         });
       }
-
-      // Multi-select brand/breed filter
       filtered = filtered.filter(product => {
         const brandMatches =
           !selectedBrand?.length ||
@@ -143,10 +131,25 @@ export default function ProductCollectionScreeen({ route, navigation }) {
 
         return brandMatches && breedMatches;
       });
-
-      // Veg-only toggle
       if (isGreenSwitchOn) {
         filtered = filtered.filter(product => product.isVeg === true);
+      }
+      const getPriceNum = p => {
+        const v = p?.salePrice ?? p?.price ?? 0;
+        const n = typeof v === 'string' ? parseFloat(v) : Number(v);
+        return Number.isFinite(n) ? n : 0;
+      };
+
+      if (sortOrder) {
+        if (sortOrder === 'lowToHigh') {
+          filtered = [...filtered].sort(
+            (a, b) => getPriceNum(a) - getPriceNum(b),
+          );
+        } else if (sortOrder === 'highToLow') {
+          filtered = [...filtered].sort(
+            (a, b) => getPriceNum(b) - getPriceNum(a),
+          );
+        }
       }
 
       setProducts(filtered);
@@ -201,8 +204,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
         backgroundColor="#FFF5E1"
         translucent={false}
       />
-
-      {/* Header with back + search */}
       <View style={styles.headerWrapper}>
         <View style={styles.headerRow}>
           <TouchableOpacity
@@ -219,7 +220,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           />
         </View>
       </View>
-
       <View style={styles.filterBarWrapper}>
         <Text style={styles.subcategoryNameText}>{subcategoryName}</Text>
         <GreenSwitchButton
@@ -232,10 +232,10 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           setSelectedBrand={handleBrandChange}
           setSelectedBreed={handleBreedChange}
           collectionName={collectionName}
+          sortOrder={sortOrder}
+          onChangeSort={setSortOrder}
         />
       </View>
-
-      {/* Body */}
       {loading ? (
         <ProductCollectionShimmer />
       ) : (
@@ -349,7 +349,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-
   headerWrapper: {
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
@@ -363,9 +362,7 @@ const styles = StyleSheet.create({
   },
   backButton: { paddingRight: 15 },
   searchBar: { flex: 1 },
-
   screen: { backgroundColor: '#fff' },
-
   noProductsText: {
     textAlign: 'center',
     marginTop: 20,
@@ -374,7 +371,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     fontSize: 16,
   },
-
   productContainer: {
     padding: 15,
     flexDirection: 'row',
@@ -384,18 +380,16 @@ const styles = StyleSheet.create({
   productCardWrapper: {
     width: '48%',
   },
-
   filterBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 15,
   },
-
-  // Green switch
   switchWrapper: {
     width: 64,
     height: 30,
     justifyContent: 'center',
+    marginBottom: 9,
   },
   track: {
     position: 'absolute',
@@ -423,8 +417,6 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     backgroundColor: '#0a0',
   },
-
-  // Collections row
   touchable: { alignItems: 'center' },
   circle: {
     width: 72,
@@ -461,7 +453,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F17521',
     borderRadius: 4,
   },
-
   subcategoryNameText: {
     color: '#181818',
     fontSize: 16,
