@@ -47,7 +47,7 @@ const DeliverySection = () => {
       <Text style={styles.heading}>Delivery & Service Information</Text>
 
       <View style={styles.pincodeRow}>
-        <MapPin size={20} color="#F5A500" style={styles.pinIcon} />
+        <MapPin size={24} color="#F5A500" style={styles.pinIcon} />
         <TextInput
           style={styles.input}
           placeholder="Enter PINCODE"
@@ -99,8 +99,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     marginTop: 12,
-    borderColor: '#F59A11',
-    borderWidth: 0.8,
+    borderWidth: 0.2,
     ...Platform.select({
       ios: {
         shadowColor: '#4040400D',
@@ -165,8 +164,7 @@ const styles = StyleSheet.create({
     marginBottom: 13,
   },
   infoIcon: {
-    marginRight: 15,
-    marginTop: 1,
+    paddingHorizontal: 25,
   },
   infoText: {
     fontSize: 17,

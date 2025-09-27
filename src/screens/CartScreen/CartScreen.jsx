@@ -28,6 +28,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CouponSheet from '../../components/CouponBottomSheet/CouponBottomSheet';
 import Lottie from 'lottie-react-native';
 
+import CartShimmer from '../../ui/Shimmer/CartShimmer';
+
 const CartScreen = () => {
   const isLoggedIn = useSelector(state => state.auth.isLoggedIn);
   const navigation = useNavigation();
@@ -89,9 +91,17 @@ const CartScreen = () => {
       });
       if (cartResponse.success) {
         const formattedItems = cartResponse.data.items.map(item => ({
-          id: item._id || item.productId,
+          id: item._id,
           title: item.productId?.title || 'No Title',
-          price: item.price || 0,
+          price: item.productId?.price || 0,
+          salePrice: item.price || 0,
+          discount:
+            item.productId?.price && item.price
+              ? Math.round(
+                  ((item.productId.price - item.price) / item.productId.price) *
+                    100,
+                )
+              : 0,
           quantity: item.quantity || 1,
           total: item.total || item.price * item.quantity,
           cgst: item.cgst || 0,
@@ -200,9 +210,10 @@ const CartScreen = () => {
   };
 
   const totalMRP = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + item.salePrice * item.quantity,
     0,
   );
+
   const cgst = cartItems.reduce(
     (sum, item) => sum + (item.cgst || 0) * item.quantity,
     0,
@@ -325,7 +336,8 @@ const CartScreen = () => {
       </View>
 
       {loading ? (
-        <AddressShimmer />
+        // <AddressShimmer />
+        <CartShimmer />
       ) : cartItems.length === 0 ? (
         renderEmptyCart()
       ) : (
@@ -399,10 +411,12 @@ const CartScreen = () => {
                     <Text style={styles.title}>{item.title}</Text>
                     <View style={styles.priceAndStepper}>
                       <View style={styles.priceWrapper}>
-                        <Text style={styles.price}>₹{item.price}</Text>
+                        <Text style={styles.price}>₹{item.salePrice}</Text>
                         <View style={styles.mrpDiscountContainer}>
                           <Text style={styles.mrp}>MRP ₹{item.price}</Text>
-                          <Text style={styles.discount}>(0% Off)</Text>
+                          <Text style={styles.discount}>
+                            ({item.discount}% Off)
+                          </Text>
                         </View>
                       </View>
                       <View style={styles.stepper}>

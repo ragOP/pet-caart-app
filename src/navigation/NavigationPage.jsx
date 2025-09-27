@@ -1,3 +1,4 @@
+// src/navigation/NavigationPage.js
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import BottomTabNavigation from './BottomTabNavigation';
@@ -20,111 +21,51 @@ import ProductListScreen from '../screens/ProductListScreen/ProductListScreen';
 import SingleProductScreen from '../screens/SingleProductScreen/SingleProductScreen';
 import ProductCollectionScreeen from '../screens/ProductCollectionScreen/ProductCollectionScreen';
 import ContactUsScreen from '../screens/ContactUsScreen/ContactUsScreen';
+import { navigationRef } from '../constants/navigationRef';
 
 const Stack = createStackNavigator();
 
 export default function NavigationPage() {
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName="SplashScreen"
-        options={{ headerShown: false }}
+        screenOptions={{ headerShown: false }}
       >
-        <Stack.Screen
-          name="SplashScreen"
-          component={SplashScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="BottomTabs"
-          component={BottomTabNavigation}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="SplashScreen" component={SplashScreen} />
+        <Stack.Screen name="BottomTabs" component={BottomTabNavigation} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen
           name="ProfileDetailScreen"
           component={ProfileDetailScreen}
-          options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="AddressInfoScreen"
-          component={AddressInfoScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddAddressScreen"
-          component={AddAddressScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="MyOrderScreen"
-          component={MyOrderScreen}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="AddressInfoScreen" component={AddressInfoScreen} />
+        <Stack.Screen name="AddAddressScreen" component={AddAddressScreen} />
+        <Stack.Screen name="MyOrderScreen" component={MyOrderScreen} />
         <Stack.Screen
           name="OrderDetailsScreen"
           component={OrderDetailsScreen}
-          options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="LoginScreen"
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="SignupScreen"
-          component={SignUpScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="InviteScreen"
-          component={InviteScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Terms"
-          component={Terms}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="LoginScreen" component={LoginScreen} />
+        <Stack.Screen name="SignupScreen" component={SignUpScreen} />
+        <Stack.Screen name="InviteScreen" component={InviteScreen} />
+        <Stack.Screen name="Terms" component={Terms} />
         <Stack.Screen
           name="AllCategoriesScreen"
           component={AllCategoriesScreen}
-          options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="BrandScreen"
-          component={BrandScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ProductListScreen"
-          component={ProductListScreen}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="BrandScreen" component={BrandScreen} />
+        <Stack.Screen name="ProductListScreen" component={ProductListScreen} />
         <Stack.Screen
           name="SingleProductScreen"
           component={SingleProductScreen}
-          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="ProductCollectionScreeen"
           component={ProductCollectionScreeen}
-          options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="ContactUsScreen"
-          component={ContactUsScreen}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="ContactUsScreen" component={ContactUsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

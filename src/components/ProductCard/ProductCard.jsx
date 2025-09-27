@@ -205,7 +205,6 @@ const ProductCard = ({
         {brandId?.name && <Text style={styles.brandText}>{brandId.name}</Text>}
 
         <View>
-          {' '}
           {normalizedVariants?.length > 0 && (
             <ScrollView
               horizontal
@@ -215,7 +214,6 @@ const ProductCard = ({
               decelerationRate="fast"
               snapToInterval={VAR_CARD_WIDTH + VAR_CARD_GAP}
             >
-              {' '}
               {normalizedVariants.map(v => {
                 return (
                   <Pressable
@@ -229,32 +227,27 @@ const ProductCard = ({
                       },
                     ]}
                   >
-                    {' '}
                     <View style={styles.vHead}>
-                      {' '}
-                      <Text style={styles.vHeadTxt}>{v.weightLabel}</Text>{' '}
-                    </View>{' '}
+                      <Text style={styles.vHeadTxt}>{v.weightLabel}</Text>
+                    </View>
                     <View style={styles.vBody}>
-                      {' '}
                       <View
                         style={{ flexDirection: 'row', alignItems: 'center' }}
                       >
-                        {' '}
-                        <Text style={styles.vSale}>₹{v.salePrice}</Text>{' '}
+                        <Text style={styles.vSale}>₹{v.salePrice}</Text>
                         {v.mrpPrice > v.salePrice && (
                           <Text style={styles.vMrp}>MRP ₹{v.mrpPrice}</Text>
-                        )}{' '}
-                      </View>{' '}
+                        )}
+                      </View>
                       <Text style={styles.vOff}>
-                        {' '}
-                        {v.discountPercentage}% OFF{' '}
-                      </Text>{' '}
-                    </View>{' '}
+                        {v.discountPercentage}% OFF
+                      </Text>
+                    </View>
                   </Pressable>
                 );
-              })}{' '}
+              })}
             </ScrollView>
-          )}{' '}
+          )}
         </View>
         <Text style={styles.priceLabel}>PRICE</Text>
         <View style={styles.priceDiscountRow}>
@@ -279,6 +272,12 @@ const ProductCard = ({
                   disabled={loading}
                   activeOpacity={1}
                 >
+                  {!loading ? (
+                    <Text style={styles.stepperSymbol}>−</Text>
+                  ) : null}
+                </TouchableOpacity>
+
+                <View style={styles.stepperMiddle}>
                   {loading ? (
                     <Lottie
                       source={require('../../lottie/loading.json')}
@@ -287,12 +286,8 @@ const ProductCard = ({
                       style={{ width: 22, height: 22, alignSelf: 'center' }}
                     />
                   ) : (
-                    <Text style={styles.stepperSymbol}>−</Text>
+                    <Text style={styles.stepperQtyText}>{currentQty}</Text>
                   )}
-                </TouchableOpacity>
-
-                <View style={styles.stepperMiddle}>
-                  <Text style={styles.stepperQtyText}>{currentQty}</Text>
                 </View>
 
                 <TouchableOpacity
@@ -301,16 +296,9 @@ const ProductCard = ({
                   disabled={loading}
                   activeOpacity={1}
                 >
-                  {loading ? (
-                    <Lottie
-                      source={require('../../lottie/loading.json')}
-                      autoPlay
-                      loop
-                      style={{ width: 22, height: 22, alignSelf: 'center' }}
-                    />
-                  ) : (
+                  {!loading ? (
                     <Text style={styles.stepperSymbol}>+</Text>
-                  )}
+                  ) : null}
                 </TouchableOpacity>
               </View>
             ) : (
@@ -366,8 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     padding: 10,
     height: screenHeight * 0.22,
-    borderColor: '#F59A11',
-    borderWidth: 0.8,
+
     marginHorizontal: 1,
     marginTop: 7,
   },

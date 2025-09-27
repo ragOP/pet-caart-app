@@ -36,8 +36,8 @@ export default function ProductCollectionScreeen({ route, navigation }) {
   const [products, setProducts] = useState([]);
   const [allCollectionProducts, setAllCollectionProducts] = useState([]);
   const [collections, setCollections] = useState([]);
-  const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedBreed, setSelectedBreed] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState([]); // array of slugs [web:24]
+  const [selectedBreed, setSelectedBreed] = useState([]);
   const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
 
   useEffect(() => {
