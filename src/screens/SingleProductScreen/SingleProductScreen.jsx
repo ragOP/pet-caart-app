@@ -40,12 +40,15 @@ import Banner from '../../components/Banner/Banner';
 import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
 import Lottie from 'lottie-react-native';
 import { go } from '../../constants/navigationRef';
+
 const { width: screenWidthFull } = Dimensions.get('window');
 const screenWidth = screenWidthFull * 0.94;
+
 const getDiscountPercent = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
 };
+
 const formatWeight = grams => {
   if (!Number.isFinite(Number(grams))) return '';
   const g = Number(grams);
@@ -55,6 +58,7 @@ const formatWeight = grams => {
   }
   return `${g}g`;
 };
+
 const coerceStockNumber = obj => {
   const candidates = [
     obj?.stock,
@@ -69,6 +73,7 @@ const coerceStockNumber = obj => {
   }
   return 0;
 };
+
 const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
   const PriceCard = ({ item, isSelected, onPress }) => {
     const discount = getDiscountPercent(item.price, item.salePrice);
@@ -106,7 +111,9 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
       </TouchableOpacity>
     );
   };
+
   if (!variants?.length) return null;
+
   return (
     <FlatList
       data={variants}
@@ -145,6 +152,7 @@ const SingleProductScreen = ({ navigation }) => {
   const toggleSection = section => {
     setExpandedSection(prev => (prev === section ? null : section));
   };
+
   useEffect(() => {
     const fetchProductDetails = async () => {
       setLoading(true);
@@ -173,11 +181,13 @@ const SingleProductScreen = ({ navigation }) => {
     }
     go('BottomTabs', { screen: 'Cart' });
   };
+
   useEffect(() => {
     if (product && !selectedVariant) {
       setSelectedVariant(product);
     }
   }, [product, selectedVariant]);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -236,6 +246,7 @@ const SingleProductScreen = ({ navigation }) => {
       item.productId === product?._id && item.variantId === currentVariantId,
   );
   const isInCart = Boolean(inCartItem);
+
   useEffect(() => {
     if (isInCart) {
       setQuantity(inCartItem?.quantity || 1);
@@ -307,6 +318,17 @@ const SingleProductScreen = ({ navigation }) => {
       </View>
     );
 
+  const navigateToBrandListing = () => {
+    const brandSlug = product?.brandId?.slug || product?.brandId?.name || '';
+    navigation.navigate('ProductListScreen', {
+      categorySlug: null,
+      collectionSlug: null,
+      collectionName: product?.brandId?.name || 'Brand',
+      searchQuery: '',
+      brandSlug,
+    });
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -370,6 +392,7 @@ const SingleProductScreen = ({ navigation }) => {
             </View>
           </>
         )}
+
         <View style={styles.featuresContainer}>
           <View style={styles.featureCard}>
             <ShieldCheck size={20} color="#00A86B" />
@@ -388,9 +411,15 @@ const SingleProductScreen = ({ navigation }) => {
             <Text style={styles.featureText}>Multiple Payments</Text>
           </View>
         </View>
+
         <View style={styles.pad}>
           <View style={styles.brandRatingRow}>
-            <Text style={styles.brand}>{product?.brandId?.name}</Text>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={navigateToBrandListing}
+            >
+              <Text style={styles.brand}>{product?.brandId?.name}</Text>
+            </TouchableOpacity>
             <View style={styles.ratingRow}>
               <Text style={styles.star}>★</Text>
               <Text style={styles.rating}>3.0</Text>
@@ -633,16 +662,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 19,
     overflow: 'hidden',
-    borderWidth: 0.2,
+    borderWidth: 0.1,
+    borderColor: '#fff',
     ...Platform.select({
       ios: {
-        shadowColor: '#4040400D',
+        shadowColor: '#fff',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
       },
       android: {
-        elevation: 3,
+        elevation: 6,
       },
     }),
   },
@@ -697,7 +727,8 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    borderWidth: 0.2,
+    borderWidth: 0.1,
+    borderColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -705,13 +736,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     ...Platform.select({
       ios: {
-        shadowColor: '#4040400D',
+        shadowColor: '#fff',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
       },
       android: {
-        elevation: 3,
+        elevation: 6,
       },
     }),
   },
@@ -733,7 +764,6 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 10,
     borderWidth: 1,
-    // borderColor: '#014e6a',
     borderColor: '#a6a6a6',
     backgroundColor: '#fff',
     overflow: 'hidden',
@@ -809,7 +839,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     textAlign: 'center',
   },
-  // New Go to Cart CTA styles
   goToCartButton: {
     backgroundColor: '#F59A11',
     borderRadius: 12,
@@ -829,7 +858,6 @@ const styles = StyleSheet.create({
   },
 
   quantityContainer: {
-    // kept for reference; no longer used when isInCart is true
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,

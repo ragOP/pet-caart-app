@@ -99,16 +99,17 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     marginTop: 12,
-    borderWidth: 0.2,
+    borderWidth: 0.1,
+    borderColor: '#fff',
     ...Platform.select({
       ios: {
-        shadowColor: '#4040400D',
+        shadowColor: '#fff',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
       },
       android: {
-        elevation: 3,
+        elevation: 5,
       },
     }),
   },

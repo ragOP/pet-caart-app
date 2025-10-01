@@ -19,10 +19,10 @@ import Lottie from 'lottie-react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const PARENT_CARD_WIDTH = Math.round(screenWidth * 0.48);
-const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * 0.52);
+const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * 0.49);
 const VAR_CARD_GAP = 5;
-const VAR_CARD_HEIGHT = 50;
-const CARD_HEIGHT = 425;
+const VAR_CARD_HEIGHT = 42;
+const CARD_HEIGHT = 375;
 const getVariantDiscount = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
@@ -337,13 +337,23 @@ const styles = StyleSheet.create({
   card: {
     width: screenWidth * 0.64,
     alignSelf: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     height: CARD_HEIGHT,
     backgroundColor: '#fff',
-    borderColor: '#F59A11',
-    borderWidth: 1.5,
+    borderWidth: 0.4,
     borderRadius: 8,
     marginBottom: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4040400D',
+        shadowOffset: { width: 2, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   cardInner: { flex: 1, justifyContent: 'flex-start' },
   imageSection: {
@@ -353,8 +363,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F6F6F6',
     borderRadius: 6,
     padding: 10,
-    height: screenHeight * 0.22,
-
+    height: screenHeight * 0.18,
+    borderColor: '#F59A11',
+    borderWidth: 1,
     marginHorizontal: 1,
     marginTop: 7,
   },
@@ -399,7 +410,6 @@ const styles = StyleSheet.create({
   brandText: {
     fontSize: 13,
     color: '#F59A11',
-    marginTop: 5,
     fontFamily: 'Gotham-Rounded-Bold',
   },
   priceLabel: {
@@ -507,7 +517,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#008000',
   },
   vegText: { fontSize: 11, color: '#008000', marginTop: 1 },
-  vRow: { paddingVertical: 6 },
+  vRow: { paddingVertical: 4 },
   vCard: {
     borderRadius: 10,
     backgroundColor: '#ffffff',
@@ -516,22 +526,22 @@ const styles = StyleSheet.create({
     borderColor: '#014e6a',
   },
   vHead: {
-    height: 16,
+    height: 11,
     backgroundColor: '#0A4B5F',
     justifyContent: 'center',
     alignItems: 'center',
   },
   vHeadTxt: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 8,
     fontFamily: 'Gotham-Rounded-Bold',
   },
   vBody: { paddingHorizontal: 4, paddingTop: 1, paddingBottom: 6, flex: 1 },
-  vSale: { color: '#014e6a', fontSize: 11, fontFamily: 'Gotham-Rounded-Bold' },
+  vSale: { color: '#014e6a', fontSize: 10, fontFamily: 'Gotham-Rounded-Bold' },
   vMrp: {
     marginLeft: 6,
     color: '#6a6a6a',
-    fontSize: 9,
+    fontSize: 8,
     textDecorationLine: 'line-through',
     fontFamily: 'Gotham-Rounded-Medium',
   },

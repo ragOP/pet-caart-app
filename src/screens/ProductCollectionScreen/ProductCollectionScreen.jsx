@@ -19,6 +19,12 @@ import FilterBar from '../../components/FilterBar/FilterBar';
 import { getCollection } from '../../apis/getCollection';
 import ProductCollectionShimmer from '../../ui/Shimmer/ProductCollectionShimmer';
 const { width: screenWidth } = Dimensions.get('window');
+const LIFE_STAGE_LABELS = {
+  puppy: 'puppy',
+  adult: 'adult',
+  starter: 'starter',
+  kitten: 'kitten',
+};
 export default function ProductCollectionScreeen({ route, navigation }) {
   const {
     categorySlug,
@@ -28,7 +34,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     subcategoryName,
     subcategoryId,
   } = route.params;
-
   const [loading, setLoading] = useState(true);
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [products, setProducts] = useState([]);
@@ -36,13 +41,14 @@ export default function ProductCollectionScreeen({ route, navigation }) {
   const [collections, setCollections] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState([]);
   const [selectedBreed, setSelectedBreed] = useState([]);
+  const [selectedLifeStage, setSelectedLifeStage] = useState([]);
+  const [selectedProductType, setSelectedProductType] = useState([]);
+  const [selectedBreedSize, setSelectedBreedSize] = useState([]);
   const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
   const [sortOrder, setSortOrder] = useState(null);
-
   useEffect(() => {
     fetchCollections();
   }, []);
-
   useEffect(() => {
     fetchProducts();
   }, [
@@ -50,6 +56,9 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     collectionSlug,
     JSON.stringify(selectedBrand),
     JSON.stringify(selectedBreed),
+    JSON.stringify(selectedLifeStage),
+    JSON.stringify(selectedProductType),
+    JSON.stringify(selectedBreedSize),
     searchQuery,
     isGreenSwitchOn,
     sortOrder,
@@ -68,7 +77,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       setLoadingCollections(false);
     }
   };
-
   const filteredCollections = collections
     .filter(coll => coll.subCategoryId === subcategoryId)
     .sort((a, b) => {
@@ -76,46 +84,65 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       if (b.slug === collectionSlug) return 1;
       return 0;
     });
-
+  const norm = v =>
+    String(v || '')
+      .trim()
+      .toLowerCase();
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const params = { categorySlug, collectionSlug };
       if (selectedBrand?.length) params.brandSlug = selectedBrand.join(',');
       if (selectedBreed?.length) params.breedSlug = selectedBreed.join(',');
-
+      if (selectedLifeStage?.length)
+        params.lifeStage = selectedLifeStage.join(',');
+      if (selectedProductType?.length)
+        params.productType = selectedProductType.join(',');
+      if (selectedBreedSize?.length)
+        params.breedSize = selectedBreedSize.join(',');
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
       let filtered = fetchedProducts;
-      if (searchQuery && searchQuery.trim() !== '') {
-        const searchTerm = String(searchQuery).toLowerCase();
+      if (searchQuery && String(searchQuery).trim() !== '') {
+        const searchTerm = norm(searchQuery);
         filtered = filtered.filter(product => {
-          const matchesTitle = product.title
-            ?.toLowerCase()
-            .includes(searchTerm);
-          const matchesDesc = product.description
-            ?.toLowerCase()
-            .includes(searchTerm);
-          const matchesBrand = product.brandId?.name
-            ?.toLowerCase()
-            .includes(searchTerm);
-          const matchesCategory = product.categoryId?.name
-            ?.toLowerCase()
-            .includes(searchTerm);
-          const matchesSubCategory = product.subCategoryId?.name
-            ?.toLowerCase()
-            .includes(searchTerm);
-          const matchesBreed = product.breedId?.some(breed =>
-            breed.name?.toLowerCase().includes(searchTerm),
+          const matchesTitle = norm(product.title).includes(searchTerm);
+          const matchesDesc = norm(product.description).includes(searchTerm);
+          const matchesBrand = norm(product.brandId?.name).includes(searchTerm);
+          const matchesCategory = norm(product.categoryId?.name).includes(
+            searchTerm,
           );
+          const matchesSubCategory = norm(product.subCategoryId?.name).includes(
+            searchTerm,
+          );
+          const matchesBreed = (product.breedId || []).some(b =>
+            norm(b.name).includes(searchTerm),
+          );
+          const productLifeStages = Array.isArray(product.lifeStage)
+            ? product.lifeStage
+            : product.lifeStage
+            ? [product.lifeStage]
+            : [];
+          const matchesLifeStageField = productLifeStages
+            .map(ls => norm(ls))
+            .some(ls => ls.includes(searchTerm));
+          const matchesLifeStageLabel = Object.values(LIFE_STAGE_LABELS).some(
+            ls => norm(ls).includes(searchTerm),
+          );
+          const matchesType = norm(product.productType).includes(searchTerm);
+          const matchesSize = norm(product.breedSize).includes(searchTerm);
           return (
             matchesTitle ||
             matchesDesc ||
             matchesBrand ||
             matchesCategory ||
             matchesSubCategory ||
-            matchesBreed
+            matchesBreed ||
+            matchesLifeStageField ||
+            matchesLifeStageLabel ||
+            matchesType ||
+            matchesSize
           );
         });
       }
@@ -127,9 +154,42 @@ export default function ProductCollectionScreeen({ route, navigation }) {
 
         const breedMatches =
           !selectedBreed?.length ||
-          product.breedId?.some(b => selectedBreed.includes(b.slug));
-
-        return brandMatches && breedMatches;
+          (product.breedId || []).some(b => selectedBreed.includes(b.slug));
+        const productLifeStages = Array.isArray(product.lifeStage)
+          ? product.lifeStage
+          : product.lifeStage
+          ? [product.lifeStage]
+          : [];
+        const normalizedProductStages = productLifeStages.map(v => norm(v));
+        const normalizedSelectedStages = (selectedLifeStage || []).map(v =>
+          norm(v),
+        );
+        const lifeStageMatches =
+          !normalizedSelectedStages.length ||
+          normalizedProductStages.some(ls =>
+            normalizedSelectedStages.includes(ls),
+          );
+        const typeVal = norm(product.productType);
+        const normalizedSelectedTypes = (selectedProductType || []).map(v =>
+          norm(v),
+        );
+        const typeMatches =
+          !normalizedSelectedTypes.length ||
+          normalizedSelectedTypes.includes(typeVal);
+        const sizeVal = norm(product.breedSize);
+        const normalizedSelectedSizes = (selectedBreedSize || []).map(v =>
+          norm(v),
+        );
+        const sizeMatches =
+          !normalizedSelectedSizes.length ||
+          normalizedSelectedSizes.includes(sizeVal);
+        return (
+          brandMatches &&
+          breedMatches &&
+          lifeStageMatches &&
+          typeMatches &&
+          sizeMatches
+        );
       });
       if (isGreenSwitchOn) {
         filtered = filtered.filter(product => product.isVeg === true);
@@ -139,7 +199,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
         const n = typeof v === 'string' ? parseFloat(v) : Number(v);
         return Number.isFinite(n) ? n : 0;
       };
-
       if (sortOrder) {
         if (sortOrder === 'lowToHigh') {
           filtered = [...filtered].sort(
@@ -151,7 +210,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           );
         }
       }
-
       setProducts(filtered);
     } catch (error) {
       console.error('Product fetch error:', error);
@@ -160,20 +218,24 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       setLoading(false);
     }
   };
-
   const handleSearchChange = query => {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
-
-  // Receive arrays from FilterBar after Apply
   const handleBrandChange = brandSlugs => {
     setSelectedBrand(Array.isArray(brandSlugs) ? brandSlugs : []);
   };
-
   const handleBreedChange = breedSlugs => {
     setSelectedBreed(Array.isArray(breedSlugs) ? breedSlugs : []);
   };
-
+  const handleLifeStageChange = lifeStages => {
+    setSelectedLifeStage(Array.isArray(lifeStages) ? lifeStages : []);
+  };
+  const handleProductTypeChange = types => {
+    setSelectedProductType(Array.isArray(types) ? types : []);
+  };
+  const handleBreedSizeChange = sizes => {
+    setSelectedBreedSize(Array.isArray(sizes) ? sizes : []);
+  };
   const GreenSwitchButton = ({ value, onValueChange }) => (
     <TouchableOpacity
       onPress={() => onValueChange(!value)}
@@ -196,7 +258,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       </View>
     </TouchableOpacity>
   );
-
   return (
     <View style={styles.container}>
       <StatusBar
@@ -229,8 +290,14 @@ export default function ProductCollectionScreeen({ route, navigation }) {
         <FilterBar
           selectedBrand={selectedBrand}
           selectedBreed={selectedBreed}
+          selectedLifeStage={selectedLifeStage}
+          selectedProductType={selectedProductType}
+          selectedBreedSize={selectedBreedSize}
           setSelectedBrand={handleBrandChange}
           setSelectedBreed={handleBreedChange}
+          setSelectedLifeStage={handleLifeStageChange}
+          setSelectedProductType={handleProductTypeChange}
+          setSelectedBreedSize={handleBreedSizeChange}
           collectionName={collectionName}
           sortOrder={sortOrder}
           onChangeSort={setSortOrder}
@@ -309,7 +376,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
               />
             </View>
           )}
-
           {products.length > 0 ? (
             <View style={styles.productContainer}>
               {products.map((product, index) => (
@@ -346,7 +412,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
@@ -377,9 +442,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  productCardWrapper: {
-    width: '48%',
-  },
+  productCardWrapper: { width: '48%' },
   filterBarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -428,23 +491,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     marginBottom: 5,
   },
-  circleSelected: {
-    borderColor: '#F17521',
-  },
-  image: {
-    width: 56,
-    height: 56,
-    borderRadius: 8,
-  },
-  label: {
-    fontSize: 13,
-    color: '#888',
-    textAlign: 'center',
-  },
-  labelSelected: {
-    color: '#F17521',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
+  circleSelected: { borderColor: '#F17521' },
+  image: { width: 56, height: 56, borderRadius: 8 },
+  label: { fontSize: 13, color: '#888', textAlign: 'center' },
+  labelSelected: { color: '#F17521', fontFamily: 'Gotham-Rounded-Bold' },
   underline: {
     position: 'absolute',
     bottom: -8,
@@ -454,7 +504,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   subcategoryNameText: {
-    color: '#181818',
+    color: '#F59A11',
     fontSize: 16,
     fontFamily: 'Gotham-Rounded-Bold',
     marginLeft: 8,
