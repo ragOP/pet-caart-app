@@ -115,6 +115,10 @@ const CartScreen = () => {
         dispatch(setCart(formattedItems));
         setShippingCost(cartResponse.data.shippingDetails?.totalCost || 0);
         setShippingDate(cartResponse.data.shippingDetails?.estimatedDate || '');
+      } else {
+        dispatch(setCart([]));
+        setShippingCost(0);
+        setShippingDate('');
       }
     } catch (error) {
       console.error('Error fetching cart:', error);

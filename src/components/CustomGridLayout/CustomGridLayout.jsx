@@ -54,7 +54,7 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
         navigation.navigate(item.link);
       }
     } else if (item.itemId?._id) {
-      navigation.navigate('Product', { id: item.itemId._id });
+      navigation.navigate('ProductListScreen', { id: item.itemId._id });
     }
   };
 

@@ -1,3 +1,5 @@
+// screens/ProductCollectionScreen.js
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -18,14 +20,17 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import FilterBar from '../../components/FilterBar/FilterBar';
 import { getCollection } from '../../apis/getCollection';
 import ProductCollectionShimmer from '../../ui/Shimmer/ProductCollectionShimmer';
+
 const { width: screenWidth } = Dimensions.get('window');
+
 const LIFE_STAGE_LABELS = {
   puppy: 'puppy',
   adult: 'adult',
   starter: 'starter',
   kitten: 'kitten',
 };
-export default function ProductCollectionScreeen({ route, navigation }) {
+
+export default function ProductCollectionScreen({ route, navigation }) {
   const {
     categorySlug,
     collectionSlug,
@@ -44,24 +49,28 @@ export default function ProductCollectionScreeen({ route, navigation }) {
   const [selectedLifeStage, setSelectedLifeStage] = useState([]);
   const [selectedProductType, setSelectedProductType] = useState([]);
   const [selectedBreedSize, setSelectedBreedSize] = useState([]);
-  const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
+  const [isVeg, setIsVeg] = useState(false);
   const [sortOrder, setSortOrder] = useState(null);
+
+  // Fetch collections
   useEffect(() => {
     fetchCollections();
   }, []);
+
+  // Fetch & filter products on filter/sort/veg change
   useEffect(() => {
     fetchProducts();
   }, [
     categorySlug,
     collectionSlug,
-    JSON.stringify(selectedBrand),
-    JSON.stringify(selectedBreed),
-    JSON.stringify(selectedLifeStage),
-    JSON.stringify(selectedProductType),
-    JSON.stringify(selectedBreedSize),
+    selectedBrand,
+    selectedBreed,
+    selectedLifeStage,
+    selectedProductType,
+    selectedBreedSize,
     searchQuery,
-    isGreenSwitchOn,
     sortOrder,
+    isVeg,
   ]);
 
   const fetchCollections = async () => {
@@ -77,6 +86,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       setLoadingCollections(false);
     }
   };
+
   const filteredCollections = collections
     .filter(coll => coll.subCategoryId === subcategoryId)
     .sort((a, b) => {
@@ -84,10 +94,13 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       if (b.slug === collectionSlug) return 1;
       return 0;
     });
+
+  // Normalize string for search
   const norm = v =>
     String(v || '')
       .trim()
       .toLowerCase();
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -104,6 +117,17 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
       let filtered = fetchedProducts;
+
+      // Debug: Log the isVeg filter state
+      console.log('isVeg filter is:', isVeg);
+
+      // Apply veg filter (show only vegetarian products when isVeg is true)
+      if (isVeg) {
+        filtered = filtered.filter(product => product.isVeg === true);
+        console.log('Filtered products (veg):', filtered);
+      }
+
+      // Apply search filter
       if (searchQuery && String(searchQuery).trim() !== '') {
         const searchTerm = norm(searchQuery);
         filtered = filtered.filter(product => {
@@ -146,12 +170,13 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           );
         });
       }
+
+      // Apply brand/breed/life stage/product type/breed size filters
       filtered = filtered.filter(product => {
         const brandMatches =
           !selectedBrand?.length ||
           (product.brandId?.slug &&
             selectedBrand.includes(product.brandId.slug));
-
         const breedMatches =
           !selectedBreed?.length ||
           (product.breedId || []).some(b => selectedBreed.includes(b.slug));
@@ -191,14 +216,14 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           sizeMatches
         );
       });
-      if (isGreenSwitchOn) {
-        filtered = filtered.filter(product => product.isVeg === true);
-      }
+
+      // Sort by price if sortOrder is set
       const getPriceNum = p => {
         const v = p?.salePrice ?? p?.price ?? 0;
         const n = typeof v === 'string' ? parseFloat(v) : Number(v);
         return Number.isFinite(n) ? n : 0;
       };
+
       if (sortOrder) {
         if (sortOrder === 'lowToHigh') {
           filtered = [...filtered].sort(
@@ -210,6 +235,9 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           );
         }
       }
+
+      // Log final products to render
+      console.log('Final products to render:', filtered);
       setProducts(filtered);
     } catch (error) {
       console.error('Product fetch error:', error);
@@ -218,6 +246,8 @@ export default function ProductCollectionScreeen({ route, navigation }) {
       setLoading(false);
     }
   };
+
+  // Handler for search, brand, breed, life stage, etc. filters
   const handleSearchChange = query => {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
@@ -236,28 +266,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
   const handleBreedSizeChange = sizes => {
     setSelectedBreedSize(Array.isArray(sizes) ? sizes : []);
   };
-  const GreenSwitchButton = ({ value, onValueChange }) => (
-    <TouchableOpacity
-      onPress={() => onValueChange(!value)}
-      activeOpacity={1}
-      style={styles.switchWrapper}
-    >
-      <View style={[styles.track]} />
-      <View
-        style={[
-          styles.thumb,
-          { left: value ? 34 : 4, borderColor: value ? '#0a0' : '#9f9f9f' },
-        ]}
-      >
-        <View
-          style={[
-            styles.thumbInner,
-            { backgroundColor: value ? '#0a0' : '#9f9f9f' },
-          ]}
-        />
-      </View>
-    </TouchableOpacity>
-  );
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -282,11 +291,6 @@ export default function ProductCollectionScreeen({ route, navigation }) {
         </View>
       </View>
       <View style={styles.filterBarWrapper}>
-        <Text style={styles.subcategoryNameText}>{subcategoryName}</Text>
-        <GreenSwitchButton
-          value={isGreenSwitchOn}
-          onValueChange={setIsGreenSwitchOn}
-        />
         <FilterBar
           selectedBrand={selectedBrand}
           selectedBreed={selectedBreed}
@@ -298,6 +302,8 @@ export default function ProductCollectionScreeen({ route, navigation }) {
           setSelectedLifeStage={handleLifeStageChange}
           setSelectedProductType={handleProductTypeChange}
           setSelectedBreedSize={handleBreedSizeChange}
+          isVeg={isVeg}
+          setIsVeg={setIsVeg}
           collectionName={collectionName}
           sortOrder={sortOrder}
           onChangeSort={setSortOrder}
@@ -412,6 +418,7 @@ export default function ProductCollectionScreeen({ route, navigation }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
@@ -448,39 +455,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 15,
   },
-  switchWrapper: {
-    width: 64,
-    height: 30,
-    justifyContent: 'center',
-    marginBottom: 9,
-  },
-  track: {
-    position: 'absolute',
-    width: 56,
-    height: 24,
-    borderRadius: 10,
-    backgroundColor: '#eee',
-    left: 4,
-    top: 6,
-  },
-  thumb: {
-    position: 'absolute',
-    width: 28,
-    height: 28,
-    borderWidth: 2,
-    backgroundColor: '#fff',
-    top: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  thumbInner: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#0a0',
-  },
-  touchable: { alignItems: 'center' },
   circle: {
     width: 72,
     height: 72,

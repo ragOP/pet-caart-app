@@ -35,11 +35,11 @@ import { addItemToCart } from '../../redux/cartSlice';
 import { getProducts } from '../../apis/getProducts';
 import { getProductById } from '../../apis/getProductById';
 import { addProductToCart } from '../../apis/addProductToCart';
-import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
 import Banner from '../../components/Banner/Banner';
 import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
 import Lottie from 'lottie-react-native';
 import { go } from '../../constants/navigationRef';
+import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
 
 const { width: screenWidthFull } = Dimensions.get('window');
 const screenWidth = screenWidthFull * 0.94;
@@ -656,25 +656,13 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     lineHeight: 25,
   },
-
   accordionContainer: {
     marginVertical: 14,
     backgroundColor: '#fff',
-    borderRadius: 19,
+    borderRadius: 16, // smoother corners
+    borderWidth: 1, // clear but subtle border
+    borderColor: '#E5E5E5', // light grey border for neat separation
     overflow: 'hidden',
-    borderWidth: 0.1,
-    borderColor: '#fff',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#fff',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
   },
   accordionHeader: {
     padding: 18,
@@ -727,8 +715,8 @@ const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    borderWidth: 0.1,
-    borderColor: '#fff',
+    borderWidth: 0.0,
+    borderColor: '#E5E5E5',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -736,13 +724,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     ...Platform.select({
       ios: {
-        shadowColor: '#fff',
-        shadowOffset: { width: 0, height: 3 },
+        shadowColor: '#E5E5E5',
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.2,
-        shadowRadius: 6,
+        shadowRadius: 3,
       },
       android: {
-        elevation: 6,
+        elevation: 1,
+        shadowColor: '#E5E5E5',
       },
     }),
   },

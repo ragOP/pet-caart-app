@@ -73,7 +73,7 @@ const CategoryScreen = ({ navigation }) => {
           <Text>No banner image found</Text>
         )}
       </View>
-      <CategoryCard />
+      {/* <CategoryCard /> */}
     </View>
   );
 };

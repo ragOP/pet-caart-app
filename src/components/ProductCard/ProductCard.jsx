@@ -22,7 +22,7 @@ const PARENT_CARD_WIDTH = Math.round(screenWidth * 0.48);
 const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * 0.49);
 const VAR_CARD_GAP = 5;
 const VAR_CARD_HEIGHT = 42;
-const CARD_HEIGHT = 375;
+const CARD_HEIGHT = 400;
 const getVariantDiscount = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
@@ -254,12 +254,27 @@ const ProductCard = ({
           <Text style={styles.priceValue}>₹{discountedPrice}</Text>
           {hasDiscount && (
             <>
-              <Text style={styles.strikePrice}>₹{originalPrice}</Text>
               <View style={styles.discountContainer}>
                 <Text style={styles.discountText}>{discount} OFF</Text>
               </View>
             </>
           )}
+        </View>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}
+        >
+          <Text style={[styles.strikePrice, { flex: 1 }]}>
+            MRP ₹{originalPrice}
+          </Text>
+          <Text
+            style={{
+              fontSize: 9,
+              color: '#888',
+              fontFamily: 'Gotham-Rounded-Bold',
+            }}
+          >
+            ⚡ 17 Oct 2025
+          </Text>
         </View>
 
         <View style={styles.cartButtonRow}>
@@ -340,18 +355,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     height: CARD_HEIGHT,
     backgroundColor: '#fff',
-    borderWidth: 0.4,
+    borderWidth: 0.1,
     borderRadius: 8,
     marginBottom: 15,
     ...Platform.select({
       ios: {
-        shadowColor: '#4040400D',
+        shadowColor: '#fff',
         shadowOffset: { width: 2, height: 3 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
       },
       android: {
-        elevation: 5,
+        elevation: 3,
       },
     }),
   },
@@ -431,7 +446,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: '#888',
     fontSize: 10,
-    marginLeft: 5,
+    marginTop: 2,
     fontFamily: 'Gotham-Rounded-Bold',
   },
   discountContainer: {

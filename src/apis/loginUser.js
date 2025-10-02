@@ -19,14 +19,17 @@ export const loginUser = async payload => {
       };
     }
     console.log('API Response:', apiResponse);
-    if (apiResponse?.response?.data?.token) {
-      await AsyncStorage.setItem(TOKEN, apiResponse.response.data.token);
-      console.log('Token saved to AsyncStorage');
-      const user = apiResponse.response.data.user;
+    // Extract the relevant data
+    const data = apiResponse.response.data;
+    if (data?.token) {
+      await AsyncStorage.setItem(TOKEN, data.token);
+      console.log('Token saved to AsyncStorage login');
+      // Return all necessary fields, including isExisitinguser
       return {
         success: true,
-        token: apiResponse.response.data.token,
-        user: user,
+        token: data.token,
+        user: data.user,
+        isExisitinguser: data.isExisitinguser, // <- This is the key line
       };
     } else {
       console.log('Login failed, no token received.');
@@ -34,7 +37,6 @@ export const loginUser = async payload => {
     }
   } catch (error) {
     console.error('Login failed:', error);
-
     return {
       success: false,
       message: error.message || 'An error occurred during the login process',

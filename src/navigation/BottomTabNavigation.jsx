@@ -15,6 +15,7 @@ import {
   UserRound,
   LayoutDashboard,
   Logs,
+  Dog,
 } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
@@ -27,7 +28,7 @@ const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
 const TABS = [
   { label: 'Home', icon: Home, route: 'Home' },
-  { label: 'Breed Shop', icon: Logs, route: 'Breed' },
+  { label: 'Breed Shop', icon: Dog, route: 'Breed' },
   { label: '', icon: LayoutDashboard, route: 'CollectionScreen' },
   { label: 'Cart', icon: ShoppingBasket, route: 'Cart' },
   { label: 'Profile', icon: UserRound, route: 'Profile' },
@@ -65,21 +66,26 @@ const CustomTabBar = ({ state, navigation }) => {
                 </TouchableOpacity>
               );
             }
-            const isBreedTab = tab.label === 'Breed Shop';
+
+            const tabStyle = [
+              styles.tab,
+              index === 1 && { marginRight: 40 },
+              index === 3 && { marginLeft: 40 },
+            ];
 
             return (
               <TouchableOpacity
                 key={index}
-                style={[styles.tab, isBreedTab && { marginRight: 30 }]}
+                style={tabStyle}
                 onPress={() => navigation.navigate(tab.route)}
                 activeOpacity={1}
               >
-                <Icon size={26} color={isSelected ? '#0888B1' : '#4B4B4B'} />
-                <Text
+                <Icon size={28} color={isSelected ? '#0888B1' : '#4B4B4B'} />
+                {/* <Text
                   style={[styles.label, isSelected && { color: '#0888B1' }]}
                 >
                   {tab.label}
-                </Text>
+                </Text> */}
               </TouchableOpacity>
             );
           })}
@@ -138,7 +144,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   label: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 4,
     color: '#4B4B4B',
   },
