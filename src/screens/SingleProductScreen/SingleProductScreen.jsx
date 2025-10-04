@@ -137,6 +137,7 @@ const SingleProductScreen = ({ navigation }) => {
   const { productId } = route.params;
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
+  const isLoggedIn = useSelector(state => !!state.auth.user); // Adjust to your auth state, e.g., state.auth.token
 
   const [expandedSection, setExpandedSection] = useState(null);
   const [product, setProduct] = useState(null);
@@ -256,6 +257,13 @@ const SingleProductScreen = ({ navigation }) => {
   }, [isInCart, inCartItem]);
 
   const handleAddToCart = async () => {
+    if (!isLoggedIn) {
+      navigation.navigate('LoginScreen', {
+        returnScreen: 'SingleProductScreen',
+        productId,
+      });
+      return;
+    }
     if (!effectiveInStock || cartLoading || !product) return;
     setCartLoading(true);
     try {
@@ -304,6 +312,17 @@ const SingleProductScreen = ({ navigation }) => {
     setCurrentImageIndex(index);
   }, []);
 
+  const navigateToBrandListing = () => {
+    const brandSlug = product?.brandId?.slug || product?.brandId?.name || '';
+    navigation.navigate('ProductListScreen', {
+      categorySlug: null,
+      collectionSlug: null,
+      collectionName: product?.brandId?.name || 'Brand',
+      searchQuery: '',
+      brandSlug,
+    });
+  };
+
   if (loading) return <SingleProductShimmer />;
   if (error)
     return (
@@ -317,17 +336,6 @@ const SingleProductScreen = ({ navigation }) => {
         <Text style={styles.errorText}>No product data available</Text>
       </View>
     );
-
-  const navigateToBrandListing = () => {
-    const brandSlug = product?.brandId?.slug || product?.brandId?.name || '';
-    navigation.navigate('ProductListScreen', {
-      categorySlug: null,
-      collectionSlug: null,
-      collectionName: product?.brandId?.name || 'Brand',
-      searchQuery: '',
-      brandSlug,
-    });
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
@@ -660,7 +668,7 @@ const styles = StyleSheet.create({
     marginVertical: 14,
     backgroundColor: '#fff',
     borderRadius: 16, // smoother corners
-    borderWidth: 1, // clear but subtle border
+    borderWidth: 2, // clear but subtle border
     borderColor: '#E5E5E5', // light grey border for neat separation
     overflow: 'hidden',
   },
@@ -693,11 +701,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   accordionBody: {
+    marginTop: 8,
     paddingHorizontal: 18,
     paddingVertical: 14,
     borderRadius: 12,
     marginHorizontal: 12,
-    marginBottom: 12,
+    marginBottom: 8,
     borderColor: '#FBB040',
     borderWidth: 0.6,
   },
@@ -707,33 +716,19 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: 'Gotham-Rounded-Medium',
   },
-
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorText: { fontSize: 16, color: 'red', padding: 10 },
-
   cardContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    borderWidth: 0.0,
+    borderWidth: 2,
     borderColor: '#E5E5E5',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
     justifyContent: 'space-between',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#E5E5E5',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 1,
-        shadowColor: '#E5E5E5',
-      },
-    }),
   },
   iconLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   labelText: {
@@ -845,7 +840,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     textAlign: 'center',
   },
-
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',

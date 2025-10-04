@@ -68,11 +68,11 @@ const CollectionScreen = ({ navigation }) => {
             />
           </TouchableOpacity>
         ))}
-        <EssentialSlider
+        {/* <EssentialSlider
           headingIcon={require('../../assets/icons/paw2.png')}
           headingTextOrange="Shop"
           headingTextBlue="By Store"
-        />
+        /> */}
       </ScrollView>
     </View>
   );

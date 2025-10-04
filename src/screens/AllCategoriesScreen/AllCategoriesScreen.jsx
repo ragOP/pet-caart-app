@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   StatusBar,
   StyleSheet,
   Platform,
@@ -17,11 +16,13 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { useQuery } from '@tanstack/react-query';
 import SearchBar from '../../components/SearchBar/SearchBar';
+
+import CollectionShimmer from '../../ui/Shimmer/CollectionShimmer';
+import { getCategories } from '../../apis/getCategories';
 import { getSubCategories } from '../../apis/getSubCategories';
 import { getCollection } from '../../apis/getCollection';
-import { getCategories } from '../../apis/getCategories';
-import CollectionShimmer from '../../ui/Shimmer/CollectionShimmer';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -90,63 +91,85 @@ function FoodCard({ label, image }) {
 }
 
 export default function AllCategoriesScreen({ navigation }) {
-  const [categories, setCategories] = useState([]);
-  const [subcategories, setSubCategories] = useState([]);
-  const [collections, setCollections] = useState({});
-  const [loading, setLoading] = useState(true);
   const [activeAccordionId, setActiveAccordionId] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
   const underlineAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+  // Categories Query
+  const { data: apiCategories, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const res = await getCategories();
+      return res.data.data.categories
+        .filter(c => c.name === 'Dogs' || c.name === 'Cats')
+        .sort((a, b) => (a.name === 'Dogs' ? -1 : 1));
+    },
+  });
 
-        const apiResponse = await getCategories();
-        const filteredCats = apiResponse.data.data.categories
-          .filter(c => c.name === 'Dogs' || c.name === 'Cats')
-          .sort((a, b) => (a.name === 'Dogs' ? -1 : 1));
-        setCategories(filteredCats);
-
+  // Subcategories Query (depends on categories)
+  const { data: apiSubcategories, isLoading: isLoadingSubcategories } =
+    useQuery({
+      queryKey: ['subcategories'],
+      queryFn: async () => {
         const res = await getSubCategories();
-        if (res?.data?.data) {
-          setSubCategories(res.data.data);
+        return res?.data?.data || [];
+      },
+      enabled: !!apiCategories,
+    });
+  const { data: collections, isLoading: isLoadingCollections } = useQuery({
+    queryKey: ['collections'],
+    queryFn: async () => {
+      const subcatIds = apiSubcategories?.map(subcat => subcat._id) || [];
+      const colls = {};
+      for (const subcatId of subcatIds) {
+        try {
+          const collectionRes = await getCollection();
+          colls[subcatId] = collectionRes.data.data.filter(
+            item => item.subCategoryId === subcatId,
+          );
+        } catch (error) {
+          colls[subcatId] = [];
         }
-
-        const newCollections = {};
-        if (res?.data?.data) {
-          const allSubcatIds = res.data.data.map(subcat => subcat._id);
-          for (const subcatId of allSubcatIds) {
-            try {
-              const collectionRes = await getCollection();
-              newCollections[subcatId] = collectionRes.data.data.filter(
-                item => item.subCategoryId === subcatId,
-              );
-            } catch (error) {
-              newCollections[subcatId] = [];
-            }
-          }
-          setCollections(newCollections);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        setLoading(false);
       }
-    };
+      return colls;
+    },
+    enabled: !!apiSubcategories?.length, // Only fetch if subcategories exist
+  });
 
-    fetchData();
-  }, []);
+  // Filter subcategories by active category
+  const filteredSubcategories = useMemo(() => {
+    if (!apiCategories || !apiSubcategories) return [];
+    return apiSubcategories.filter(
+      subcat => subcat.categoryId === apiCategories[activeTab]?._id,
+    );
+  }, [apiCategories, apiSubcategories, activeTab]);
 
-  const handleAccordionToggle = subCategoryId => {
-    if (activeAccordionId === subCategoryId) {
+  // Tab labels and width
+  const TAB_LABELS = useMemo(
+    () => (apiCategories ? apiCategories.map(c => c.name) : []),
+    [apiCategories],
+  );
+  const TAB_COUNT = TAB_LABELS.length;
+  const underlineWidth = SCREEN_WIDTH / Math.max(TAB_COUNT, 1);
+  const underlineTranslate = underlineAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, underlineWidth],
+  });
+
+  // Tab press handler
+  const handleTabPress = index => {
+    if (index < TAB_COUNT) {
+      setActiveTab(index);
       setActiveAccordionId(null);
-    } else {
-      setActiveAccordionId(subCategoryId);
+      Animated.timing(underlineAnim, {
+        toValue: index,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
     }
   };
 
+  // Collection click handler
   const handleCollectionClick = (
     categorySlug,
     collectionSlug,
@@ -164,32 +187,9 @@ export default function AllCategoriesScreen({ navigation }) {
     });
   };
 
-  const filteredSubcategories =
-    categories.length > 0
-      ? subcategories.filter(
-          subcat => subcat.categoryId === categories[activeTab]?._id,
-        )
-      : [];
-
-  const TAB_LABELS = categories.map(c => c.name);
-  const TAB_COUNT = TAB_LABELS.length;
-  const underlineWidth = SCREEN_WIDTH / Math.max(TAB_COUNT, 1);
-  const underlineTranslate = underlineAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, underlineWidth],
-  });
-
-  const handleTabPress = index => {
-    if (index < TAB_COUNT) {
-      setActiveTab(index);
-      setActiveAccordionId(null);
-      Animated.timing(underlineAnim, {
-        toValue: index,
-        duration: 220,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
+  // Loading state
+  const loading =
+    isLoadingCategories || isLoadingSubcategories || isLoadingCollections;
 
   return (
     <View style={styles.container}>
@@ -261,9 +261,9 @@ export default function AllCategoriesScreen({ navigation }) {
                 key={category._id}
                 category={category}
                 isOpen={activeAccordionId === category._id}
-                onToggle={handleAccordionToggle}
+                onToggle={setActiveAccordionId}
               >
-                {collections[category._id]?.length > 0 ? (
+                {collections?.[category._id]?.length > 0 ? (
                   <ScrollView
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}

@@ -8,6 +8,7 @@ import {
   Dimensions,
   ScrollView,
   Pressable,
+  Platform,
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import LinearGradient from 'react-native-linear-gradient';
@@ -19,10 +20,11 @@ import Lottie from 'lottie-react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const PARENT_CARD_WIDTH = Math.round(screenWidth * 0.48);
-const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * 0.49);
+const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * 0.43);
 const VAR_CARD_GAP = 5;
 const VAR_CARD_HEIGHT = 42;
-const CARD_HEIGHT = 400;
+const CARD_HEIGHT = 360;
+
 const getVariantDiscount = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
@@ -35,6 +37,7 @@ const formatWeight = w => {
   }
   return `${n}g`;
 };
+
 const ProductCard = ({
   images,
   title,
@@ -62,6 +65,9 @@ const ProductCard = ({
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
+
+  // LOGIN STATE for REDIRECTION
+  const isLoggedIn = useSelector(state => !!state.auth.user); // Adjust per your store
 
   const currentQty = useMemo(() => {
     const found = cartItems.find(
@@ -96,6 +102,15 @@ const ProductCard = ({
 
   const handleIncrement = async () => {
     if (loading || isOutOfStock) return;
+
+    if (!isLoggedIn) {
+      navigation.navigate('LoginScreen', {
+        returnScreen: 'SingleProductScreen',
+        productId,
+      });
+      return;
+    }
+
     const newQty = currentQty + 1;
     setLoading(true);
     try {
@@ -187,23 +202,6 @@ const ProductCard = ({
           </Swiper>
           <Text style={styles.ratingText}>⭐ {rating}</Text>
         </View>
-
-        <View style={styles.titleRow}>
-          <Text style={styles.titleText} numberOfLines={2}>
-            {title}
-          </Text>
-          {isVeg && (
-            <View style={styles.vegMark}>
-              <View style={styles.vegBox}>
-                <View style={styles.vegDot} />
-              </View>
-              <Text style={styles.vegText}>VEG</Text>
-            </View>
-          )}
-        </View>
-
-        {brandId?.name && <Text style={styles.brandText}>{brandId.name}</Text>}
-
         <View>
           {normalizedVariants?.length > 0 && (
             <ScrollView
@@ -249,31 +247,22 @@ const ProductCard = ({
             </ScrollView>
           )}
         </View>
-        <Text style={styles.priceLabel}>PRICE</Text>
         <View style={styles.priceDiscountRow}>
           <Text style={styles.priceValue}>₹{discountedPrice}</Text>
-          {hasDiscount && (
-            <>
-              <View style={styles.discountContainer}>
-                <Text style={styles.discountText}>{discount} OFF</Text>
+          {isVeg && (
+            <View style={styles.vegMark}>
+              <View style={styles.vegBox}>
+                <View style={styles.vegDot} />
               </View>
-            </>
+              <Text style={styles.vegText}>VEG</Text>
+            </View>
           )}
         </View>
-        <View
-          style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}
-        >
-          <Text style={[styles.strikePrice, { flex: 1 }]}>
-            MRP ₹{originalPrice}
-          </Text>
-          <Text
-            style={{
-              fontSize: 9,
-              color: '#888',
-              fontFamily: 'Gotham-Rounded-Bold',
-            }}
-          >
-            ⚡ 17 Oct 2025
+        {brandId?.name && <Text style={styles.brandText}>{brandId.name}</Text>}
+
+        <View style={styles.titleRow}>
+          <Text style={styles.titleText} numberOfLines={2}>
+            {title}
           </Text>
         </View>
 
@@ -356,6 +345,7 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     backgroundColor: '#fff',
     borderWidth: 0.1,
+    borderColor: '#fff',
     borderRadius: 8,
     marginBottom: 15,
     ...Platform.select({
@@ -366,7 +356,7 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
       },
       android: {
-        elevation: 3,
+        elevation: 1.5,
       },
     }),
   },
@@ -421,11 +411,13 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     fontFamily: 'gotham-rounded-book',
     lineHeight: 18,
+    paddingLeft: 2,
   },
   brandText: {
     fontSize: 13,
     color: '#F59A11',
     fontFamily: 'Gotham-Rounded-Bold',
+    paddingLeft: 3,
   },
   priceLabel: {
     fontSize: 12,
@@ -436,9 +428,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 3,
+    paddingLeft: 4,
   },
   priceValue: {
-    fontSize: 12,
+    fontSize: 15,
     color: '#218032',
     fontFamily: 'Gotham-Rounded-Bold',
   },
@@ -465,8 +458,8 @@ const styles = StyleSheet.create({
   cartButtonRow: {
     position: 'absolute',
     bottom: 8,
-    left: 4,
-    right: 5,
+    left: 0,
+    right: 0,
   },
   cartButton: {
     backgroundColor: '#F59A11',

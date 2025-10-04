@@ -99,19 +99,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     marginTop: 12,
-    borderWidth: 0.1,
-    borderColor: '#fff',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#fff',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 5,
-      },
-    }),
+    borderWidth: 2, // clear but subtle border
+    borderColor: '#E5E5E5', // light grey border for neat separation
   },
   heading: {
     fontSize: 19,

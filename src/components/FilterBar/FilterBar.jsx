@@ -75,8 +75,6 @@ const FilterBar = ({
     { label: 'Low to High', value: 'lowToHigh', icon: ArrowDownWideNarrow },
     { label: 'High to Low', value: 'highToLow', icon: ArrowUpNarrowWide },
   ];
-
-  // Fetch brands and breeds
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -92,8 +90,6 @@ const FilterBar = ({
     };
     loadData();
   }, []);
-
-  // Sync temp selection state
   useEffect(() => setTempBrandSlugs(selectedBrand || []), [selectedBrand]);
   useEffect(() => setTempBreedSlugs(selectedBreed || []), [selectedBreed]);
   useEffect(
@@ -110,7 +106,6 @@ const FilterBar = ({
   );
 
   const openFilterSheet = () => {
-    // Sync all temp states before opening
     setTempBrandSlugs(selectedBrand || []);
     setTempBreedSlugs(selectedBreed || []);
     setTempLifeStages(selectedLifeStage || []);
@@ -157,30 +152,31 @@ const FilterBar = ({
   const handleBreedSizeSelect = v =>
     setTempBreedSizes(prev => toggleValue(prev, v));
 
-  // Veg toggle is now direct, above the filter bar
   const handleVegToggle = () => setIsVeg?.(prev => !prev);
 
   const GreenSwitchButton = ({ value, onValueChange }) => (
-    <TouchableOpacity
-      onPress={() => onValueChange(!value)}
-      activeOpacity={1}
-      style={styles.switchWrapper}
-    >
-      <View style={styles.track} />
-      <View
-        style={[
-          styles.thumb,
-          { left: value ? 34 : 4, borderColor: value ? '#0a0' : '#9f9f9f' },
-        ]}
+    <View style={styles.vegbutton}>
+      <TouchableOpacity
+        onPress={() => onValueChange(!value)}
+        activeOpacity={1}
+        style={styles.switchWrapper}
       >
+        <View style={styles.track} />
         <View
           style={[
-            styles.thumbInner,
-            { backgroundColor: value ? '#0a0' : '#9f9f9f' },
+            styles.thumb,
+            { left: value ? 34 : 4, borderColor: value ? '#0a0' : '#9f9f9f' },
           ]}
-        />
-      </View>
-    </TouchableOpacity>
+        >
+          <View
+            style={[
+              styles.thumbInner,
+              { backgroundColor: value ? '#0a0' : '#9f9f9f' },
+            ]}
+          />
+        </View>
+      </TouchableOpacity>
+    </View>
   );
   const openSortSheet = () => {
     sortSheetRef.current?.open();
@@ -274,8 +270,6 @@ const FilterBar = ({
           </Text>
         </TouchableOpacity>
       </ScrollView>
-
-      {/* Filter bottom sheet */}
       <RBSheet
         ref={filterSheetRef}
         height={550}
@@ -471,8 +465,6 @@ const FilterBar = ({
           </View>
         </View>
       </RBSheet>
-
-      {/* Sort bottom sheet */}
       <RBSheet
         ref={sortSheetRef}
         height={180}
@@ -574,22 +566,13 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     marginHorizontal: 4,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 6,
     backgroundColor: '#fff',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#0002',
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 6,
-        shadowOpacity: 0.2,
-      },
-      android: { elevation: 2 },
-    }),
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#ddd',
+    borderColor: '#E5E5E5',
+    borderWidth: 2,
   },
   activeButton: {
     backgroundColor: '#F59A111A',
@@ -597,7 +580,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   buttonText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#555',
     fontFamily: 'Gotham-Rounded-Medium',
   },
@@ -634,7 +617,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   brandButton: {
-    width: '30%',
+    width: '20%',
     backgroundColor: '#e6f5f7',
     padding: 8,
     marginRight: '2.5%',
@@ -765,35 +748,43 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59A11',
   },
   switchWrapper: {
-    width: 64,
-    height: 30,
-    justifyContent: 'center',
+    width: 60,
+    height: 32,
     marginTop: 3,
   },
   track: {
     position: 'absolute',
-    width: 56,
-    height: 24,
+    width: 60,
+    height: 14,
     borderRadius: 12,
     backgroundColor: '#ebebeb',
-    left: 4,
-    top: 3,
+    top: 7.5,
   },
   thumb: {
     position: 'absolute',
-    width: 26,
-    height: 26,
+    width: 24,
+    height: 24,
     borderWidth: 2,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    top: 1,
+    top: 2.2,
   },
   thumbInner: {
-    width: 18,
-    height: 18,
+    width: 16,
+    height: 16,
     borderRadius: 9,
     backgroundColor: '#0a0',
+  },
+  vegbutton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    height: 36,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    borderColor: '#E5E5E5',
+    borderWidth: 2,
   },
 });
 

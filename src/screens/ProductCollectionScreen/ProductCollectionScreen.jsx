@@ -51,13 +51,9 @@ export default function ProductCollectionScreen({ route, navigation }) {
   const [selectedBreedSize, setSelectedBreedSize] = useState([]);
   const [isVeg, setIsVeg] = useState(false);
   const [sortOrder, setSortOrder] = useState(null);
-
-  // Fetch collections
   useEffect(() => {
     fetchCollections();
   }, []);
-
-  // Fetch & filter products on filter/sort/veg change
   useEffect(() => {
     fetchProducts();
   }, [
@@ -72,7 +68,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
     sortOrder,
     isVeg,
   ]);
-
   const fetchCollections = async () => {
     try {
       setLoadingCollections(true);
@@ -86,7 +81,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
       setLoadingCollections(false);
     }
   };
-
   const filteredCollections = collections
     .filter(coll => coll.subCategoryId === subcategoryId)
     .sort((a, b) => {
@@ -94,8 +88,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
       if (b.slug === collectionSlug) return 1;
       return 0;
     });
-
-  // Normalize string for search
   const norm = v =>
     String(v || '')
       .trim()
@@ -117,17 +109,10 @@ export default function ProductCollectionScreen({ route, navigation }) {
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
       let filtered = fetchedProducts;
-
-      // Debug: Log the isVeg filter state
-      console.log('isVeg filter is:', isVeg);
-
-      // Apply veg filter (show only vegetarian products when isVeg is true)
       if (isVeg) {
         filtered = filtered.filter(product => product.isVeg === true);
-        console.log('Filtered products (veg):', filtered);
+        // console.log('Filtered products (veg):', filtered);
       }
-
-      // Apply search filter
       if (searchQuery && String(searchQuery).trim() !== '') {
         const searchTerm = norm(searchQuery);
         filtered = filtered.filter(product => {
@@ -170,8 +155,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
           );
         });
       }
-
-      // Apply brand/breed/life stage/product type/breed size filters
       filtered = filtered.filter(product => {
         const brandMatches =
           !selectedBrand?.length ||
@@ -216,8 +199,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
           sizeMatches
         );
       });
-
-      // Sort by price if sortOrder is set
       const getPriceNum = p => {
         const v = p?.salePrice ?? p?.price ?? 0;
         const n = typeof v === 'string' ? parseFloat(v) : Number(v);
@@ -235,8 +216,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
           );
         }
       }
-
-      // Log final products to render
       console.log('Final products to render:', filtered);
       setProducts(filtered);
     } catch (error) {
@@ -246,8 +225,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
       setLoading(false);
     }
   };
-
-  // Handler for search, brand, breed, life stage, etc. filters
   const handleSearchChange = query => {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
@@ -290,6 +267,8 @@ export default function ProductCollectionScreen({ route, navigation }) {
           />
         </View>
       </View>
+      <Text style={styles.subcategoryNameText}>{subcategoryName}</Text>
+
       <View style={styles.filterBarWrapper}>
         <FilterBar
           selectedBrand={selectedBrand}
@@ -466,7 +445,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   circleSelected: { borderColor: '#F17521' },
-  image: { width: 56, height: 56, borderRadius: 8 },
+  image: { width: 52, height: 52, borderRadius: 8 },
   label: { fontSize: 13, color: '#888', textAlign: 'center' },
   labelSelected: { color: '#F17521', fontFamily: 'Gotham-Rounded-Bold' },
   underline: {
@@ -481,7 +460,7 @@ const styles = StyleSheet.create({
     color: '#F59A11',
     fontSize: 16,
     fontFamily: 'Gotham-Rounded-Bold',
-    marginLeft: 8,
-    marginRight: 8,
+    marginHorizontal: 20,
+    marginVertical: 8,
   },
 });

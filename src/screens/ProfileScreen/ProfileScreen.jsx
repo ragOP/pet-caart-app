@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -25,7 +25,9 @@ import {
   User,
 } from 'lucide-react-native';
 import { logout } from '../../redux/authSlice';
+import { resetCart } from '../../redux/cartSlice';
 import SearchBar from '../../components/SearchBar/SearchBar';
+import { persistor } from '../../redux/store';
 
 const formatDateSince = date => {
   const options = { year: 'numeric', month: 'long' };
@@ -36,8 +38,14 @@ const formatDateSince = date => {
 const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { isLoggedIn, user } = useSelector(state => state.auth);
-  const createdAt = user?.createdAt || '2025-07-02T16:36:26.352Z';
-  const membershipSince = formatDateSince(createdAt);
+  const createdAt = user?.createdAt;
+  const membershipSince = createdAt ? formatDateSince(createdAt) : '';
+
+  const confirmLogout = async () => {
+    dispatch(resetCart());
+    await persistor.purge();
+    dispatch(logout());
+  };
 
   const loggedInMenuItems = [
     {
@@ -68,7 +76,7 @@ const ProfileScreen = ({ navigation }) => {
     {
       label: 'Log Out',
       icon: <LogOut size={26} color="#004E6A" />,
-      action: () => dispatch(logout()),
+      action: confirmLogout,
     },
   ];
 
@@ -88,9 +96,6 @@ const ProfileScreen = ({ navigation }) => {
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <SearchBar />
-            {/* <TouchableOpacity style={styles.locationButton} activeOpacity={1}>
-              <MapPin color="#FFA500" size={24} />
-            </TouchableOpacity> */}
           </View>
         </SafeAreaView>
       </View>
@@ -105,7 +110,7 @@ const ProfileScreen = ({ navigation }) => {
               activeOpacity={0.8}
               onPress={() => navigation.navigate('LoginScreen')}
             >
-              <Text style={styles.loginTitle}>Login / Signup</Text>
+              <Text style={styles.loginTitle}>LOGIN / SIGNUP</Text>
               <ChevronRight size={20} color="#004E6A" />
             </TouchableOpacity>
           </View>
@@ -138,7 +143,7 @@ const ProfileScreen = ({ navigation }) => {
               onPress={() =>
                 item.navigateTo
                   ? navigation.navigate(item.navigateTo)
-                  : item.action && item.action()
+                  : item.action()
               }
             >
               {item.icon}
@@ -170,16 +175,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     paddingRight: 15,
-  },
-  locationButton: {
-    backgroundColor: '#FFFFFF',
-    padding: 10,
-    borderRadius: 10,
-    marginLeft: 10,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   guestHeaderBox: {
     backgroundColor: '#FFFFFF',
