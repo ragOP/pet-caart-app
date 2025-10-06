@@ -13,36 +13,36 @@ import {
 import { ArrowLeft, CheckCircle, ChevronRight, Box } from 'lucide-react-native';
 
 const orders = [
-  {
-    id: '2548514851',
-    date: '10ᵗʰ MAY 2025',
-    title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
-    image:
-      'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png', // Replace with actual image
-    quantity: '14x3Kg',
-    offer: '10% OFF',
-    status: 'DELIVERED',
-  },
-  {
-    id: '2548514851',
-    date: '10ᵗʰ MAY 2025',
-    title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
-    image:
-      'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
-    quantity: '14x3Kg',
-    offer: '10% OFF',
-    status: 'DELIVERED',
-  },
-  {
-    id: '2548514851',
-    date: '10ᵗʰ MAY 2025',
-    title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
-    image:
-      'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
-    quantity: '14x3Kg',
-    offer: '10% OFF',
-    status: 'DELIVERED',
-  },
+  // {
+  //   id: '2548514851',
+  //   date: '10ᵗʰ MAY 2025',
+  //   title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
+  //   image:
+  //     'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png', // Replace with actual image
+  //   quantity: '14x3Kg',
+  //   offer: '10% OFF',
+  //   status: 'DELIVERED',
+  // },
+  // {
+  //   id: '2548514851',
+  //   date: '10ᵗʰ MAY 2025',
+  //   title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
+  //   image:
+  //     'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
+  //   quantity: '14x3Kg',
+  //   offer: '10% OFF',
+  //   status: 'DELIVERED',
+  // },
+  // {
+  //   id: '2548514851',
+  //   date: '10ᵗʰ MAY 2025',
+  //   title: 'Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits',
+  //   image:
+  //     'https://res.cloudinary.com/doaggd1wa/image/upload/v1751724395/kbpcoekkcunumhlwmv2k.png',
+  //   quantity: '14x3Kg',
+  //   offer: '10% OFF',
+  //   status: 'DELIVERED',
+  // },
 ];
 const MyOrderScreen = ({ navigation }) => {
   return (
@@ -76,6 +76,7 @@ const MyOrderScreen = ({ navigation }) => {
           </Text>
           <TouchableOpacity
             style={styles.shopButton}
+            activeOpacity={1}
             onPress={() => navigation.navigate('BottomTabs')}
           >
             <Text style={styles.shopButtonText}>Start Shopping</Text>
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -241,7 +242,6 @@ const styles = StyleSheet.create({
   },
   // Empty UI
   emptyContainer: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 30,

@@ -22,7 +22,7 @@ const InviteScreen = ({ navigation }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <View style={styles.headerWrapper}>
         <SafeAreaView>
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {

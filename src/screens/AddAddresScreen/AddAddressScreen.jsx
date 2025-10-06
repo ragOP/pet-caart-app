@@ -115,7 +115,7 @@ const AddAddressScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#FFF5E1"
+        backgroundColor="#FFFFFF"
         translucent={false}
       />
       <View style={styles.headerWrapper}>
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {

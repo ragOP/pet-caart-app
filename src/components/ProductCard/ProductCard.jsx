@@ -66,8 +66,7 @@ const ProductCard = ({
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
 
-  // LOGIN STATE for REDIRECTION
-  const isLoggedIn = useSelector(state => !!state.auth.user); // Adjust per your store
+  const isLoggedIn = useSelector(state => !!state.auth.user);
 
   const currentQty = useMemo(() => {
     const found = cartItems.find(
@@ -254,7 +253,7 @@ const ProductCard = ({
               <View style={styles.vegBox}>
                 <View style={styles.vegDot} />
               </View>
-              <Text style={styles.vegText}>VEG</Text>
+              {/* <Text style={styles.vegText}>VEG</Text> */}
             </View>
           )}
         </View>
@@ -509,22 +508,23 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
   },
 
-  vegMark: { alignItems: 'center', marginLeft: 12 },
+  vegMark: { alignItems: 'center', marginLeft: 111 },
   vegBox: {
-    width: 18,
-    height: 18,
+    width: 15,
+    height: 15,
     borderWidth: 2,
     borderColor: '#008000',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 1,
   },
   vegDot: {
-    width: 11,
-    height: 11,
+    width: 7.5,
+    height: 7.5,
     borderRadius: 7,
     backgroundColor: '#008000',
   },
-  vegText: { fontSize: 11, color: '#008000', marginTop: 1 },
+  vegText: { fontSize: 9, color: '#008000', marginTop: 1 },
   vRow: { paddingVertical: 4 },
   vCard: {
     borderRadius: 10,

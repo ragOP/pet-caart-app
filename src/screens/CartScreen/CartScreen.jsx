@@ -90,28 +90,35 @@ const CartScreen = () => {
         params: { address_id: effectiveAddressId },
       });
       if (cartResponse.success) {
-        const formattedItems = cartResponse.data.items.map(item => ({
-          id: item._id,
-          title: item.productId?.title || 'No Title',
-          price: item.productId?.price || 0,
-          salePrice: item.price || 0,
-          discount:
-            item.productId?.price && item.price
-              ? Math.round(
-                  ((item.productId.price - item.price) / item.productId.price) *
-                    100,
-                )
-              : 0,
-          quantity: item.quantity || 1,
-          total: item.total || item.price * item.quantity,
-          cgst: item.cgst || 0,
-          sgst: item.sgst || 0,
-          cess: item.cess || 0,
-          igst: item.igst || 0,
-          image: item.productId?.images?.[0] || 'default-image-url',
-          productId: item.productId._id || item.productId,
-          variantId: item.variantId?._id || null,
-        }));
+        const formattedItems = cartResponse.data.items.map(item => {
+          const mrp = item.variantId?.price || item.productId?.price || 0;
+          const salePrice = item.price || 0;
+          const variantWeight = item.variantId?.weight; // Extract variant weight
+          const productWeight = item.productId?.weight;
+          const weight = variantWeight || productWeight; // Fallback to product weight
+
+          const discount =
+            mrp && salePrice ? Math.round(((mrp - salePrice) / mrp) * 100) : 0;
+
+          return {
+            id: item._id,
+            title: item.productId?.title || 'No Title',
+            price: mrp,
+            salePrice: salePrice,
+            discount: discount,
+            quantity: item.quantity || 1,
+            total: item.total || salePrice * item.quantity,
+            cgst: item.cgst || 0,
+            sgst: item.sgst || 0,
+            cess: item.cess || 0,
+            igst: item.igst || 0,
+            image: item.productId?.images?.[0] || 'default-image-url',
+            productId: item.productId._id || item.productId,
+            variantId: item.variantId?._id || null,
+            weight: weight, // Include weight
+          };
+        });
+
         dispatch(setCart(formattedItems));
         setShippingCost(cartResponse.data.shippingDetails?.totalCost || 0);
         setShippingDate(cartResponse.data.shippingDetails?.estimatedDate || '');
@@ -281,6 +288,13 @@ const CartScreen = () => {
     setAppliedCoupon(foundCoupon);
     setCouponError('');
   };
+  const formatWeight = grams => {
+    if (grams >= 1000) {
+      const kg = grams / 1000;
+      return Math.floor(kg) + 'kg'; // 2.8kg → 2kg
+    }
+    return grams + 'g';
+  };
 
   const PROGRESS_TARGET = 2000;
   const progress = Math.min(totalPayable / PROGRESS_TARGET, 1);
@@ -413,6 +427,13 @@ const CartScreen = () => {
                   />
                   <View style={styles.details}>
                     <Text style={styles.title}>{item.title}</Text>
+                    {item.variantId && item.weight && (
+                      <View style={styles.variantChip}>
+                        <Text style={styles.variantText}>
+                          {formatWeight(item.weight)}
+                        </Text>
+                      </View>
+                    )}
                     <View style={styles.priceAndStepper}>
                       <View style={styles.priceWrapper}>
                         <Text style={styles.price}>₹{item.salePrice}</Text>
@@ -535,7 +556,7 @@ const CartScreen = () => {
                   - ₹{couponDiscount.toFixed(2)}
                 </Text>
               </View>
-              <View style={styles.priceRow}>
+              {/* <View style={styles.priceRow}>
                 <Text style={styles.label}>CGST</Text>
                 <Text style={styles.value}>₹{cgst.toFixed(2)}</Text>
               </View>
@@ -550,7 +571,7 @@ const CartScreen = () => {
               <View style={styles.priceRow}>
                 <Text style={styles.label}>CESS</Text>
                 <Text style={styles.value}>₹{cess.toFixed(2)}</Text>
-              </View>
+              </View> */}
               <View style={styles.priceRow}>
                 <View>
                   <Text style={styles.label}>Shipping Charges</Text>
@@ -971,6 +992,19 @@ const styles = StyleSheet.create({
     height: 90,
     position: 'absolute',
     top: -42,
+  },
+  variantChip: {
+    backgroundColor: '#e4ebf0',
+    paddingHorizontal: 20,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginVertical: 3,
+  },
+  variantText: {
+    fontSize: 12,
+    color: '#232a39',
+    fontFamily: 'Gotham-Rounded-Medium',
   },
 });
 

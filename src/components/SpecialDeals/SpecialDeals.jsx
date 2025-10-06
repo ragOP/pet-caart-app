@@ -64,6 +64,7 @@ const SpecialDeals = () => {
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(width * 0.8, 360);
   const cardSpacing = (width - cardWidth - 32) / 6;
+
   const [bestSellerData, setBestSellerData] = useState([]);
   const [loadingMap, setLoadingMap] = useState({});
   const dispatch = useDispatch();
@@ -75,20 +76,22 @@ const SpecialDeals = () => {
       try {
         const response = await getProducts();
         const allProducts = response?.data?.data;
+
         if (Array.isArray(allProducts)) {
           const bestSellers = allProducts
             .filter(item => item.isBestSeller && item.salePrice < 599)
             .map(item => {
               const weight = item.weight || 0;
-              // Only kg if >=1000, otherwise g
               const formattedWeight =
                 weight >= 1000
                   ? `${(weight / 1000).toFixed(1)}kg`
                   : `${weight}g`;
-              // Include brand if available, separated by |
-              const badge = item.brandId?.name
-                ? `${formattedWeight} | ${item.brandId.name}`
-                : formattedWeight;
+
+              const brandName = item.brandId?.name
+                ? ` | ${item.brandId.name}`
+                : '';
+              const badge = formattedWeight + brandName;
+
               return {
                 id: item._id,
                 image: item.images?.[0] || '',
@@ -106,15 +109,19 @@ const SpecialDeals = () => {
                 productId: item._id,
                 variantId: item.variants?.[0]?._id || 'default',
                 stock: item.stock || 1,
-                weight: weight,
               };
             });
+
           setBestSellerData(bestSellers);
+        } else {
+          setBestSellerData([]);
         }
       } catch (error) {
         console.error('Error fetching products:', error);
+        setBestSellerData([]);
       }
     };
+
     fetchProducts();
   }, []);
 
@@ -124,7 +131,9 @@ const SpecialDeals = () => {
 
   const handleClaim = async deal => {
     if (loadingMap[deal.id]) return;
+
     setLoadingMap(prev => ({ ...prev, [deal.id]: true }));
+
     try {
       dispatch(
         addItemToCart({
@@ -137,6 +146,7 @@ const SpecialDeals = () => {
           discount: deal.discount,
         }),
       );
+
       await addProductToCart({
         productId: deal.productId,
         variantId: deal.variantId,
@@ -155,15 +165,21 @@ const SpecialDeals = () => {
     );
   };
 
+  // Show nothing if no special deals
+  if (bestSellerData.length === 0) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Unlock special deals</Text>
       <Text style={styles.subHeader}>Almost there! Add ₹903 more</Text>
+
       <FlatList
         data={bestSellerData}
         horizontal
         showsHorizontalScrollIndicator={false}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={{ marginHorizontal: 5 }}>
             <SpecialDealCard
@@ -329,6 +345,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     color: '#fff',
     letterSpacing: 1,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    width: '100%',
+    marginTop: 10,
+    fontFamily: 'Gotham-Rounded-Medium',
   },
 });
 

@@ -1,3 +1,5 @@
+// screens/ProductCollectionScreen.js
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,6 +10,8 @@ import {
   StatusBar,
   TouchableOpacity,
   Platform,
+  FlatList,
+  Image,
 } from 'react-native';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { getProducts } from '../../apis/getProducts';
@@ -18,20 +22,14 @@ import ProductListShimmer from '../../ui/Shimmer/ProductListShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// canonical normalization for keys sent to server and used for comparison
-const normKey = v =>
-  String(v ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '_');
+const LIFE_STAGE_LABELS = {
+  puppy: 'puppy',
+  adult: 'adult',
+  starter: 'starter',
+  kitten: 'kitten',
+};
 
-// used for search text normalization
-const normText = v =>
-  String(v ?? '')
-    .trim()
-    .toLowerCase();
-
-export default function ProductListScreeen({ route, navigation }) {
+export default function ProductListScreen({ route, navigation }) {
   const {
     categorySlug,
     collectionSlug,
@@ -42,11 +40,9 @@ export default function ProductListScreeen({ route, navigation }) {
     initialBrandSlugs = [],
     brandSlug = null,
   } = route.params;
-
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [allCollectionProducts, setAllCollectionProducts] = useState([]);
-
   const [selectedBrand, setSelectedBrand] = useState(
     Array.isArray(initialBrandSlugs) && initialBrandSlugs.length
       ? initialBrandSlugs
@@ -55,11 +51,10 @@ export default function ProductListScreeen({ route, navigation }) {
       : [],
   );
   const [selectedBreed, setSelectedBreed] = useState([]);
-  const [selectedLifeStage, setSelectedLifeStage] = useState([]); // expects keys like 'puppy', 'adult', ...
-  const [selectedProductType, setSelectedProductType] = useState([]); // expects keys like 'wet_food'
-  const [selectedBreedSize, setSelectedBreedSize] = useState([]); // expects keys like 'mini'
-
-  const [isGreenSwitchOn, setIsGreenSwitchOn] = useState(false);
+  const [selectedLifeStage, setSelectedLifeStage] = useState([]);
+  const [selectedProductType, setSelectedProductType] = useState([]);
+  const [selectedBreedSize, setSelectedBreedSize] = useState([]);
+  const [isVeg, setIsVeg] = useState(false);
   const [sortOrder, setSortOrder] = useState(null);
 
   useEffect(() => {
@@ -67,68 +62,69 @@ export default function ProductListScreeen({ route, navigation }) {
   }, [
     categorySlug,
     collectionSlug,
-    JSON.stringify(selectedBrand),
-    JSON.stringify(selectedBreed),
-    JSON.stringify(selectedLifeStage),
-    JSON.stringify(selectedProductType),
-    JSON.stringify(selectedBreedSize),
+    selectedBrand,
+    selectedBreed,
+    selectedLifeStage,
+    selectedProductType,
+    selectedBreedSize,
     searchQuery,
-    isGreenSwitchOn,
     sortOrder,
+    isVeg,
   ]);
+
+  const norm = v =>
+    String(v || '')
+      .trim()
+      .toLowerCase();
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const params = { categorySlug, collectionSlug };
-
       if (selectedBrand?.length) params.brandSlug = selectedBrand.join(',');
       if (selectedBreed?.length) params.breedSlug = selectedBreed.join(',');
       if (selectedLifeStage?.length)
-        params.lifeStage = selectedLifeStage.map(normKey).join(',');
+        params.lifeStage = selectedLifeStage.join(',');
       if (selectedProductType?.length)
-        params.productType = selectedProductType.map(normKey).join(',');
+        params.productType = selectedProductType.join(',');
       if (selectedBreedSize?.length)
-        params.breedSize = selectedBreedSize.map(normKey).join(',');
-
+        params.breedSize = selectedBreedSize.join(',');
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
       let filtered = fetchedProducts;
+      if (isVeg) {
+        filtered = filtered.filter(product => product.isVeg === true);
+        // console.log('Filtered products (veg):', filtered);
+      }
       if (searchQuery && String(searchQuery).trim() !== '') {
-        const searchTerm = normText(searchQuery);
+        const searchTerm = norm(searchQuery);
         filtered = filtered.filter(product => {
-          const matchesTitle = normText(product.title).includes(searchTerm);
-          const matchesDesc = normText(product.description).includes(
+          const matchesTitle = norm(product.title).includes(searchTerm);
+          const matchesDesc = norm(product.description).includes(searchTerm);
+          const matchesBrand = norm(product.brandId?.name).includes(searchTerm);
+          const matchesCategory = norm(product.categoryId?.name).includes(
             searchTerm,
           );
-          const matchesBrand = normText(product.brandId?.name).includes(
+          const matchesSubCategory = norm(product.subCategoryId?.name).includes(
             searchTerm,
           );
-          const matchesCategory = normText(product.categoryId?.name).includes(
-            searchTerm,
-          );
-          const matchesSubCategory = normText(
-            product.subCategoryId?.name,
-          ).includes(searchTerm);
           const matchesBreed = (product.breedId || []).some(b =>
-            normText(b.name).includes(searchTerm),
+            norm(b.name).includes(searchTerm),
           );
-
           const productLifeStages = Array.isArray(product.lifeStage)
             ? product.lifeStage
             : product.lifeStage
             ? [product.lifeStage]
             : [];
           const matchesLifeStageField = productLifeStages
-            .map(ls => normText(ls))
+            .map(ls => norm(ls))
             .some(ls => ls.includes(searchTerm));
-
-          const matchesType = normText(product.productType).includes(
-            searchTerm,
+          const matchesLifeStageLabel = Object.values(LIFE_STAGE_LABELS).some(
+            ls => norm(ls).includes(searchTerm),
           );
-          const matchesSize = normText(product.breedSize).includes(searchTerm);
-
+          const matchesType = norm(product.productType).includes(searchTerm);
+          const matchesSize = norm(product.breedSize).includes(searchTerm);
           return (
             matchesTitle ||
             matchesDesc ||
@@ -137,6 +133,7 @@ export default function ProductListScreeen({ route, navigation }) {
             matchesSubCategory ||
             matchesBreed ||
             matchesLifeStageField ||
+            matchesLifeStageLabel ||
             matchesType ||
             matchesSize
           );
@@ -147,45 +144,37 @@ export default function ProductListScreeen({ route, navigation }) {
           !selectedBrand?.length ||
           (product.brandId?.slug &&
             selectedBrand.includes(product.brandId.slug));
-
-        // breed
         const breedMatches =
           !selectedBreed?.length ||
           (product.breedId || []).some(b => selectedBreed.includes(b.slug));
-
         const productLifeStages = Array.isArray(product.lifeStage)
           ? product.lifeStage
           : product.lifeStage
           ? [product.lifeStage]
           : [];
-        const normalizedProductStages = productLifeStages.map(v => normKey(v));
+        const normalizedProductStages = productLifeStages.map(v => norm(v));
         const normalizedSelectedStages = (selectedLifeStage || []).map(v =>
-          normKey(v),
+          norm(v),
         );
         const lifeStageMatches =
           !normalizedSelectedStages.length ||
           normalizedProductStages.some(ls =>
             normalizedSelectedStages.includes(ls),
           );
-
-        // productType (string)
-        const typeVal = normKey(product.productType);
+        const typeVal = norm(product.productType);
         const normalizedSelectedTypes = (selectedProductType || []).map(v =>
-          normKey(v),
+          norm(v),
         );
         const typeMatches =
           !normalizedSelectedTypes.length ||
           normalizedSelectedTypes.includes(typeVal);
-
-        // breedSize (string)
-        const sizeVal = normKey(product.breedSize);
+        const sizeVal = norm(product.breedSize);
         const normalizedSelectedSizes = (selectedBreedSize || []).map(v =>
-          normKey(v),
+          norm(v),
         );
         const sizeMatches =
           !normalizedSelectedSizes.length ||
           normalizedSelectedSizes.includes(sizeVal);
-
         return (
           brandMatches &&
           breedMatches &&
@@ -194,18 +183,12 @@ export default function ProductListScreeen({ route, navigation }) {
           sizeMatches
         );
       });
-
-      // veg toggle
-      if (isGreenSwitchOn) {
-        filtered = filtered.filter(product => product.isVeg === true);
-      }
-
-      // sorting
       const getPriceNum = p => {
         const v = p?.salePrice ?? p?.price ?? 0;
         const n = typeof v === 'string' ? parseFloat(v) : Number(v);
         return Number.isFinite(n) ? n : 0;
       };
+
       if (sortOrder) {
         if (sortOrder === 'lowToHigh') {
           filtered = [...filtered].sort(
@@ -217,7 +200,7 @@ export default function ProductListScreeen({ route, navigation }) {
           );
         }
       }
-
+      console.log('Final products to render:', filtered);
       setProducts(filtered);
     } catch (error) {
       console.error('Product fetch error:', error);
@@ -226,12 +209,9 @@ export default function ProductListScreeen({ route, navigation }) {
       setLoading(false);
     }
   };
-
   const handleSearchChange = query => {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
-
-  // Controlled handlers
   const handleBrandChange = brandSlugs => {
     setSelectedBrand(Array.isArray(brandSlugs) ? brandSlugs : []);
   };
@@ -247,29 +227,6 @@ export default function ProductListScreeen({ route, navigation }) {
   const handleBreedSizeChange = sizes => {
     setSelectedBreedSize(Array.isArray(sizes) ? sizes : []);
   };
-
-  const GreenSwitchButton = ({ value, onValueChange }) => (
-    <TouchableOpacity
-      onPress={() => onValueChange(!value)}
-      activeOpacity={1}
-      style={styles.switchWrapper}
-    >
-      <View style={[styles.track]} />
-      <View
-        style={[
-          styles.thumb,
-          { left: value ? 34 : 4, borderColor: value ? '#0a0' : '#9f9f9f' },
-        ]}
-      >
-        <View
-          style={[
-            styles.thumbInner,
-            { backgroundColor: value ? '#0a0' : '#9f9f9f' },
-          ]}
-        />
-      </View>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.container}>
@@ -294,12 +251,9 @@ export default function ProductListScreeen({ route, navigation }) {
           />
         </View>
       </View>
+      {/* <Text style={styles.subcategoryNameText}>{subcategoryName}</Text> */}
 
       <View style={styles.filterBarWrapper}>
-        <GreenSwitchButton
-          value={isGreenSwitchOn}
-          onValueChange={setIsGreenSwitchOn}
-        />
         <FilterBar
           selectedBrand={selectedBrand}
           selectedBreed={selectedBreed}
@@ -311,12 +265,13 @@ export default function ProductListScreeen({ route, navigation }) {
           setSelectedLifeStage={handleLifeStageChange}
           setSelectedProductType={handleProductTypeChange}
           setSelectedBreedSize={handleBreedSizeChange}
+          isVeg={isVeg}
+          setIsVeg={setIsVeg}
           collectionName={collectionName}
           sortOrder={sortOrder}
           onChangeSort={setSortOrder}
         />
       </View>
-
       {loading ? (
         <ProductListShimmer />
       ) : (
@@ -394,36 +349,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 15,
   },
-  switchWrapper: {
-    width: 64,
-    height: 30,
-    justifyContent: 'center',
-    marginBottom: 9,
-  },
-  track: {
-    position: 'absolute',
-    width: 56,
-    height: 24,
-    borderRadius: 10,
-    backgroundColor: '#eee',
-    left: 4,
-    top: 6,
-  },
-  thumb: {
-    position: 'absolute',
-    width: 28,
-    height: 28,
-    borderWidth: 2,
-    backgroundColor: '#fff',
-    top: 4,
+  circle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#F6F6F6',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
+    borderWidth: 1.5,
+    marginBottom: 5,
   },
-  thumbInner: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#0a0',
+  circleSelected: { borderColor: '#F17521' },
+  image: { width: 52, height: 52, borderRadius: 8 },
+  label: { fontSize: 13, color: '#888', textAlign: 'center' },
+  labelSelected: { color: '#F17521', fontFamily: 'Gotham-Rounded-Bold' },
+  underline: {
+    position: 'absolute',
+    bottom: -8,
+    width: 100,
+    height: 3,
+    backgroundColor: '#F17521',
+    borderRadius: 4,
+  },
+  subcategoryNameText: {
+    color: '#F59A11',
+    fontSize: 16,
+    fontFamily: 'Gotham-Rounded-Bold',
+    marginHorizontal: 15,
+    marginVertical: 8,
   },
 });

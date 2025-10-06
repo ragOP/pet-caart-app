@@ -130,7 +130,9 @@ const HomeScreen = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {loading && <CustomGridLayoutShimmer />}
         {!loading && !sections && (
-          <Text style={styles.errorText}>Error loading sections</Text>
+          <Text style={styles.errorText}>
+            Failed to load page configuration.
+          </Text>
         )}
         {!loading &&
           sections?.map((section, idx) => (
@@ -153,7 +155,7 @@ const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 20,
     backgroundColor: '#FFFFFF',
@@ -195,6 +197,7 @@ const styles = StyleSheet.create({
     padding: 16,
     textAlign: 'center',
     color: 'red',
+    fontFamily: 'Gotham-Rounded-Bold',
   },
 });
 

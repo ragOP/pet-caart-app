@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     color: '#F59A11',
     fontSize: 16,
     fontFamily: 'Gotham-Rounded-Bold',
-    marginHorizontal: 20,
+    marginHorizontal: 15,
     marginVertical: 8,
   },
 });

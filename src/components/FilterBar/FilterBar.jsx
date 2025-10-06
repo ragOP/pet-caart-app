@@ -308,11 +308,11 @@ const FilterBar = ({
                       ]}
                       onPress={() => handleBrandSelect(brand.slug)}
                     >
-                      <Image
+                      {/* <Image
                         source={{ uri: brand.logo }}
                         style={styles.brandLogo}
-                        resizeMode="cover"
-                      />
+                        resizeMode="contain"
+                      /> */}
                       <Text
                         style={[
                           styles.brandText,
@@ -609,7 +609,11 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
     paddingBottom: 12,
   },
-  sectionTitle: { fontSize: 18, marginBottom: 8, fontWeight: 'bold' },
+  sectionTitle: {
+    fontSize: 18,
+    marginBottom: 8,
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
   brandContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -617,7 +621,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   brandButton: {
-    width: '20%',
+    width: '25%',
     backgroundColor: '#e6f5f7',
     padding: 8,
     marginRight: '2.5%',
@@ -629,7 +633,7 @@ const styles = StyleSheet.create({
   },
   brandLogo: { width: 64, height: 64, marginBottom: 4, borderRadius: 32 },
   brandText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#333',
     fontFamily: 'Gotham-Rounded-Medium',
     marginTop: 2,
@@ -649,7 +653,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginRight: 8,
     marginBottom: 10,
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#bcdde9',
     justifyContent: 'center',

@@ -52,6 +52,8 @@ const CustomGridLayoutShimmer = () => {
 
         <View style={styles.bestsellerBox} />
       </View>
+      <View style={[styles.sectionTitle, { width: 380 }]} />
+      <View style={[styles.sectionTitle, { width: 380 }]} />
     </View>
   );
 };

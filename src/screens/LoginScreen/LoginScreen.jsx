@@ -354,8 +354,9 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </>
           )}
-          <Text style={styles.terms}>
-            By continuing, you agree to our Terms of Service and Privacy Policy
+          <Text style={styles.terms}>By continuing, you agree to our </Text>
+          <Text style={styles.termsCol}>
+            Terms of Service and Privacy Policy
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -484,11 +485,18 @@ const styles = StyleSheet.create({
   terms: {
     fontSize: 14,
     color: '#6a899a',
-    marginBottom: 20,
+    marginBottom: 2,
     fontFamily: 'gotham-rounded-book',
     textAlign: 'center',
     lineHeight: 16,
     marginTop: 10,
+  },
+  termsCol: {
+    color: '#004E6A',
+    fontFamily: 'gotham-rounded-book',
+    textAlign: 'center',
+    lineHeight: 16,
+    fontSize: 14,
   },
 });
 

@@ -40,6 +40,7 @@ import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
 import Lottie from 'lottie-react-native';
 import { go } from '../../constants/navigationRef';
 import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
+import RenderHtml from 'react-native-render-html';
 
 const { width: screenWidthFull } = Dimensions.get('window');
 const screenWidth = screenWidthFull * 0.94;
@@ -58,7 +59,8 @@ const formatWeight = grams => {
   }
   return `${g}g`;
 };
-
+const containerMarginHorizontal = 12;
+const adjustedSnapInterval = screenWidth + 2 * containerMarginHorizontal;
 const coerceStockNumber = obj => {
   const candidates = [
     obj?.stock,
@@ -153,20 +155,35 @@ const SingleProductScreen = ({ navigation }) => {
   const toggleSection = section => {
     setExpandedSection(prev => (prev === section ? null : section));
   };
+  // const stripHtmlTagsAndEntities = str => {
+  //   if (!str) return '';
+  //   let text = str.replace(/<[^>]*>/g, ' ');
+  //   text = text
+  //     .replace(/&amp;/g, '&')
+  //     .replace(/&lt;/g, '<')
+  //     .replace(/&gt;/g, '>')
+  //     .replace(/&nbsp;/g, ' ')
+  //     .replace(/&#39;/g, "'")
+  //     .replace(/&quot;/g, '"');
+  //   return text.trim();
+  // };
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       setLoading(true);
-      setError(null);
       try {
         const response = await getProductById({ id: productId });
         if (response) {
-          setProduct(response);
-        } else {
-          setError('Product not found');
+          const productWithCommonImages = {
+            ...response,
+            images: [...response.images, ...(response.commonImages || [])],
+            variants: response.variants.map(variant => ({
+              ...variant,
+              images: [...variant.images, ...(response.commonImages || [])],
+            })),
+          };
+          setProduct(productWithCommonImages);
         }
-      } catch (err) {
-        setError('Failed to load product details');
       } finally {
         setLoading(false);
       }
@@ -363,7 +380,12 @@ const SingleProductScreen = ({ navigation }) => {
               horizontal
               data={displayedImages}
               renderItem={({ item }) => (
-                <View style={styles.shadowBox}>
+                <View
+                  style={[
+                    styles.shadowBox,
+                    { marginHorizontal: containerMarginHorizontal },
+                  ]}
+                >
                   <Image
                     source={{ uri: item }}
                     style={styles.productImage}
@@ -374,10 +396,10 @@ const SingleProductScreen = ({ navigation }) => {
               keyExtractor={item => item}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.imagesContainer}
-              snapToInterval={screenWidth}
+              snapToInterval={adjustedSnapInterval}
               getItemLayout={(data, index) => ({
-                length: screenWidth,
-                offset: screenWidth * index,
+                length: adjustedSnapInterval,
+                offset: adjustedSnapInterval * index,
                 index,
               })}
               initialNumToRender={displayedImages.length}
@@ -479,9 +501,23 @@ const SingleProductScreen = ({ navigation }) => {
             </TouchableOpacity>
             {expandedSection === 'productDetails' && (
               <View style={styles.accordionBody}>
-                <Text style={styles.accordionInlineText}>
-                  {product?.description || 'No product details available.'}
-                </Text>
+                {product.description ? (
+                  <RenderHtml
+                    source={{ html: product.description }}
+                    contentWidth={screenWidth}
+                    baseStyle={styles.accordionInlineText}
+                    tagsStyles={{
+                      b: { fontWeight: 'bold', color: '#101010' },
+                      strong: { fontWeight: 'bold', color: '#101010' },
+                      li: { marginBottom: 6 },
+                      ul: { marginLeft: 18 },
+                    }}
+                  />
+                ) : (
+                  <Text style={styles.accordionInlineText}>
+                    No product details available.
+                  </Text>
+                )}
               </View>
             )}
 
@@ -512,10 +548,14 @@ const SingleProductScreen = ({ navigation }) => {
                   </Text>
                 )}
                 <Text style={styles.accordionInlineText}>
-                  Stock:
+                  {/* Stock:
                   {effectiveInStock
                     ? `In Stock (${stockToShow})`
-                    : 'Out of Stock'}
+                    : 'Out of Stock'} */}
+                  Imported By : {product.importedBy}.
+                </Text>
+                <Text style={styles.accordionInlineText}>
+                  Country Of Origin : {product.countryOfOrigin}.
                 </Text>
               </View>
             )}
@@ -640,7 +680,8 @@ const styles = StyleSheet.create({
   imagesContainer: {},
   productImage: {
     width: screenWidth,
-    height: screenWidth * 0.8,
+    height: screenWidth,
+    borderRadius: 10,
   },
   brandRatingRow: {
     flexDirection: 'row',
@@ -713,7 +754,7 @@ const styles = StyleSheet.create({
   accordionInlineText: {
     fontSize: 15,
     color: '#333',
-    lineHeight: 20,
+    lineHeight: 25,
     fontFamily: 'Gotham-Rounded-Medium',
   },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -881,9 +922,9 @@ const styles = StyleSheet.create({
         elevation: 3,
       },
     }),
-    borderRadius: 10,
     backgroundColor: 'white',
     marginHorizontal: 12,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 2,
@@ -917,6 +958,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     color: '#222',
   },
+  // lightText:{
+  //      fontSize: 14,
+  //   fontFamily: 'Gotham-Rounded-Medium',
+  //   color: '#222'
+  // }
 });
 
 export default SingleProductScreen;
