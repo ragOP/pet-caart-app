@@ -12,22 +12,25 @@ import {
   TextInput,
 } from 'react-native';
 import { ArrowLeft, Share2, Copy } from 'lucide-react-native';
-import Clipboard from '@react-native-clipboard/clipboard'; 
+import Clipboard from '@react-native-clipboard/clipboard';
 
 const InviteScreen = ({ navigation }) => {
-  const [link] = useState("https://www.figma.com/design");
+  const [link] = useState('https://www.figma.com/design');
   const handleCopy = () => {
-    Clipboard.setString(link); 
+    Clipboard.setString(link);
   };
 
   return (
     <ScrollView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <Text style={styles.header}>Invite Friends</Text>
@@ -38,17 +41,23 @@ const InviteScreen = ({ navigation }) => {
       <Text style={styles.subHeader}>Invite a friend</Text>
 
       <View style={styles.content}>
-        <Image source={require('../../assets/images/invitee.png')} style={styles.image} />
+        <Image
+          source={require('../../assets/images/invitee.png')}
+          style={styles.image}
+        />
 
         <Text style={styles.inviteText}>
-          <Text style={styles.blueText}>Invite your fellow pet lovers</Text> — you and your friend
-          both get 50% off on your next order.{' '}
+          <Text style={styles.blueText}>Invite your fellow pet lovers</Text> —
+          you and your friend both get 50% off on your next order.{' '}
           <Text style={styles.blueTextItalic}>
             Because sharing treats (and discounts) is what true pet parents do!
           </Text>
         </Text>
 
-        <TouchableOpacity activeOpacity={1} onPress={() => navigation.navigate('Terms')}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => navigation.navigate('Terms')}
+        >
           <Text style={styles.termsText}>Terms and Conditions</Text>
         </TouchableOpacity>
 
@@ -61,7 +70,11 @@ const InviteScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.button} onPress={handleCopy} activeOpacity={1}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleCopy}
+            activeOpacity={1}
+          >
             <Copy size={18} color="#fff" />
             <Text style={styles.buttonText}>COPY LINK</Text>
           </TouchableOpacity>
@@ -74,11 +87,26 @@ const InviteScreen = ({ navigation }) => {
         <Text style={styles.socialText}>SHARE ON SOCIAL MEDIA</Text>
 
         <View style={styles.socialIcons}>
-          <Image source={require('../../assets/icons/instagram.png')} style={styles.icon} />
-          <Image source={require('../../assets/icons/facebook.png')} style={styles.icon} />
-          <Image source={require('../../assets/icons/linkedin.png')} style={styles.icon} />
-          <Image source={require('../../assets/icons/x.png')} style={styles.icon} />
-          <Image source={require('../../assets/icons/whatsapp.png')} style={styles.icon} />
+          <Image
+            source={require('../../assets/icons/instagram.png')}
+            style={styles.icon}
+          />
+          <Image
+            source={require('../../assets/icons/facebook.png')}
+            style={styles.icon}
+          />
+          <Image
+            source={require('../../assets/icons/linkedin.png')}
+            style={styles.icon}
+          />
+          <Image
+            source={require('../../assets/icons/x.png')}
+            style={styles.icon}
+          />
+          <Image
+            source={require('../../assets/icons/whatsapp.png')}
+            style={styles.icon}
+          />
         </View>
       </View>
     </ScrollView>
@@ -86,13 +114,17 @@ const InviteScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
-  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
   backButton: { paddingRight: 15 },
   header: {
     fontSize: 24,
@@ -150,22 +182,19 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 14,
     color: 'black',
-    textAlign:'center',
-   
+    textAlign: 'center',
   },
   buttonRow: {
     flexDirection: 'row',
     gap: 10,
     justifyContent: 'center',
     marginBottom: 20,
-
-
   },
   button: {
-    backgroundColor: '#B4700A',
+    backgroundColor: '#0888B1',
     flexDirection: 'row',
-    alignItems: 'center', 
-    justifyContent: 'center', 
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 8,

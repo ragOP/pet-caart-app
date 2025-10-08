@@ -26,19 +26,19 @@ export const apiService = async ({
     if (token || _token) {
       requestObj.headers = {
         ...headers,
-        'ngrok-skip-browser-warning': 'xyz',  
+        'ngrok-skip-browser-warning': 'xyz',
         ...(!removeToken ? { Authorization: `Bearer ${_token || token}` } : {}),
       };
     }
     const { data: res } = await axios(requestObj);
     if (res?.token) {
       await AsyncStorage.setItem(TOKEN, res.token);
-      console.log('Token saved to AsyncStorage:', res.token);
+      console.log('Token saved to AsyncStorage apiService:', res.token);
     }
 
     return { response: res };
   } catch (error) {
-    console.error('backend endpoint error:', error);  
+    console.error('backend endpoint error:', error);
     return { success: false, error: true, ...(error.response || error) };
   }
 };

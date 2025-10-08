@@ -1,92 +1,334 @@
-import React, { useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Platform, Dimensions } from 'react-native';
+import React, { useMemo, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  ScrollView,
+  Pressable,
+  Platform,
+} from 'react-native';
 import Swiper from 'react-native-swiper';
 import LinearGradient from 'react-native-linear-gradient';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { addProductToCart } from '../../apis/addProductToCart';
+import { addItemToCart, removeItemFromCart } from '../../redux/cartSlice';
+import Lottie from 'lottie-react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const PARENT_CARD_WIDTH = Math.round(screenWidth * 0.48);
+const VAR_CARD_WIDTH = Math.round(PARENT_CARD_WIDTH * 0.43);
+const VAR_CARD_GAP = 5;
+const VAR_CARD_HEIGHT = 42;
+const CARD_HEIGHT = 360;
 
-const ProductCard = ({ images, title, rating, price, discount, isVeg, stock, cardWidth = 110 }) => {
+const getVariantDiscount = (price, salePrice) => {
+  if (!price || !salePrice || price <= salePrice) return 0;
+  return Math.round(((price - salePrice) / price) * 100);
+};
+const formatWeight = w => {
+  const n = Number(w) || 0;
+  if (n >= 1000) {
+    const kg = n / 1000;
+    return Number.isInteger(kg) ? `${kg}kg` : `${kg.toFixed(1)}kg`;
+  }
+  return `${n}g`;
+};
+
+const ProductCard = ({
+  images,
+  title,
+  rating,
+  price,
+  discount,
+  isVeg,
+  stock,
+  cardWidth = 110,
+  brandId,
+  isBestSeller,
+  productId,
+  variants = [],
+}) => {
+  const [loading, setLoading] = useState(false);
+
   const originalPrice = Number(price);
   const discountPercent = parseInt(discount);
   const hasDiscount = !isNaN(discountPercent) && discountPercent > 0;
-
   const discountedPrice = hasDiscount
     ? Math.round(originalPrice * (1 - discountPercent / 100))
     : originalPrice;
 
   const isOutOfStock = stock <= 0;
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const cartItems = useSelector(state => state.cart.items);
+
+  const isLoggedIn = useSelector(state => !!state.auth.user);
+
+  const currentQty = useMemo(() => {
+    const found = cartItems.find(
+      it => it.productId === productId && it.variantId == null,
+    );
+    return found?.quantity ?? 0;
+  }, [cartItems, productId]);
+
+  const buildCartItem = useCallback(
+    qty => ({
+      productId,
+      variantId: null,
+      quantity: qty,
+      title,
+      price: discountedPrice,
+      image: images?.length > 0 ? images[0] : '',
+      discount: hasDiscount ? `${discountPercent}%` : '0%',
+    }),
+    [productId, title, discountedPrice, images, hasDiscount, discountPercent],
+  );
+
+  const syncServerQty = useCallback(
+    async absQty => {
+      await addProductToCart({
+        productId,
+        variantId: null,
+        quantity: absQty,
+      });
+    },
+    [productId],
+  );
+
+  const handleIncrement = async () => {
+    if (loading || isOutOfStock) return;
+
+    if (!isLoggedIn) {
+      navigation.navigate('LoginScreen', {
+        returnScreen: 'SingleProductScreen',
+        productId,
+      });
+      return;
+    }
+
+    const newQty = currentQty + 1;
+    setLoading(true);
+    try {
+      dispatch(addItemToCart(buildCartItem(1)));
+      await syncServerQty(newQty);
+    } catch (e) {
+      console.warn('Increment failed:', e?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDecrement = async () => {
+    if (loading || isOutOfStock) return;
+    if (currentQty <= 0) return;
+    const newQty = currentQty - 1;
+    setLoading(true);
+    try {
+      if (newQty === 0) {
+        dispatch(removeItemFromCart({ productId, variantId: null }));
+        await syncServerQty(0);
+      } else {
+        dispatch(addItemToCart({ ...buildCartItem(-1) }));
+        await syncServerQty(newQty);
+      }
+    } catch (e) {
+      console.warn('Decrement failed:', e?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCardPress = () =>
+    navigation.navigate('SingleProductScreen', { productId });
+  const normalizedVariants = useMemo(
+    () =>
+      variants.map(v => ({
+        ...v,
+        weightLabel: formatWeight(v.weight),
+        salePrice: Number(v.salePrice ?? v.price),
+        mrpPrice: Number(v.price),
+        discountPercentage: getVariantDiscount(
+          Number(v.price),
+          Number(v.salePrice ?? v.price),
+        ),
+      })),
+    [variants],
+  );
 
   return (
-    <TouchableOpacity activeOpacity={1} style={[styles.card, { width: cardWidth }]}>
-      <View style={styles.imageSection}>
-        <LinearGradient
-          colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
-          style={styles.bestsellerContainer}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.bestsellerText}>BESTSELLER</Text>
-        </LinearGradient>
-
-        <Swiper
-          style={styles.swiper}
-          dotStyle={styles.dot}
-          activeDotStyle={styles.activeDot}
-          paginationStyle={styles.pagination}
-          autoplay={false}
-          loop={false}
-          showsPagination
-        >
-          {images && images.length > 0 ? (
-            images.map((imgSrc, index) => (
-              <Image
-                key={index}
-                source={{ uri: imgSrc }}
-                style={styles.productImage}
-                resizeMode="cover"
-              />
-            ))
-          ) : (
-            <Text>No images available</Text>
+    <TouchableOpacity
+      activeOpacity={1}
+      style={[styles.card, { width: cardWidth }]}
+      onPress={handleCardPress}
+    >
+      <View style={styles.cardInner}>
+        <View style={styles.imageSection}>
+          {isBestSeller && (
+            <LinearGradient
+              colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
+              style={styles.bestsellerContainer}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.bestsellerText}>BESTSELLER</Text>
+            </LinearGradient>
           )}
-        </Swiper>
-
-        <Text style={styles.ratingText}>⭐ {rating}</Text>
-      </View>
-
-      <View style={styles.titleRow}>
-        <Text style={styles.titleText} numberOfLines={2}>{title}</Text>
-        <View style={styles.vegWrapper}>
-          <Image
-            source={require('../../assets/images/vegq.png')}
-            style={styles.vegIcon}
-            resizeMode='contain'
-          />
+          <Swiper
+            style={styles.swiper}
+            dotStyle={styles.dot}
+            activeDotStyle={styles.activeDot}
+            paginationStyle={styles.pagination}
+            autoplay={false}
+            loop={false}
+            showsPagination
+          >
+            {images?.length > 0 ? (
+              images.map((imgSrc, index) => (
+                <Image
+                  key={index}
+                  source={{ uri: imgSrc }}
+                  style={styles.productImage}
+                  resizeMode="contain"
+                />
+              ))
+            ) : (
+              <Text>No images available</Text>
+            )}
+          </Swiper>
+          <Text style={styles.ratingText}>⭐ {rating}</Text>
         </View>
-      </View>
-      <Text style={styles.priceLabel}>PRICE</Text>
-      <View style={styles.priceDiscountRow}>
-        <Text style={styles.priceValue}>₹{discountedPrice}</Text>
-        {hasDiscount && (
-          <>
-            <Text style={styles.strikePrice}>₹{originalPrice}</Text>
-            <View style={styles.discountContainer}>
-              <Text style={styles.discountText}>{discount} OFF</Text>
+        <View>
+          {normalizedVariants?.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.vRow}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              snapToInterval={VAR_CARD_WIDTH + VAR_CARD_GAP}
+            >
+              {normalizedVariants.map(v => {
+                return (
+                  <Pressable
+                    key={v._id}
+                    style={[
+                      styles.vCard,
+                      {
+                        width: VAR_CARD_WIDTH,
+                        height: VAR_CARD_HEIGHT,
+                        marginRight: VAR_CARD_GAP,
+                      },
+                    ]}
+                  >
+                    <View style={styles.vHead}>
+                      <Text style={styles.vHeadTxt}>{v.weightLabel}</Text>
+                    </View>
+                    <View style={styles.vBody}>
+                      <View
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                      >
+                        <Text style={styles.vSale}>₹{v.salePrice}</Text>
+                        {v.mrpPrice > v.salePrice && (
+                          <Text style={styles.vMrp}>MRP ₹{v.mrpPrice}</Text>
+                        )}
+                      </View>
+                      <Text style={styles.vOff}>
+                        {v.discountPercentage}% OFF
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
+        <View style={styles.priceDiscountRow}>
+          <Text style={styles.priceValue}>₹{discountedPrice}</Text>
+          {isVeg && (
+            <View style={styles.vegMark}>
+              <View style={styles.vegBox}>
+                <View style={styles.vegDot} />
+              </View>
+              {/* <Text style={styles.vegText}>VEG</Text> */}
             </View>
-          </>
-        )}
-      </View>
+          )}
+        </View>
+        {brandId?.name && <Text style={styles.brandText}>{brandId.name}</Text>}
 
-      <View style={styles.cartButtonRow}>
-        {isOutOfStock ? (
-          <View style={styles.outOfStockButton}>
-            <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
-          </View>
-        ) : (
-          <TouchableOpacity activeOpacity={0.6} style={styles.cartButton}>
-            <Text style={styles.cartButtonText}>ADD TO CART</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.titleRow}>
+          <Text style={styles.titleText} numberOfLines={2}>
+            {title}
+          </Text>
+        </View>
+
+        <View style={styles.cartButtonRow}>
+          {!isOutOfStock ? (
+            currentQty > 0 ? (
+              <View style={styles.stepperFullWidth}>
+                <TouchableOpacity
+                  style={styles.stepperSide}
+                  onPress={handleDecrement}
+                  disabled={loading}
+                  activeOpacity={1}
+                >
+                  {!loading ? (
+                    <Text style={styles.stepperSymbol}>−</Text>
+                  ) : null}
+                </TouchableOpacity>
+
+                <View style={styles.stepperMiddle}>
+                  {loading ? (
+                    <Lottie
+                      source={require('../../lottie/loading.json')}
+                      autoPlay
+                      loop
+                      style={{ width: 22, height: 22, alignSelf: 'center' }}
+                    />
+                  ) : (
+                    <Text style={styles.stepperQtyText}>{currentQty}</Text>
+                  )}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.stepperSide}
+                  onPress={handleIncrement}
+                  disabled={loading}
+                  activeOpacity={1}
+                >
+                  {!loading ? (
+                    <Text style={styles.stepperSymbol}>+</Text>
+                  ) : null}
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={styles.cartButton}
+                onPress={handleIncrement}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Lottie
+                    source={require('../../lottie/loading.json')}
+                    autoPlay
+                    loop
+                    style={{ width: 25, height: 25, alignSelf: 'center' }}
+                  />
+                ) : (
+                  <Text style={styles.cartButtonText}>ADD TO CART</Text>
+                )}
+              </TouchableOpacity>
+            )
+          ) : (
+            <View style={styles.outOfStockButton}>
+              <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
+            </View>
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -96,163 +338,225 @@ export default ProductCard;
 
 const styles = StyleSheet.create({
   card: {
-    width: screenWidth * 0.64,  
+    width: screenWidth * 0.64,
     alignSelf: 'center',
-    paddingVertical: 9,  
-    paddingHorizontal: 5,  
+    paddingHorizontal: 8,
+    height: CARD_HEIGHT,
+    backgroundColor: '#fff',
+    borderWidth: 0.1,
+    borderColor: '#fff',
+    borderRadius: 8,
+    marginBottom: 15,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#fff',
+        shadowOffset: { width: 2, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 1.5,
+      },
+    }),
   },
+  cardInner: { flex: 1, justifyContent: 'flex-start' },
   imageSection: {
     alignItems: 'center',
-    marginBottom: 5,  
+    marginBottom: 5,
     position: 'relative',
-    backgroundColor:'#F6F6F6',
+    backgroundColor: '#F6F6F6',
     borderRadius: 6,
-    padding: 3,  
+    padding: 10,
+    height: screenHeight * 0.18,
+    borderColor: '#F59A11',
+    borderWidth: 1,
+    marginHorizontal: 1,
+    marginTop: 7,
   },
   bestsellerContainer: {
     borderRadius: 5,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
     position: 'absolute',
     top: 0,
     left: 1,
     zIndex: 1,
-    height: 22,  
-    marginRight: 8,
-    ...(Platform.OS === 'ios' && {
-      width: "auto",  
-      height: 19,
-    }),
-    ...(Platform.OS === 'android' && {
-      width: "auto",  
-      height: 16.5,
-    }),
+    height: 24,
   },
   bestsellerText: {
     color: '#fff',
-    fontSize: 8,  
-    fontFamily:'Gotham-Rounded-Bold',
+    fontSize: 11,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
-  swiper: {
-    height: screenHeight * 0.10,  
-    width: '100%',
-  },
-  productImage: {
-    marginTop: 6,  
-    width: '100%',
-    height: 64, 
-  },
-  dot: {
-    backgroundColor: '#ccc',
-    width: 4,
-    height: 4,
-    borderRadius: 3,
-    margin: 3,
-  },
-  activeDot: {
-    backgroundColor: '#333',
-    width: 6,
-    height: 6,
-    borderRadius: 4,
-    margin: 3,
-  },
-  pagination: {
-    bottom: -5,
-  },
+  swiper: { width: '100%' },
+  productImage: { width: '100%', height: '100%' },
   ratingText: {
-    fontSize: 9,  
+    fontSize: 10,
     color: '#333',
     alignSelf: 'flex-start',
     marginTop: 3,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 3,  
+    marginTop: 3,
   },
   titleText: {
-    fontSize: 14, 
-    fontWeight: '600',
-    color: '̀',
+    fontSize: 14,
+    color: '#181818',
     flex: 1,
     flexWrap: 'wrap',
-    fontFamily:'Gotham-Rounded-Light',
+    fontFamily: 'gotham-rounded-book',
+    lineHeight: 18,
+    paddingLeft: 2,
   },
-  vegWrapper: {
-    alignItems: 'center',
-    marginLeft: 4,  
-    width: 22,  
-  },
-  vegIcon: {
-    width: 14,  
-    height: 16, 
-    marginRight: 3, 
+  brandText: {
+    fontSize: 13,
+    color: '#F59A11',
+    fontFamily: 'Gotham-Rounded-Bold',
+    paddingLeft: 3,
   },
   priceLabel: {
-    fontSize: 10,  
+    fontSize: 12,
     color: '#6A6868',
-    marginTop: 6, 
-    fontFamily: "Gotham-Rounded-Light",
+    fontFamily: 'Gotham-Rounded-Medium',
   },
   priceDiscountRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
     alignItems: 'center',
     marginTop: 3,
+    paddingLeft: 4,
   },
   priceValue: {
-    fontSize: 12,  
+    fontSize: 15,
     color: '#218032',
-    fontFamily: "Gotham-Rounded-Bold",
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   strikePrice: {
     textDecorationLine: 'line-through',
     color: '#888',
-    fontSize: 10,  
-    marginLeft: 5,  
-    fontFamily: "Gotham-Rounded-Bold",
+    fontSize: 10,
+    marginTop: 2,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   discountContainer: {
     backgroundColor: '#004E6A',
     borderRadius: 3,
     paddingHorizontal: 5,
     paddingVertical: 2,
-    marginLeft: 'auto',  
+    marginLeft: 'auto',
   },
   discountText: {
     color: '#fff',
-    fontSize: 8,  
+    fontSize: 8,
     fontWeight: '600',
-    fontFamily: "Gotham-Rounded-Bold",
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   cartButtonRow: {
-    marginTop: 6,  
+    position: 'absolute',
+    bottom: 8,
+    left: 0,
+    right: 0,
   },
   cartButton: {
     backgroundColor: '#F59A11',
-    paddingVertical: 6,  
-    borderRadius: 8,
+    borderRadius: 6,
     width: '100%',
+    height: 36,
+    justifyContent: 'center',
   },
   cartButtonText: {
     color: '#fff',
-    fontWeight: '600',
-    fontSize: 9,  
+    fontSize: 13,
     textAlign: 'center',
-    fontFamily: "Gotham-Rounded-Bold",
+    fontFamily: 'Gotham-Rounded-Bold',
   },
-  outOfStockButton: {
-    backgroundColor: '#99a1ad',
-    paddingVertical: 6,
-    borderRadius: 8,
-    width: '100%',
+
+  stepperFullWidth: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 36,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#F59A11',
+    overflow: 'hidden',
+  },
+  stepperSide: {
+    width: 64,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F59A11',
+    height: '100%',
+  },
+  stepperMiddle: {
+    flex: 1,
+    backgroundColor: '#F59A11',
+    height: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  outOfStockButtonText: {
-    color: '#ffffff',
-    fontSize: 9,  
+  stepperSymbol: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+  stepperQtyText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+
+  vegMark: { alignItems: 'center', marginLeft: 111 },
+  vegBox: {
+    width: 15,
+    height: 15,
+    borderWidth: 2,
+    borderColor: '#008000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 1,
+  },
+  vegDot: {
+    width: 7.5,
+    height: 7.5,
+    borderRadius: 7,
+    backgroundColor: '#008000',
+  },
+  vegText: { fontSize: 9, color: '#008000', marginTop: 1 },
+  vRow: { paddingVertical: 4 },
+  vCard: {
+    borderRadius: 10,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    overflow: 'hidden',
+    borderColor: '#014e6a',
+  },
+  vHead: {
+    height: 11,
+    backgroundColor: '#0A4B5F',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  vHeadTxt: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+  vBody: { paddingHorizontal: 4, paddingTop: 1, paddingBottom: 6, flex: 1 },
+  vSale: { color: '#014e6a', fontSize: 10, fontFamily: 'Gotham-Rounded-Bold' },
+  vMrp: {
+    marginLeft: 6,
+    color: '#6a6a6a',
+    fontSize: 8,
+    textDecorationLine: 'line-through',
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
+  vOff: {
+    color: '#007d17',
+    fontSize: 9,
+    fontFamily: 'Gotham-Rounded-Bold',
     textAlign: 'center',
-    fontFamily: "Gotham-Rounded-Bold",
   },
 });

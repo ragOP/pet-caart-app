@@ -19,7 +19,10 @@ const OrderDetailsScreen = ({ navigation }) => {
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <ArrowLeft size={28} color="#000" />
             </TouchableOpacity>
             <Text style={styles.header}>My Orders</Text>
@@ -42,11 +45,13 @@ const OrderDetailsScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>ITEM DETAILS</Text>
         <View style={styles.itemCard}>
           <Image
-            source={require('../../assets/images/product.png')} 
+            source={require('../../assets/images/product.png')}
             style={styles.productImage}
           />
           <View style={{ flex: 1 }}>
-            <Text style={styles.productTitle}>Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits</Text>
+            <Text style={styles.productTitle}>
+              Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits
+            </Text>
             <Text style={styles.brand}>Applod</Text>
             <View style={styles.tagRow}>
               <Text style={styles.tagText}>14×3Kg | 10% OFF</Text>
@@ -71,15 +76,23 @@ const OrderDetailsScreen = ({ navigation }) => {
 const BillRow = ({ label, value, isFree, isBold }) => (
   <View style={styles.billRow}>
     <Text style={[styles.billLabel, isBold && styles.boldText]}>{label}</Text>
-    <Text style={[styles.billValue, isFree && styles.freeText, isBold && styles.boldText]}>{value}</Text>
+    <Text
+      style={[
+        styles.billValue,
+        isFree && styles.freeText,
+        isBold && styles.boldText,
+      ]}
+    >
+      {value}
+    </Text>
   </View>
 );
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -128,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: 'Gotham-Rounded-Bold',
     color: '#888',
-    paddingLeft:12
+    paddingLeft: 12,
   },
   subHeader: {
     fontSize: 16,

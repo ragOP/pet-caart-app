@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Image,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -22,10 +23,11 @@ import {
   Headset,
 } from 'lucide-react-native';
 import { logout } from '../../redux/authSlice';
-import CustomDialog from '../../components/CustomDialog/CustomDialog';
-import ContainerWrapper from '../../components/Wrapper/ContainerWrapper';
+import { resetCart } from '../../redux/cartSlice';
+import SearchBar from '../../components/SearchBar/SearchBar';
+import { persistor } from '../../redux/store';
 
-const formatDateSince = (date) => {
+const formatDateSince = date => {
   const options = { year: 'numeric', month: 'long' };
   const formattedDate = new Date(date).toLocaleDateString('en-US', options);
   return `PetCaart member since ${formattedDate}`;
@@ -33,11 +35,15 @@ const formatDateSince = (date) => {
 
 const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { isLoggedIn, user } = useSelector((state) => state.auth);
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const { isLoggedIn, user } = useSelector(state => state.auth);
+  const createdAt = user?.createdAt;
+  const membershipSince = createdAt ? formatDateSince(createdAt) : '';
 
-  const createdAt = user?.createdAt || '2022-01-15T10:30:00.000Z';
-  const membershipSince = formatDateSince(createdAt);
+  const confirmLogout = async () => {
+    dispatch(resetCart());
+    await persistor.purge();
+    dispatch(logout());
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -45,93 +51,136 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const loggedInMenuItems = [
-    { label: 'Edit Profile', icon: <UserRound size={26} color="#004E6A" />, navigateTo: 'ProfileDetailScreen' },
-    { label: 'Address Information', icon: <MapPinHouse size={26} color="#004E6A" />, navigateTo: 'AddressInfoScreen' },
-    { label: 'My Orders', icon: <PackageOpen size={26} color="#004E6A" />, navigateTo: 'MyOrderScreen' },
-    { label: 'Invite Friends', icon: <UserRoundPlus size={26} color="#004E6A" />, navigateTo: 'InviteScreen' },
-    { label: 'Contact Us', icon: <Headset size={26} color="#004E6A" />, navigateTo: 'ContactUsScreen' },
-    { label: 'Log Out', icon: <LogOut size={26} color="#004E6A" />, action: () => setShowLogoutDialog(true) },
+    {
+      label: 'Edit Profile',
+      icon: <UserRound size={26} color="#004E6A" />,
+      navigateTo: 'ProfileDetailScreen',
+    },
+    {
+      label: 'Address Information',
+      icon: <MapPinHouse size={26} color="#004E6A" />,
+      navigateTo: 'AddressInfoScreen',
+    },
+    {
+      label: 'My Orders',
+      icon: <PackageOpen size={26} color="#004E6A" />,
+      navigateTo: 'MyOrderScreen',
+    },
+    {
+      label: 'Invite Friends',
+      icon: <UserRoundPlus size={26} color="#004E6A" />,
+      navigateTo: 'InviteScreen',
+    },
+    {
+      label: 'Contact Us',
+      icon: <Headset size={26} color="#004E6A" />,
+      navigateTo: 'ContactUsScreen',
+    },
+    {
+      label: 'Log Out',
+      icon: <LogOut size={26} color="#004E6A" />,
+      action: confirmLogout,
+    },
   ];
 
   const menuItems = isLoggedIn ? loggedInMenuItems : [];
 
   return (
-    <ContainerWrapper>
-      <ScrollView style={styles.container}>
-
-        {!isLoggedIn ? (
-          <View style={styles.guestHeaderBox}>
-            <View style={styles.guestRow}>
-              <View style={styles.avatarWrapper}>
-                <UserRound size={32} color="#004E6A" />
-              </View>
-              <TouchableOpacity
-                style={styles.loginAction}
-                activeOpacity={0.8}
-                onPress={() => navigation.navigate('LoginScreen')}
-              >
-                <Text style={styles.loginTitle}>Login / Signup</Text>
-                <ChevronRight size={20} color="#004E6A" />
-              </TouchableOpacity>
+    <ScrollView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <View style={styles.headerWrapper}>
+        <SafeAreaView>
+          <View style={styles.headerRow}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
+              <ArrowLeft size={30} color="#000" />
+            </TouchableOpacity>
+            <SearchBar />
+          </View>
+        </SafeAreaView>
+      </View>
+      {!isLoggedIn ? (
+        <View style={styles.guestHeaderBox}>
+          <View style={styles.guestRow}>
+            <View style={styles.avatarWrapper}>
+              <UserRound size={32} color="#004E6A" />
+            </View>
+            <TouchableOpacity
+              style={styles.loginAction}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('LoginScreen')}
+            >
+              <Text style={styles.loginTitle}>LOGIN / SIGNUP</Text>
+              <ChevronRight size={20} color="#004E6A" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <ImageBackground
+          source={require('../../assets/images/profilebg.png')}
+          style={styles.header}
+          imageStyle={styles.backgroundImage}
+        >
+          <View style={styles.profileImageWrapper}>
+            <View style={styles.profileImage}>
+              <UserRound size={30} color="#004E6A" />
             </View>
           </View>
-        ) : (
-          <View style={styles.header}>
-            <View style={styles.profileImageWrapper}>
-              <View style={styles.profileImage}>
-                <UserRound size={30} color="#004E6A" />
-              </View>
-            </View>
-            <View style={styles.textWrapper}>
-              <Text style={styles.name}>{user?.name || 'User'}</Text>
-              <Text style={styles.membership}>{membershipSince}</Text>
-            </View>
+          <View style={styles.textWrapper}>
+            <Text style={styles.name}>Hi, {user?.name || 'User'}</Text>
+            <Text style={styles.membership}>{membershipSince}</Text>
           </View>
-        )}
+        </ImageBackground>
+      )}
 
-        {/* Menu for logged-in users */}
-        {isLoggedIn && (
-          <View style={styles.menuContainer}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.menuItem}
-                activeOpacity={0.8}
-                onPress={() => item.navigateTo ? navigation.navigate(item.navigateTo) : item.action && item.action()}
-              >
-                {item.icon}
-                <Text style={styles.menuText}>{item.label}</Text>
-                <ChevronRight size={20} color="#004E6A" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </ScrollView>
-
-      {/* Logout Confirmation Dialog */}
-      <CustomDialog
-        visible={showLogoutDialog}
-        onDismiss={() => setShowLogoutDialog(false)}
-        title="Logout"
-        message="Are you sure you want to logout from your account?"
-        primaryButtonText="Logout"
-        secondaryButtonText="Cancel"
-        onPrimaryPress={handleLogout}
-        type="warning"
-        primaryButtonColor="#f79e1b"
-        secondaryButtonColor="#666"
-      />
-    </ContainerWrapper>
+      {isLoggedIn && (
+        <View style={styles.menuContainer}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.menuItem}
+              activeOpacity={0.8}
+              onPress={() =>
+                item.navigateTo
+                  ? navigation.navigate(item.navigateTo)
+                  : item.action()
+              }
+            >
+              {item.icon}
+              <Text style={styles.menuText}>{item.label}</Text>
+              <ChevronRight size={24} color="#004E6A" />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFBF6',
+    backgroundColor: '#FFFFFF',
+  },
+  headerWrapper: {
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+  },
+  backButton: {
+    paddingRight: 15,
   },
   guestHeaderBox: {
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
     margin: 12,
     borderRadius: 12,
     padding: 16,
@@ -176,6 +225,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
     borderBottomColor: '#E0E0E0',
   },
+  backgroundImage: {
+    backgroundColor: '#F59A1199',
+  },
   profileImageWrapper: {
     marginRight: 15,
     alignItems: 'center',
@@ -198,14 +250,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    fontSize: 20,
+    fontSize: 22,
     fontFamily: 'Gotham-Rounded-Bold',
-    color: '#333',
+    color: '#2C2D2E',
+    lineHeight: 30,
   },
   membership: {
-    color: '#888',
-    fontSize: 15,
-    fontFamily: 'Gotham-Rounded-Medium',
+    color: 'black',
+    fontSize: 16,
+    fontFamily: 'gotham-rounded-book',
   },
   menuContainer: {
     paddingLeft: 12,
@@ -220,7 +273,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#E0E0E0',
   },
   menuText: {
-    fontSize: 16,
+    fontSize: 22,
     marginLeft: 20,
     color: '#333',
     flex: 1,

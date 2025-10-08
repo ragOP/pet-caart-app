@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>pet_caart_app</string>
+	<string>Pet Caart</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -58,6 +58,9 @@
 		<string>Gotham-Rounded-Book_.ttf</string>
 		<string>Gotham-Rounded-Light.ttf</string>
 		<string>Gotham-Rounded-Medium.ttf</string>
+		<string>Gotham-Book.otf</string>
+		<string>gotham-rounded-book.otf</string>
+		<string>HoltwoodOneSC.ttf</string>
 	</array>
 </dict>
 </plist>

@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, StatusBar, SafeAreaView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  StatusBar,
+  SafeAreaView,
+  Platform,
+} from 'react-native';
 import { useSelector } from 'react-redux';
 import { ArrowLeft } from 'lucide-react-native';
 import { updateProfile } from '../../apis/updateProfile';
 
 const ProfileDetailScreen = ({ navigation }) => {
-  const { user } = useSelector((state) => state.auth); 
+  const { user } = useSelector(state => state.auth);
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -14,7 +24,7 @@ const ProfileDetailScreen = ({ navigation }) => {
     if (user) {
       setName(user.name || '');
       setPhone(user.phoneNumber || '');
-      setEmail(user.email || '');  
+      setEmail(user.email || '');
     }
   }, [user]);
 
@@ -44,11 +54,19 @@ const ProfileDetailScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" translucent={false} />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FFFFFF"
+        translucent={false}
+      />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+            >
               <ArrowLeft size={30} color="#000" />
             </TouchableOpacity>
             <Text style={styles.header}>Personal Details</Text>
@@ -97,7 +115,7 @@ const ProfileDetailScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFBF6',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     fontSize: 24,
@@ -107,7 +125,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
@@ -137,7 +155,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Light',
   },
   saveButton: {
-    backgroundColor: '#F59A11',
+    backgroundColor: '#0888B1',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',

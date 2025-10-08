@@ -1,55 +1,59 @@
 export const endpoints = {
   // auth
-  login: "api/auth/user/login",
-  register: "api/auth/user/register",
-  update_profile: "api/auth/user/update-profile",
+  login: 'api/auth/user/login',
+  register: 'api/auth/user/register',
+  update_profile: 'api/auth/user/update-profile',
 
   // products
-  products: "api/product",
+  products: 'api/product',
 
   // blogs
-  blogs: "api/blogs",
+  blogs: 'api/blogs',
 
-  banners: "api/configuration/banner",
+  banners: 'api/configuration/banner',
 
   // sliders
-  sliders: "api/sliders/slider",
+  sliders: 'api/sliders/slider',
 
   // categories
-  category: "api/category",
+  category: 'api/category',
 
   // sub categories
-  sub_category: "api/subcategory",
+  sub_category: 'api/subcategory',
 
   // breeds
-  breed: "api/breed",
+  breed: 'api/breed',
 
   // collection
-  collection: "api/collection",
+  collection: 'api/collection',
 
   // header and footer
-  header_footer: "api/settings/header-footer/get",
+  header_footer: 'api/settings/header-footer/get',
 
   // cat banners
-  cat_banners: "api/cat-life-banner/get",
+  cat_banners: 'api/cat-life-banner/get',
 
   // Ad banners
-  ad_banners: "api/configuration/ad-banner",
+  ad_banners: 'api/configuration/ad-banner',
 
   // brands
-  brands: "api/brand",
+  brands: 'api/brand',
 
   // address
-  address: "api/address",
+  address: 'api/address',
   // product banner
-  productBanner: "api/product-banner",
+  productBanner: 'api/product-banner',
 
   // cart
-  cart: "api/cart",
+  cart: 'api/cart',
 
   // coupons
-  coupons: "api/coupon",
+  coupons: 'api/coupon',
 
   // orders
-  orders: "api/orders",
+  orders: 'api/orders',
+  sendOtp: 'api/otp/send-otp',
+  collection: 'api/collection',
+  delivery: 'api/delivery/check',
+  pageConfig: 'api/page-config/get-page-config-by-key',
 };

@@ -7,13 +7,13 @@ import {
   Image,
   ScrollView,
   Dimensions,
-  ActivityIndicator,  // Import ActivityIndicator
+  ActivityIndicator, // Import ActivityIndicator
   Linking,
 } from 'react-native';
 import { getAdBanner2 } from '../../apis/getAdBanner2';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 60) / 2; 
+const CARD_WIDTH = (width - 60) / 2;
 
 const BakedProduct = ({ style }) => {
   const [bannerData, setBannerData] = useState({
@@ -22,14 +22,14 @@ const BakedProduct = ({ style }) => {
     link: '',
   });
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);  
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAdBanners = async () => {
       try {
-        const response = await getAdBanner2(); 
+        const response = await getAdBanner2();
         const banner = response?.data?.data;
-        
+
         if (banner) {
           setBannerData({
             title: banner.title,
@@ -41,11 +41,11 @@ const BakedProduct = ({ style }) => {
       } catch (error) {
         console.error('Error fetching Ad banners:', error);
       } finally {
-        setLoading(false);  
+        setLoading(false);
       }
     };
 
-    fetchAdBanners();  
+    fetchAdBanners();
   }, []);
 
   if (loading) {
@@ -65,7 +65,7 @@ const BakedProduct = ({ style }) => {
           <TouchableOpacity
             activeOpacity={1}
             style={styles.shopNowButton}
-            onPress={() => Linking.openURL(bannerData.link)}  
+            onPress={() => Linking.openURL(bannerData.link)}
           >
             <Text style={styles.shopNowText}>Shop now</Text>
           </TouchableOpacity>
@@ -84,7 +84,11 @@ const BakedProduct = ({ style }) => {
 
 const ProductCard = ({ item }) => (
   <View style={styles.card}>
-    <Image source={{ uri: item.images[0] }} style={styles.productImage} resizeMode="contain" />
+    <Image
+      source={{ uri: item.images[0] }}
+      style={styles.productImage}
+      resizeMode="contain"
+    />
     <Text style={styles.productTitle} numberOfLines={2} ellipsizeMode="tail">
       {item.title}
     </Text>
@@ -100,6 +104,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF6C6',
     flex: 1,
     borderRadius: 12,
+    margin: 10,
+    padding: 10,
   },
   loaderContainer: {
     flex: 1,
@@ -114,18 +120,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   heading1: {
-    fontSize: 22,
+    fontSize: 26,
     color: '#522100',
     textAlign: 'left',
     fontFamily: 'Gotham-Rounded-Bold',
+    lineHeight: 30,
   },
-  heading2: {
-    fontSize: 22,
-    color: '#522100',
-    marginTop: -2,
-    textAlign: 'left',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
+
   subheading: {
     fontSize: 17,
     color: '#333',
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
   },
   shopNowButton: {
-    backgroundColor: '#FFA200',
+    backgroundColor: '#0888B1',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 30,
@@ -150,13 +151,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 30,
   },
   card: {
     backgroundColor: 'transparent',
     width: CARD_WIDTH,
     borderRadius: 12,
-    paddingVertical: 5,
     paddingHorizontal: 10,
     alignItems: 'center',
     marginBottom: 20,

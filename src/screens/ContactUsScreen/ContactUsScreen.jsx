@@ -7,87 +7,102 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
-  ScrollView,
+  Linking,
 } from 'react-native';
-import { ArrowLeft, ChevronRight, Truck, Trash2, Phone, Mail } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Truck,
+  Undo2,
+  PhoneCall,
+  Mail,
+  ChevronRight,
+} from 'lucide-react-native';
 
 const ContactUsScreen = ({ navigation }) => {
-  const handleTrackOrder = () => {
-    // Navigate to track order screen or show modal
-    alert('Track Order functionality will be implemented here');
+  const handleCall = () => {
+    Linking.openURL('tel:18005723575');
   };
 
-  const handleReturnOrder = () => {
-    // Navigate to return order screen or show modal
-    alert('Return Order functionality will be implemented here');
+  const handleEmail = () => {
+    Linking.openURL('mailto:support@petcaart.com');
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+      {/* Header */}
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <ArrowLeft size={30} color="#000" />
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+              activeOpacity={1}
+            >
+              <ArrowLeft size={28} color="#000" />
             </TouchableOpacity>
             <Text style={styles.header}>Contact Us</Text>
           </View>
         </SafeAreaView>
       </View>
-
-      <ScrollView style={styles.content}>
-        {/* Get in Touch Section */}
-        <Text style={styles.sectionTitle}>Get in Touch</Text>
-        
-        <View style={styles.optionContainer}>
-          <TouchableOpacity style={styles.optionRow} onPress={handleTrackOrder}>
-            <View style={styles.optionLeft}>
-              <Truck size={24} color="#004E6A" />
-              <View style={styles.optionText}>
-                <Text style={styles.optionTitle}>Track Order</Text>
-                <Text style={styles.optionSubtitle}>View status of the order</Text>
+      <View style={styles.contentWrapper}>
+        <View>
+          <TouchableOpacity activeOpacity={1} style={styles.card}>
+            <View style={styles.cardLeft}>
+              <Truck size={28} color="#FF9F00" />
+              <View style={{ marginLeft: 12 }}>
+                <Text style={styles.cardTitle}>Track Order</Text>
+                <Text style={styles.cardDesc}>View status of the order</Text>
               </View>
             </View>
-            <ChevronRight size={20} color="#f79e1b" />
+            <ChevronRight size={24} color="#FFA500" />
           </TouchableOpacity>
 
-          <View style={styles.separator} />
-
-          <TouchableOpacity style={styles.optionRow} onPress={handleReturnOrder}>
-            <View style={styles.optionLeft}>
-              <Trash2 size={24} color="#004E6A" />
-              <View style={styles.optionText}>
-                <Text style={styles.optionTitle}>Return Order</Text>
-                <Text style={styles.optionSubtitle}>Return and view the items in order</Text>
+          <TouchableOpacity activeOpacity={1} style={styles.card}>
+            <View style={styles.cardLeft}>
+              <Undo2 size={28} color="#FF9F00" />
+              <View style={{ marginLeft: 12 }}>
+                <Text style={styles.cardTitle}>Return Order</Text>
+                <Text style={styles.cardDesc}>
+                  Return and view the items in order
+                </Text>
               </View>
             </View>
-            <ChevronRight size={20} color="#f79e1b" />
+            <ChevronRight size={24} color="#FFA500" />
           </TouchableOpacity>
         </View>
 
-        {/* Contact Information Section */}
-        <Text style={styles.sectionTitle}>GET IN TOUCH</Text>
-        <Text style={styles.contactIntro}>If you have any inquiries, feel free to</Text>
+        {/* Bottom Contact Section */}
+        <View style={styles.contactSection}>
+          <Text style={styles.getInTouch}>GET IN TOUCH</Text>
+          <Text style={styles.getInTouchDesc}>
+            If you have any inquiries, feel free to
+          </Text>
 
-        <View style={styles.contactContainer}>
-          <View style={styles.contactRow}>
-            <Phone size={24} color="#004E6A" />
-            <View style={styles.contactText}>
-              <Text style={styles.contactLabel}>Call us at</Text>
-              <Text style={styles.contactValue}>1800-5723-575</Text>
-            </View>
-          </View>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.row}
+            onPress={handleCall}
+          >
+            <PhoneCall size={24} color="#005B64" style={styles.contactIcon} />
+            <Text style={styles.contactText}>
+              Call us at <Text style={styles.bold}>1800-5723-575</Text>
+            </Text>
+          </TouchableOpacity>
 
-          <View style={styles.contactRow}>
-            <Mail size={24} color="#004E6A" />
-            <View style={styles.contactText}>
-              <Text style={styles.contactLabel}>Email us at</Text>
-              <Text style={styles.contactValue}>support@petcaart.com</Text>
-            </View>
-          </View>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.row}
+            onPress={handleEmail}
+          >
+            <Mail size={24} color="#005B64" style={styles.contactIcon} />
+            <Text style={styles.contactText}>
+              Email us at <Text style={styles.bold}>support@petcaart.com</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -95,116 +110,80 @@ const ContactUsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFBF6',
+    backgroundColor: '#FFFFFF',
   },
   headerWrapper: {
-    paddingVertical: 20,
-    backgroundColor: '#FEF5E7',
+    backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
+    padding: 15,
   },
   backButton: {
     paddingRight: 15,
   },
   header: {
     fontSize: 24,
+    fontWeight: 'bold',
+    paddingLeft: 10,
+  },
+  contentWrapper: {
     flex: 1,
-    paddingLeft: 20,
-    fontFamily: 'Gotham-Rounded-Medium',
-    color: '#333',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: 'Gotham-Rounded-Bold',
-    color: '#333',
-    marginBottom: 15,
-    marginTop: 10,
-  },
-  optionContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 30,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 20,
-    paddingHorizontal: 20,
   },
-  optionLeft: {
+  card: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 18,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    alignItems: 'center',
+  },
+  cardLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
-  optionText: {
-    marginLeft: 15,
-    flex: 1,
-  },
-  optionTitle: {
+  cardTitle: {
     fontSize: 16,
-    fontFamily: 'Gotham-Rounded-Bold',
-    color: '#333',
-    marginBottom: 4,
+    fontWeight: '600',
   },
-  optionSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Gotham-Rounded-Medium',
-    color: '#666',
+  cardDesc: {
+    fontSize: 13,
+    color: '#444',
+    marginTop: 3,
   },
-  separator: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginHorizontal: 20,
-  },
-  contactIntro: {
-    fontSize: 16,
-    fontFamily: 'Gotham-Rounded-Medium',
-    color: '#333',
-    marginBottom: 20,
-  },
-  contactContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+  contactSection: {
     padding: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#FFFFFF',
   },
-  contactRow: {
+  getInTouch: {
+    fontWeight: 'bold',
+    fontSize: 15,
+    marginBottom: 8,
+  },
+  getInTouchDesc: {
+    color: '#444',
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
+  },
+  contactIcon: {
+    marginRight: 12,
   },
   contactText: {
-    marginLeft: 15,
-    flex: 1,
-  },
-  contactLabel: {
     fontSize: 14,
-    fontFamily: 'Gotham-Rounded-Medium',
     color: '#333',
-    marginBottom: 4,
   },
-  contactValue: {
-    fontSize: 16,
-    fontFamily: 'Gotham-Rounded-Bold',
-    color: '#333',
+  bold: {
+    fontWeight: 'bold',
+    color: '#000',
   },
 });
 
-export default ContactUsScreen; 
+export default ContactUsScreen;

@@ -1,62 +1,54 @@
-// components/Banner/BannerShimmer.js
-
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View, Dimensions } from 'react-native';
+import { View, Animated, StyleSheet, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.96;
+const CARD_HEIGHT = 170;
 
 const BannerShimmer = () => {
-  const shimmerAnim = useRef(new Animated.Value(-1)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.loop(
       Animated.timing(shimmerAnim, {
         toValue: 1,
-        duration: 1200,
+        duration: 1000,
         useNativeDriver: true,
-      })
+      }),
     ).start();
-  }, [shimmerAnim]);
+  }, []);
 
   const translateX = shimmerAnim.interpolate({
-    inputRange: [-1, 1],
-    outputRange: [-width, width],
+    inputRange: [0, 1],
+    outputRange: [-CARD_WIDTH, CARD_WIDTH],
   });
 
   return (
-    <View style={styles.container}>
-      <View style={styles.shimmerContainer}>
-        <Animated.View
-          style={[
-            styles.shimmerOverlay,
-            { transform: [{ translateX }] },
-          ]}
-        />
-      </View>
+    <View style={styles.shimmerCard}>
+      <Animated.View
+        style={[styles.shimmerOverlay, { transform: [{ translateX }] }]}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 10,
+  shimmerCard: {
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     borderRadius: 12,
+    backgroundColor: '#e4e7ec',
     overflow: 'hidden',
-    height: 180,
-    marginBottom: 16,
-    backgroundColor: '#e0e0e0',
-  },
-  shimmerContainer: {
-    flex: 1,
-    backgroundColor: '#e0e0e0',
+    paddingHorizontal: 8,
   },
   shimmerOverlay: {
+    width: '40%',
+    height: '100%',
+    backgroundColor: '#ffffff',
+    opacity: 0.3,
     position: 'absolute',
     top: 0,
-    bottom: 0,
-    width: '50%',
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 12,
+    left: 0,
   },
 });
 

@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, ScrollView, TouchableOpacity, Image, Dimensions, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  ActivityIndicator,
+} from 'react-native';
 import ProductCard from '../ProductCard/ProductCard';
 import FilterBar from '../FilterBar/FilterBar';
 import { getSubCategories } from '../../apis/getSubCategories';
-import { getProducts } from '../../apis/getProducts'; 
+import { getProducts } from '../../apis/getProducts';
 
 const windowWidth = Dimensions.get('window').width;
 const CARD_WIDTH = windowWidth * 0.36;
@@ -11,15 +21,17 @@ const CARD_WIDTH = windowWidth * 0.36;
 const CategoryCard = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [categoriesLoading, setCategoriesLoading] = useState(true); 
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [products, setProducts] = useState([]);
-  const [productsLoading, setProductsLoading] = useState(true); 
+  const [productsLoading, setProductsLoading] = useState(true);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedBreed, setSelectedBreed] = useState(null);
 
-  const calculateDiscount = (item) => {
-    if (!item.salePrice) return 0; 
-    let discountPercent = Math.round(((item.price - item.salePrice) / item.price) * 100);
+  const calculateDiscount = item => {
+    if (!item.salePrice) return 0;
+    let discountPercent = Math.round(
+      ((item.price - item.salePrice) / item.price) * 100,
+    );
     return discountPercent;
   };
 
@@ -27,9 +39,13 @@ const CategoryCard = () => {
     setCategoriesLoading(true);
     try {
       const subCategoriesData = await getSubCategories();
-      if (subCategoriesData && subCategoriesData.data && subCategoriesData.data.data.length > 0) {
-        setCategories(subCategoriesData.data.data);  
-        setSelectedCategory(subCategoriesData.data.data[0]); 
+      if (
+        subCategoriesData &&
+        subCategoriesData.data &&
+        subCategoriesData.data.data.length > 0
+      ) {
+        setCategories(subCategoriesData.data.data);
+        setSelectedCategory(subCategoriesData.data.data[0]);
       } else {
         console.error('No categories available');
       }
@@ -39,31 +55,29 @@ const CategoryCard = () => {
       setCategoriesLoading(false);
     }
   };
-
-  // Fetch products based on filters (category, brand, breed)
   const fetchProducts = async (subCategorySlug, brand, breed) => {
     setProductsLoading(true);
     try {
-      const response = await getProducts({ 
-        subCategorySlug, 
-        brand, 
-        breed 
+      const response = await getProducts({
+        subCategorySlug,
+        brand,
+        breed,
       });
       if (response && response.data && response.data.data.length > 0) {
-        setProducts(response.data.data); 
+        setProducts(response.data.data);
       } else {
-        setProducts([]);  
+        setProducts([]);
         console.log('No products found for the selected filters.');
       }
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
-      setProductsLoading(false); 
+      setProductsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSubCategories(); 
+    fetchSubCategories();
   }, []);
 
   useEffect(() => {
@@ -85,27 +99,37 @@ const CategoryCard = () => {
         <View style={styles.mainContent}>
           <View style={styles.sidebar}>
             {categoriesLoading ? (
-              <ActivityIndicator size="large" color="#F59A11" style={styles.centeredIndicator}/>
+              <ActivityIndicator
+                size="large"
+                color="#F59A11"
+                style={styles.centeredIndicator}
+              />
             ) : (
               <FlatList
                 data={categories}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     activeOpacity={1}
-                    onPress={() => setSelectedCategory(item)}  
+                    onPress={() => setSelectedCategory(item)}
                     style={[
                       styles.categoryItem,
-                      item._id === selectedCategory?._id && styles.selectedCategory,
+                      item._id === selectedCategory?._id &&
+                        styles.selectedCategory,
                     ]}
                   >
-                    <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.categoryImage}
+                    />
                     <Text style={styles.categoryName}>{item.name}</Text>
-                    {item._id === selectedCategory?._id && <View style={styles.selectedLine} />}
+                    {item._id === selectedCategory?._id && (
+                      <View style={styles.selectedLine} />
+                    )}
                   </TouchableOpacity>
                 )}
                 showsVerticalScrollIndicator={false}
-                keyExtractor={(item) => item._id}
-                ListEmptyComponent={<Text>No categories available</Text>} 
+                keyExtractor={item => item._id}
+                ListEmptyComponent={<Text>No categories available</Text>}
               />
             )}
           </View>
@@ -119,24 +143,29 @@ const CategoryCard = () => {
               <FlatList
                 data={products}
                 renderItem={({ item }) => {
-                  console.log('sayem',item)
+                  console.log('sayem', item);
                   const discountPercent = calculateDiscount(item);
 
                   return (
                     <ProductCard
-                      images={item.images}  
+                      images={item.images}
                       title={item.title}
                       rating={item.rating}
                       price={item.price}
-                      discount={discountPercent > 0 ? `${discountPercent}%` : '0%'} 
+                      discount={
+                        discountPercent > 0 ? `${discountPercent}%` : '0%'
+                      }
                       isVeg={item.isVeg}
                       stock={item.stock}
+                      brandId={item.brandId}
                       cardWidth={CARD_WIDTH}
                     />
                   );
                 }}
                 showsVerticalScrollIndicator={false}
-                keyExtractor={(item, index) => item.id ? item.id.toString() : `fallback-${index}`}
+                keyExtractor={(item, index) =>
+                  item.id ? item.id.toString() : `fallback-${index}`
+                }
                 numColumns={2}
                 columnWrapperStyle={styles.columnWrapper}
                 ListEmptyComponent={<Text>No products available</Text>}
