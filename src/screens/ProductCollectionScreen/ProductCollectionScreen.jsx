@@ -248,7 +248,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#FFF5E1"
+        backgroundColor="#fff"
         translucent={false}
       />
       <View style={styles.headerWrapper}>

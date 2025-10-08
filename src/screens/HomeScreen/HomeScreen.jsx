@@ -103,13 +103,9 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#FFF5E1"
-        translucent={false}
-      />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.headerWrapper}>
-        <SafeAreaView>
+        <View>
           <View style={styles.headerRow}>
             <Image
               source={require('../../assets/images/logo1.png')}
@@ -125,7 +121,7 @@ const HomeScreen = () => {
               <MapPin color="#FFA500" size={24} />
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
+        </View>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {loading && <CustomGridLayoutShimmer />}
@@ -157,7 +153,6 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
-    paddingVertical: 20,
     backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
@@ -165,7 +160,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingVertical: 5,
   },
   logo: {
     width: 70,
@@ -190,6 +184,7 @@ const styles = StyleSheet.create({
     }),
   },
   scrollContent: {
+    marginTop: 15,
     paddingBottom: 100,
     backgroundColor: '#FFFFFF',
   },

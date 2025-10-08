@@ -15,7 +15,7 @@ import { ArrowLeft, CheckCircle } from 'lucide-react-native';
 const OrderDetailsScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>

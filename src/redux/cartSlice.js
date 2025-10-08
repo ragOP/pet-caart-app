@@ -1,4 +1,6 @@
+// redux/cartSlice.js
 import { createSlice } from '@reduxjs/toolkit';
+import { PURGE } from 'redux-persist';
 
 const initialState = {
   items: [],
@@ -29,11 +31,16 @@ const cartSlice = createSlice({
       );
     },
     setCart: (state, action) => {
-      state.items = action.payload;
+      state.items = action.payload || [];
     },
     resetCart: state => {
       state.items = [];
     },
+  },
+  extraReducers: builder => {
+    builder.addCase(PURGE, state => {
+      state.items = [];
+    });
   },
 });
 

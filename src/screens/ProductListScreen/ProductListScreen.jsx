@@ -232,7 +232,7 @@ export default function ProductListScreen({ route, navigation }) {
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#FFF5E1"
+        backgroundColor="#FFFFFF"
         translucent={false}
       />
       <View style={styles.headerWrapper}>

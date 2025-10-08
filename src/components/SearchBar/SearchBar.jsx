@@ -1,41 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Platform,
+  TouchableOpacity,
+  useWindowDimensions,
+} from 'react-native';
 import { Search } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation
+import { useNavigation } from '@react-navigation/native';
 
 const SearchBar = () => {
   const data = ["Search 'Dog Food'", "Search 'Cat Food'", "Search 'Pedigree'"];
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+
+  // Breakpoints
+  const isXS = width < 340;
+  const isSM = width >= 340 && width < 380;
+
   const handleSearchSubmit = () => {
-    if (searchQuery.trim()) {
-      navigation.navigate('ProductListScreen', {
-        searchQuery, // Pass the search query here
-      });
-    }
+    const q = searchQuery.trim();
+    if (q) navigation.navigate('ProductListScreen', { searchQuery: q });
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex(prevIndex => (prevIndex + 1) % data.length);
-    }, 1500);
-
-    return () => clearInterval(interval);
+    const id = setInterval(() => {
+      setPlaceholderIndex(p => (p + 1) % data.length);
+    }, 2000);
+    return () => clearInterval(id);
   }, []);
 
   return (
     <View style={styles.shadowWrapper}>
-      <View style={styles.searchContainer}>
+      <View
+        style={[
+          styles.searchContainer,
+          isXS && { height: 44, paddingHorizontal: 10 },
+          isSM && { height: 48, paddingHorizontal: 12 },
+        ]}
+      >
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            isXS && { fontSize: 14, paddingVertical: 6 },
+            isSM && { fontSize: 15, paddingVertical: 8 },
+          ]}
           placeholder={data[placeholderIndex]}
           placeholderTextColor="#999"
           value={searchQuery}
           onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearchSubmit} // Trigger search on submit
+          onSubmitEditing={handleSearchSubmit}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          returnKeyType="search"
         />
-        <Search color="#004E6A" size={20} onPress={handleSearchSubmit} />
+        <TouchableOpacity
+          onPress={handleSearchSubmit}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Search color="#004E6A" size={isXS ? 18 : isSM ? 19 : 20} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -43,6 +70,7 @@ const SearchBar = () => {
 
 const styles = StyleSheet.create({
   shadowWrapper: {
+    width: '100%',
     ...Platform.select({
       ios: {
         shadowColor: '#4040400D',
@@ -70,6 +98,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontFamily: 'gotham-rounded-book',
+    paddingVertical: 10,
   },
 });
 

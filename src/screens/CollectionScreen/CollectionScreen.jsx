@@ -6,11 +6,14 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
+  Dimensions,
 } from 'react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
-import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_WIDTH <= 360 || SCREEN_HEIGHT <= 640;
 const banners = [
   {
     label: 'CATEGORIES',
@@ -33,37 +36,35 @@ const banners = [
     image: require('../../assets/images/Newlaunch.png'),
   },
 ];
+
 const CollectionScreen = ({ navigation }) => {
+  const dynamicStyles = useMemo(() => makeStyles(isSmallDevice), []);
   return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#FFFFFF"
-        translucent={false}
-      />
-      <View style={styles.headerWrapper}>
-        <View style={styles.headerRow}>
+    <View style={dynamicStyles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <View style={dynamicStyles.headerWrapper}>
+        <View style={dynamicStyles.headerRow}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
-            style={styles.backButton}
+            style={dynamicStyles.backButton}
             activeOpacity={1}
           >
-            <ArrowLeft size={30} color="#000" />
+            <ArrowLeft size={isSmallDevice ? 24 : 30} color="#000" />
           </TouchableOpacity>
-          <SearchBar style={styles.searchBar} />
+          <SearchBar style={dynamicStyles.searchBar} />
         </View>
       </View>
-      <ScrollView>
-        {banners.map((item, idx) => (
+      <ScrollView contentContainerStyle={dynamicStyles.scrollContent}>
+        {banners.map(item => (
           <TouchableOpacity
             key={item.label}
-            style={styles.banner}
+            style={dynamicStyles.banner}
             onPress={() => navigation.navigate(item.nav)}
             activeOpacity={1}
           >
             <Image
               source={item.image}
-              style={styles.bannerImg}
+              style={dynamicStyles.bannerImg}
               resizeMode="cover"
             />
           </TouchableOpacity>
@@ -80,35 +81,43 @@ const CollectionScreen = ({ navigation }) => {
 
 export default CollectionScreen;
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  headerWrapper: {
-    paddingVertical: 5,
-    backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-  },
-  backButton: {
-    paddingRight: 15,
-  },
-  searchBar: {
-    flex: 1,
-  },
-  banner: {
-    width: '100%',
-    height: 110,
-    marginVertical: 10,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bannerImg: {
-    ...StyleSheet.absoluteFillObject,
-    width: '100%',
-    height: '100%',
-  },
-});
+const makeStyles = small =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#FFFFFF' },
+    headerWrapper: {
+      backgroundColor: '#FFFFFF',
+      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: small ? 10 : 15,
+      paddingVertical: small ? 6 : 10,
+      gap: small ? 6 : 10,
+    },
+    backButton: {
+      paddingRight: small ? 8 : 15,
+    },
+    searchBar: {
+      flex: 1,
+      height: small ? 36 : 44,
+    },
+    scrollContent: {
+      paddingVertical: small ? 6 : 10,
+    },
+    banner: {
+      width: '100%',
+      height: small ? 80 : 110,
+      marginVertical: small ? 6 : 10,
+      overflow: 'hidden',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: small ? 8 : 12,
+      marginHorizontal: 0,
+    },
+    bannerImg: {
+      ...StyleSheet.absoluteFillObject,
+      width: '100%',
+      height: '100%',
+    },
+  });

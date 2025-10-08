@@ -33,39 +33,96 @@ export default function NavigationPage() {
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="SplashScreen" component={SplashScreen} />
-        <Stack.Screen name="BottomTabs" component={BottomTabNavigation} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Profile" component={ProfileScreen} />
+        <Stack.Screen
+          name="BottomTabs"
+          component={BottomTabNavigation}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          screenOptions={{ headerShown: false }}
+        />
         <Stack.Screen
           name="ProfileDetailScreen"
           component={ProfileDetailScreen}
+          screenOptions={{ headerShown: false }}
         />
-        <Stack.Screen name="AddressInfoScreen" component={AddressInfoScreen} />
-        <Stack.Screen name="AddAddressScreen" component={AddAddressScreen} />
-        <Stack.Screen name="MyOrderScreen" component={MyOrderScreen} />
+        <Stack.Screen
+          name="AddressInfoScreen"
+          component={AddressInfoScreen}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AddAddressScreen"
+          component={AddAddressScreen}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MyOrderScreen"
+          component={MyOrderScreen}
+          screenOptions={{ headerShown: false }}
+        />
         <Stack.Screen
           name="OrderDetailsScreen"
           component={OrderDetailsScreen}
+          screenOptions={{ headerShown: false }}
         />
-        <Stack.Screen name="LoginScreen" component={LoginScreen} />
-        <Stack.Screen name="SignupScreen" component={SignUpScreen} />
-        <Stack.Screen name="InviteScreen" component={InviteScreen} />
-        <Stack.Screen name="Terms" component={Terms} />
+        <Stack.Screen
+          name="LoginScreen"
+          component={LoginScreen}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="SignupScreen"
+          component={SignUpScreen}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="InviteScreen"
+          component={InviteScreen}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Terms"
+          component={Terms}
+          screenOptions={{ headerShown: false }}
+        />
         <Stack.Screen
           name="AllCategoriesScreen"
           component={AllCategoriesScreen}
+          screenOptions={{ headerShown: false }}
         />
-        <Stack.Screen name="BrandScreen" component={BrandScreen} />
-        <Stack.Screen name="ProductListScreen" component={ProductListScreen} />
+        <Stack.Screen
+          name="BrandScreen"
+          component={BrandScreen}
+          screenOptions={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ProductListScreen"
+          component={ProductListScreen}
+          screenOptions={{ headerShown: false }}
+        />
         <Stack.Screen
           name="SingleProductScreen"
           component={SingleProductScreen}
+          screenOptions={{ headerShown: false }}
         />
         <Stack.Screen
           name="ProductCollectionScreeen"
           component={ProductCollectionScreeen}
+          screenOptions={{ headerShown: false }}
         />
-        <Stack.Screen name="ContactUsScreen" component={ContactUsScreen} />
+        <Stack.Screen
+          name="ContactUsScreen"
+          component={ContactUsScreen}
+          screenOptions={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

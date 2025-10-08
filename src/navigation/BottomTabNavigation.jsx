@@ -38,7 +38,7 @@ const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.wrapper}>
+    <View style={styles.wrapper}>
       <ImageBackground
         source={require('../assets/images/baar.png')}
         style={styles.backgroundImage}
@@ -91,7 +91,7 @@ const CustomTabBar = ({ state, navigation }) => {
           })}
         </View>
       </ImageBackground>
-    </SafeAreaView>
+    </View>
   );
 };
 

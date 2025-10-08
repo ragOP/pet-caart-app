@@ -145,7 +145,7 @@ const LoginScreen = ({ navigation }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <StatusBar barStyle="dark-content" backgroundColor="#FFF5E1" />
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <View style={styles.headerWrapper}>
           <SafeAreaView>
             <View style={styles.headerRow}>
