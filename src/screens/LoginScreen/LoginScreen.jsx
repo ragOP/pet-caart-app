@@ -12,6 +12,7 @@ import {
   Image,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 import {
   loginFailure,
@@ -24,6 +25,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import { updateProfile } from '../../apis/updateProfile';
+
+const AS_KEYS = {
+  PHONE: '@user_phone',
+  EMAIL: '@user_email',
+};
+
+const setItem = async (key, val) => {
+  try {
+    await AsyncStorage.setItem(key, String(val ?? ''));
+  } catch (e) {
+    // no-op
+  }
+};
+const getItem = async key => {
+  try {
+    return await AsyncStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -54,22 +75,22 @@ const LoginScreen = ({ navigation }) => {
 
   const handleSendOtp = async () => {
     if (phoneNumber.length !== 10) {
-      alert('Please enter a valid 10-digit phone number');
+      Alert.alert('Invalid', 'Please enter a valid 10-digit phone number');
       return;
     }
     setOtpSending(true);
     try {
       const response = await sendOtp({ phoneNumber });
-      console.log('sendOtp response:', response);
       if (response?.success) {
+        console.log('OTP sent successfully', response);
         setShowOtpInput(true);
         setResendDisabled(true);
         setTimer(60);
       } else {
-        alert(response?.message || 'Failed to send OTP');
+        Alert.alert('Failed', response?.message || 'Failed to send OTP');
       }
     } catch {
-      alert('An error occurred while sending OTP');
+      Alert.alert('Error', 'An error occurred while sending OTP');
     }
     setOtpSending(false);
   };
@@ -77,16 +98,15 @@ const LoginScreen = ({ navigation }) => {
   const handleResendOtp = async () => {
     try {
       const response = await sendOtp({ phoneNumber });
-      console.log('resendOtp response:', response);
       if (response?.success) {
         setResendDisabled(true);
         setTimer(60);
-        alert('OTP resent successfully');
+        Alert.alert('Success', 'OTP resent successfully');
       } else {
-        alert(response?.message || 'Failed to resend OTP');
+        Alert.alert('Failed', response?.message || 'Failed to resend OTP');
       }
     } catch {
-      alert('Failed to resend OTP');
+      Alert.alert('Error', 'Failed to resend OTP');
     }
   };
 
@@ -97,9 +117,12 @@ const LoginScreen = ({ navigation }) => {
       dispatch(loginRequest());
       try {
         const response = await loginUser(payload);
-        console.log('loginUser response:', response);
-        if (response.user && response.token) {
-          if (response.isExisitinguser === false) {
+
+        if (response?.user && response?.token) {
+          // New user flow
+          if (response?.isExisitinguser === false) {
+            // Persist phone for ProfileDetailScreen hydration
+            await setItem(AS_KEYS.PHONE, String(phoneNumber).trim());
             setShowEmailInput(true);
           } else {
             dispatch(
@@ -109,33 +132,56 @@ const LoginScreen = ({ navigation }) => {
           }
         } else {
           dispatch(loginFailure('Login failed: incomplete response'));
-          alert('Login failed: incomplete response');
+          Alert.alert('Login failed', 'Incomplete response');
         }
       } catch {
         dispatch(loginFailure('An error occurred during login'));
-        alert('An error occurred during login');
+        Alert.alert('Error', 'An error occurred during login');
       }
     } else {
-      alert('Please enter a valid phone number and OTP');
+      Alert.alert('Invalid', 'Please enter a valid phone number and OTP');
     }
   };
 
   const handleCompleteRegistration = async () => {
-    if (!email || !email.includes('@')) {
-      alert('Please enter a valid email address');
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      Alert.alert('Invalid', 'Please enter a valid email address');
       return;
     }
     try {
-      const response = await updateProfile({ data: { phoneNumber, email } });
-      console.log('updateProfile response:', response);
+      const response = await updateProfile({
+        data: { phoneNumber, email: cleanEmail },
+      });
+
       if (response?.success) {
-        dispatch(loginSuccess({ token: response.token, user: response.user }));
-        navigation.navigate('BottomTabs');
+        // Persist locally for future hydration
+        await setItem(AS_KEYS.PHONE, String(phoneNumber || '').trim());
+        await setItem(AS_KEYS.EMAIL, cleanEmail);
+
+        // If backend returns fresh token/user use it; else fallback to previous
+        const token = response?.token ?? null;
+        const user = response?.user ??
+          response?.data?.user ?? {
+            phoneNumber,
+            email: cleanEmail,
+          };
+
+        if (token && user) {
+          dispatch(loginSuccess({ token, user }));
+        } else if (user) {
+          dispatch(loginSuccess({ token: null, user }));
+        }
+
+        // Option A: Go to ProfileDetail to complete name with a new-user banner
+        navigation.navigate('BottomTabs', { isNew: true });
+        // Option B: If not needed, go to BottomTabs instead
+        // navigation.navigate('BottomTabs');
       } else {
-        alert(response?.message || 'Registration failed');
+        Alert.alert('Failed', response?.message || 'Registration failed');
       }
     } catch {
-      alert('An error occurred during registration');
+      Alert.alert('Error', 'An error occurred during registration');
     }
   };
 
@@ -167,6 +213,7 @@ const LoginScreen = ({ navigation }) => {
             source={require('../../assets/images/logo1.png')}
             resizeMode="contain"
           />
+
           <View style={styles.stepIndicatorContainer}>
             <View
               style={[
@@ -229,6 +276,7 @@ const LoginScreen = ({ navigation }) => {
               </Text>
             </View>
           </View>
+
           {!showOtpInput && !showEmailInput && (
             <>
               <Text style={styles.label}>Enter Mobile Number</Text>
@@ -269,6 +317,7 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </>
           )}
+
           {showOtpInput && !showEmailInput && (
             <>
               <View
@@ -334,6 +383,7 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </>
           )}
+
           {showEmailInput && (
             <>
               <Text style={styles.label}>Email Address</Text>
@@ -354,6 +404,7 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </>
           )}
+
           <Text style={styles.terms}>By continuing, you agree to our </Text>
           <Text style={styles.termsCol}>
             Terms of Service and Privacy Policy
@@ -365,13 +416,8 @@ const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  content: {
-    padding: 20,
-  },
+  container: { flex: 1, backgroundColor: '#ffffff' },
+  content: { padding: 20 },
   headerWrapper: {
     paddingVertical: 10,
     backgroundColor: '#ffffff',
@@ -383,9 +429,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 5,
   },
-  backButton: {
-    paddingRight: 15,
-  },
+  backButton: { paddingRight: 15 },
   logo: {
     marginTop: 10,
     width: 200,
@@ -423,11 +467,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Bold',
     marginRight: 10,
   },
-  phoneInput: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: 'Gotham-Rounded-Medium',
-  },
+  phoneInput: { flex: 1, fontSize: 16, fontFamily: 'Gotham-Rounded-Medium' },
   button: {
     backgroundColor: '#004E6A',
     paddingVertical: 15,
@@ -435,9 +475,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  buttonDisabled: {
-    backgroundColor: '#004E6A90',
-  },
+  buttonDisabled: { backgroundColor: '#004E6A90' },
   buttonText: {
     color: '#fff',
     fontFamily: 'Gotham-Rounded-Bold',
@@ -456,32 +494,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  activeStep: {
-    backgroundColor: '#004E6A',
-  },
-  inactiveStep: {
-    backgroundColor: '#0000001a',
-  },
-  stepNumber: {
-    color: '#666',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
-  stepNumberActive: {
-    color: '#fff',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
-  stepLine: {
-    width: 40,
-    height: 4,
-    marginRight: 10,
-    marginLeft: 10,
-  },
-  activeStepLine: {
-    backgroundColor: '#004E6A',
-  },
-  inactiveStepLine: {
-    backgroundColor: '#0000001a',
-  },
+  activeStep: { backgroundColor: '#004E6A' },
+  inactiveStep: { backgroundColor: '#0000001a' },
+  stepNumber: { color: '#666', fontFamily: 'Gotham-Rounded-Bold' },
+  stepNumberActive: { color: '#fff', fontFamily: 'Gotham-Rounded-Bold' },
+  stepLine: { width: 40, height: 4, marginRight: 10, marginLeft: 10 },
+  activeStepLine: { backgroundColor: '#004E6A' },
+  inactiveStepLine: { backgroundColor: '#0000001a' },
   terms: {
     fontSize: 14,
     color: '#6a899a',

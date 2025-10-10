@@ -27,26 +27,23 @@ import { resetCart } from '../../redux/cartSlice';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import { persistor } from '../../redux/store';
 
-// ---------- Responsive helpers (no deps) ----------
-const guidelineBaseWidth = 375; // iPhone X base width
-const guidelineBaseHeight = 812; // iPhone X base height
+const guidelineBaseWidth = 375;
+const guidelineBaseHeight = 812;
 const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
 
 const useResponsive = () => {
   const { width, height } = useWindowDimensions();
-  const wp = p => (width * p) / 100; // width percentage
-  const hp = p => (height * p) / 100; // height percentage
+  const wp = p => (width * p) / 100;
+  const hp = p => (height * p) / 100;
 
   const scale = width / guidelineBaseWidth;
   const vScale = height / guidelineBaseHeight;
 
-  // Moderate scale for fonts/sizes with clamped growth
   const ms = (size, factor = 0.5) => size + (scale * size - size) * factor;
 
-  // Breakpoints
-  const sm = width < 360; // very small phones
-  const md = width >= 360 && width < 768; // regular phones
-  const lg = width >= 768; // tablets / large
+  const sm = width < 360;
+  const md = width >= 360 && width < 768;
+  const lg = width >= 768;
 
   return { width, height, wp, hp, ms, sm, md, lg, scale, vScale };
 };
