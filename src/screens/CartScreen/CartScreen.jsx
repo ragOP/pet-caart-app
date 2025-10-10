@@ -18,6 +18,7 @@ import { Trash2, MapPinHouse } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Path, Rect } from 'react-native-svg';
 
+// API helpers
 import { getCart } from '../../apis/getCart';
 import { getCoupons } from '../../apis/getCoupons';
 import { addProductToCart } from '../../apis/addProductToCart';
@@ -37,10 +38,12 @@ import Lottie from 'lottie-react-native';
 import RazorpayCheckout from 'react-native-razorpay';
 import CartShimmer from '../../ui/Shimmer/CartShimmer';
 
-// Screen size tiers for 4–5 inch devices
 const { width: SW, height: SH } = Dimensions.get('window');
-const isVerySmall = SW <= 340 || SH <= 600; // ~4–4.7"
-const isSmall = SW <= 375 || SH <= 667; // up to ~5"
+const isVerySmallRaw = SW <= 340 || SH <= 600;
+const isSmallRaw = SW <= 375 || SH <= 667;
+const isSmallStrict = SW <= 384 || SH <= 684;
+const useVerySmall = isVerySmallRaw;
+const useSmall = isSmallRaw && isSmallStrict;
 
 const SELECTED_ADDRESS_KEY = '@selectedAddressId';
 
@@ -65,15 +68,14 @@ const CartScreen = () => {
   const [cartId, setCartId] = useState(null);
   const [isPaying, setIsPaying] = useState(false);
   const [checkoutNote, setCheckoutNote] = useState('');
-
+  const [showSuccessAnim, setShowSuccessAnim] = useState(false);
+  const successAnimRef = useRef(null);
   const couponSheetRef = useRef();
   const addressSheetRef = useRef();
-
   const s = useMemo(
-    () => makeStyles({ isSmall, isVerySmall }),
-    [isSmall, isVerySmall],
+    () => makeStyles({ isSmall: useSmall, isVerySmall: useVerySmall }),
+    [],
   );
-
   const defaultAddress = addresses.find(addr => addr.isDefault);
   const cartIdFromItems = cartItems?.length ? cartItems[0]?.cartId : null;
 
@@ -105,7 +107,7 @@ const CartScreen = () => {
 
   const fetchAndSetCurrentCart = async addressId => {
     try {
-      setLoading(true);
+      setLoading(true); // start screen loader
       const effectiveAddressId =
         addressId ?? (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
       const cartResponse = await getCart({
@@ -116,9 +118,7 @@ const CartScreen = () => {
           const mrp = item.variantId?.price || item.productId?.price || 0;
           const salePrice = item.price || 0;
 
-          const variantWeight = item.variantId?.weight;
-          const productWeight = item.productId?.weight;
-          const weight = variantWeight || productWeight;
+          const weight = item.variantId?.weight || item.productId?.weight;
 
           const discount =
             mrp && salePrice ? Math.round(((mrp - salePrice) / mrp) * 100) : 0;
@@ -138,7 +138,7 @@ const CartScreen = () => {
             image: item.productId?.images?.[0] || 'default-image-url',
             productId: item.productId._id || item.productId,
             variantId: item.variantId?._id || null,
-            weight: weight,
+            weight,
           };
         });
 
@@ -297,6 +297,19 @@ const CartScreen = () => {
     return appliedCoupon?._id || appliedCoupon?.id || '';
   };
 
+  const playSuccessAndNavigate = async () => {
+    try {
+      setShowSuccessAnim(true);
+      await new Promise(res => setTimeout(res, 1800));
+    } finally {
+      setShowSuccessAnim(false);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MyOrderScreen' }],
+      });
+    }
+  };
+
   const handlePayNow = async () => {
     try {
       if (!isLoggedIn) {
@@ -324,7 +337,12 @@ const CartScreen = () => {
       const createPaymentResp = await apiService({
         endpoint: 'api/razorpay/create-payment',
         method: 'POST',
-        data: { addressId, cartId: effectiveCartId, couponId, note },
+        data: {
+          addressId,
+          cartId: effectiveCartId,
+          couponId,
+          note,
+        },
       });
 
       const payload =
@@ -350,8 +368,6 @@ const CartScreen = () => {
           contact: user?.phone || '',
         },
         theme: { color: '#00BFA5' },
-        modal: { animation: true },
-        retry: { enabled: true, max_count: 1 },
       };
 
       const paymentData = await RazorpayCheckout.open(options);
@@ -375,13 +391,12 @@ const CartScreen = () => {
           razorpaySignature: razorpay_signature,
         },
       });
-
       dispatch(resetCart());
       setAppliedCoupon(null);
       setCouponCode('');
       setCouponError('');
-      Alert.alert('Success', 'Payment successful! Order placed.');
       await fetchAndSetCurrentCart(addressId);
+      await playSuccessAndNavigate();
     } catch (err) {
       console.log('Payment error', err);
       Alert.alert('Payment failed', err?.message || 'Something went wrong');
@@ -430,18 +445,16 @@ const CartScreen = () => {
     return grams + 'g';
   };
 
-  // Progress meter
   const PROGRESS_TARGET = 2000;
-  const totalPayCap = Math.max(PROGRESS_TARGET, 1);
-  const progress = Math.min(totalPayable / totalPayCap, 1);
+  const progress = Math.min(totalPayable / PROGRESS_TARGET, 1);
   const showProgress = totalPayable > 0;
   const showDog = totalPayable > 0 && totalPayable < PROGRESS_TARGET;
 
   const renderEmptyCart = () => (
     <View style={s.emptyCartContainer}>
       <Svg
-        width={isVerySmall ? 120 : isSmall ? 150 : 200}
-        height={isVerySmall ? 120 : isSmall ? 150 : 200}
+        width={useVerySmall ? 120 : useSmall ? 150 : 200}
+        height={useVerySmall ? 120 : useSmall ? 150 : 200}
         viewBox="0 0 100 100"
         fill="none"
       >
@@ -479,7 +492,7 @@ const CartScreen = () => {
 
         <View style={s.addressContainer}>
           <MapPinHouse
-            size={isVerySmall ? 14 : isSmall ? 15 : 17}
+            size={useVerySmall ? 14 : useSmall ? 15 : 17}
             color="#666"
           />
           <Text style={s.addressText} numberOfLines={1}>
@@ -514,7 +527,7 @@ const CartScreen = () => {
             <Text style={s.bannerText}>
               🎉 You’re saving{' '}
               <Text style={{ fontWeight: 'bold' }}>
-                ₹{(appliedCoupon ? couponDiscount || 0 : 0).toFixed(2)}
+                ₹{couponDiscount.toFixed(2)}
               </Text>{' '}
               on this order
             </Text>
@@ -534,7 +547,7 @@ const CartScreen = () => {
                       s.dogImage,
                       {
                         left: `${progress * 100}%`,
-                        transform: [{ translateX: -18 }],
+                        transform: [{ translateX: -20 }],
                       },
                     ]}
                     source={require('../../lottie/Dogwalking.json')}
@@ -568,17 +581,15 @@ const CartScreen = () => {
                     style={s.productImage}
                   />
                   <View style={s.details}>
-                    <Text style={s.title} numberOfLines={2}>
-                      {item.title}
-                    </Text>
+                    <Text style={s.title}>{item.title}</Text>
 
-                    {item.variantId && item.weight ? (
+                    {item.variantId && item.weight && (
                       <View style={s.variantChip}>
                         <Text style={s.variantText}>
                           {formatWeight(item.weight)}
                         </Text>
                       </View>
-                    ) : null}
+                    )}
 
                     <View style={s.priceAndStepper}>
                       <View style={s.priceWrapper}>
@@ -589,7 +600,7 @@ const CartScreen = () => {
                         </View>
                       </View>
 
-                      <View style={s.stepper}>
+                      <View className="stepper" style={s.stepper}>
                         <TouchableOpacity
                           style={s.stepBtn}
                           onPress={() => decreaseQuantity(item.id)}
@@ -628,7 +639,7 @@ const CartScreen = () => {
                       onPressOut={e => e.stopPropagation()}
                     >
                       <Trash2
-                        size={isVerySmall ? 14 : isSmall ? 16 : 18}
+                        size={useVerySmall ? 14 : useSmall ? 16 : 18}
                         color="#fc9a8c"
                       />
                     </TouchableOpacity>
@@ -645,8 +656,8 @@ const CartScreen = () => {
                 <Image
                   source={require('../../assets/icons/cpn.png')}
                   style={{
-                    width: isVerySmall ? 16 : isSmall ? 18 : 20,
-                    height: isVerySmall ? 16 : isSmall ? 18 : 20,
+                    width: useVerySmall ? 16 : useSmall ? 18 : 20,
+                    height: useVerySmall ? 16 : useSmall ? 18 : 20,
                   }}
                 />
                 <Text style={s.couponTitle}>Coupons & Offers</Text>
@@ -680,15 +691,13 @@ const CartScreen = () => {
                 <Text style={s.checkAllCoupons}>Check All Coupons</Text>
               </TouchableOpacity>
             </View>
-
-            {/* GST */}
             <View style={s.gstContainer}>
               <View style={s.gstHeader}>
                 <Image
                   source={require('../../assets/images/gst.png')}
                   style={{
-                    width: isVerySmall ? 16 : isSmall ? 18 : 20,
-                    height: isVerySmall ? 16 : isSmall ? 18 : 20,
+                    width: useVerySmall ? 16 : useSmall ? 18 : 20,
+                    height: useVerySmall ? 16 : useSmall ? 18 : 20,
                   }}
                 />
                 <Text style={s.gstTitle}>Apply for GST Invoice</Text>
@@ -707,6 +716,8 @@ const CartScreen = () => {
                 </TouchableOpacity>
               </View>
             </View>
+
+            {/* Price Details */}
             <View style={s.priceDetailsWrapper}>
               <Text style={s.priceDetailsTitle}>📦 Price Details</Text>
 
@@ -717,9 +728,7 @@ const CartScreen = () => {
 
               <View style={s.priceRow}>
                 <Text style={s.freeText}>Coupon Discount</Text>
-                <Text style={s.freeText}>
-                  - ₹{(couponDiscount || 0).toFixed(2)}
-                </Text>
+                <Text style={s.freeText}>- ₹{couponDiscount.toFixed(2)}</Text>
               </View>
 
               <View style={s.priceRow}>
@@ -774,6 +783,18 @@ const CartScreen = () => {
         onSelectCoupon={handleCouponApply}
         onSheetClose={onSheetClose}
       />
+      {showSuccessAnim && (
+        <View style={s.successOverlay} pointerEvents="none">
+          <Lottie
+            ref={successAnimRef}
+            source={require('../../lottie/Add To Cart Success.json')}
+            autoPlay
+            loop={false}
+            style={s.successLottie}
+            // onAnimationFinish={() => { /* alternative to timeout */ }}
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -788,9 +809,9 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
         Platform.OS === 'android'
           ? StatusBar.currentHeight
           : vsmall
-          ? 14
-          : small
           ? 18
+          : small
+          ? 22
           : 30,
     },
     headerRow: {
@@ -813,7 +834,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       gap: vsmall ? 3 : small ? 4 : 6,
     },
     addressText: {
-      marginLeft: vsmall ? 3 : small ? 4 : 6,
+      marginLeft: vsmall ? 4 : small ? 5 : 6,
       fontSize: vsmall ? 12 : small ? 13 : 14,
       color: '#555',
       fontFamily: 'Gotham-Rounded-Medium',
@@ -848,7 +869,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
 
     content: {
       padding: vsmall ? 8 : small ? 10 : 12,
-      paddingBottom: vsmall ? 72 : small ? 80 : 100,
+      paddingBottom: vsmall ? 72 : small ? 84 : 100,
     },
 
     progressContainer: {
@@ -898,7 +919,8 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       fontFamily: 'Gotham-Rounded-Medium',
       marginBottom: vsmall ? 2 : small ? 3 : 4,
       color: '#222',
-      width: '85%',
+      width: '90%',
+      lineHeight: 17,
     },
 
     priceAndStepper: {
@@ -938,7 +960,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       alignItems: 'center',
       borderWidth: 1,
       borderColor: '#004E6A80',
-      borderRadius: 20,
+      borderRadius: 22,
       overflow: 'hidden',
       width: vsmall ? 84 : small ? 92 : 100,
       justifyContent: 'space-between',
@@ -961,25 +983,27 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       top: vsmall ? 8 : small ? 10 : 12,
       right: vsmall ? 8 : small ? 10 : 12,
     },
+
+    // Coupons
     couponContainer: {
       backgroundColor: '#0888B133',
       borderColor: '#0888B1',
       borderWidth: 1,
-      borderRadius: vsmall ? 10 : small ? 12 : 14,
-      padding: vsmall ? 10 : small ? 12 : 14,
+      borderRadius: vsmall ? 10 : small ? 12 : 16,
+      padding: vsmall ? 10 : small ? 12 : 16,
       marginTop: vsmall ? 6 : small ? 8 : 10,
-      marginBottom: vsmall ? 10 : small ? 14 : 18,
+      marginBottom: vsmall ? 10 : small ? 14 : 20,
     },
     couponHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: vsmall ? 6 : small ? 8 : 10,
+      marginBottom: vsmall ? 8 : small ? 10 : 12,
     },
     couponTitle: {
-      fontSize: vsmall ? 13 : small ? 15 : 16,
+      fontSize: vsmall ? 14 : small ? 16 : 18,
       fontFamily: 'Gotham-Rounded-Bold',
       color: '#222',
-      marginLeft: vsmall ? 5 : small ? 6 : 8,
+      marginLeft: vsmall ? 6 : small ? 8 : 8,
     },
     couponInputWrapper: {
       flexDirection: 'row',
@@ -989,61 +1013,45 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       borderColor: '#EEE',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: vsmall ? 6 : small ? 8 : 10,
-      paddingVertical: Platform.OS === 'ios' ? (vsmall ? 5 : small ? 6 : 8) : 0,
-      height: vsmall ? 34 : small ? 38 : 40,
+      paddingHorizontal: vsmall ? 8 : small ? 10 : 10,
+      paddingVertical:
+        Platform.OS === 'ios' ? (vsmall ? 8 : small ? 9 : 10) : 1,
+      height: vsmall ? 38 : small ? 42 : 45,
     },
     couponInput: {
-      fontSize: vsmall ? 12 : small ? 13 : 14,
+      fontSize: vsmall ? 14 : small ? 15 : 16,
       color: '#222',
       fontFamily: 'Gotham-Rounded-Medium',
       flex: 1,
     },
     applyBtn: {
       color: '#0B99C6',
-      fontSize: vsmall ? 12 : small ? 13 : 14,
+      fontSize: vsmall ? 14 : small ? 15 : 16,
       fontFamily: 'Gotham-Rounded-Bold',
-      marginLeft: vsmall ? 8 : small ? 10 : 12,
+      marginLeft: vsmall ? 10 : small ? 12 : 12,
     },
-    couponError: {
-      color: 'red',
-      marginTop: vsmall ? 3 : small ? 4 : 6,
-      fontSize: vsmall ? 11 : small ? 12 : 12,
-    },
-    allCouponsRow: {
-      borderTopWidth: 1,
-      borderTopColor: '#0888B1',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingTop: vsmall ? 6 : small ? 8 : 10,
-      marginTop: vsmall ? 6 : small ? 8 : 10,
-      borderStyle: 'dashed',
-    },
-    checkAllCoupons: {
-      color: '#0888B1',
-      fontSize: vsmall ? 12 : small ? 13 : 14,
-      fontFamily: 'Gotham-Rounded-Bold',
-    },
+    couponError: { color: 'red', marginTop: vsmall ? 4 : small ? 6 : 6 },
+
+    // GST
     gstContainer: {
       backgroundColor: '#FFFFFF',
       borderColor: '#EBEBEB',
       borderWidth: 2,
-      borderRadius: vsmall ? 10 : small ? 12 : 14,
-      padding: vsmall ? 10 : small ? 12 : 14,
+      borderRadius: vsmall ? 10 : small ? 12 : 16,
+      padding: vsmall ? 10 : small ? 12 : 16,
       marginTop: vsmall ? 6 : small ? 8 : 10,
-      marginBottom: vsmall ? 10 : small ? 14 : 18,
+      marginBottom: vsmall ? 10 : small ? 14 : 20,
     },
     gstHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: vsmall ? 6 : small ? 8 : 10,
+      marginBottom: vsmall ? 8 : small ? 10 : 12,
     },
     gstTitle: {
-      fontSize: vsmall ? 13 : small ? 15 : 16,
+      fontSize: vsmall ? 14 : small ? 16 : 18,
       fontFamily: 'Gotham-Rounded-Bold',
       color: '#222',
-      marginLeft: vsmall ? 5 : small ? 6 : 8,
+      marginLeft: vsmall ? 6 : small ? 8 : 8,
     },
     gstInputWrapper: {
       flexDirection: 'row',
@@ -1053,54 +1061,57 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       borderColor: '#EEE',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: vsmall ? 6 : small ? 8 : 10,
-      paddingVertical: Platform.OS === 'ios' ? (vsmall ? 5 : small ? 6 : 8) : 0,
-      height: vsmall ? 34 : small ? 38 : 40,
+      paddingHorizontal: vsmall ? 8 : small ? 10 : 10,
+      paddingVertical:
+        Platform.OS === 'ios' ? (vsmall ? 8 : small ? 9 : 10) : 1,
+      height: vsmall ? 38 : small ? 42 : 45,
     },
     gstInput: {
-      fontSize: vsmall ? 12 : small ? 13 : 14,
+      fontSize: vsmall ? 14 : small ? 15 : 16,
       color: '#222',
       fontFamily: 'Gotham-Rounded-Medium',
       flex: 1,
     },
+
+    // Price Details
     priceDetailsWrapper: {
       backgroundColor: '#fff',
-      borderRadius: small ? 14 : 16,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: '#F59A11',
-      padding: small ? 14 : 16,
-      marginBottom: small ? '38%' : '45%',
+      padding: 16,
+      marginBottom: '45%',
     },
     priceDetailsTitle: {
-      fontSize: vsmall ? 14 : small ? 16 : 18,
+      fontSize: vsmall ? 16 : small ? 18 : 18,
       fontFamily: 'Gotham-Rounded-Bold',
       color: '#000',
-      marginBottom: vsmall ? 10 : small ? 12 : 16,
+      marginBottom: vsmall ? 12 : small ? 16 : 16,
     },
     priceRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: vsmall ? 8 : small ? 10 : 12,
+      marginBottom: vsmall ? 10 : small ? 12 : 12,
     },
     label: {
-      fontSize: vsmall ? 12 : small ? 14 : 15,
+      fontSize: vsmall ? 14 : small ? 15 : 15,
       color: '#222',
       fontFamily: 'Gotham-Rounded-Medium',
     },
     value: {
-      fontSize: vsmall ? 12 : small ? 14 : 15,
+      fontSize: vsmall ? 14 : small ? 15 : 15,
       fontFamily: 'Gotham-Rounded-Medium',
       color: '#222',
     },
     subText: {
-      fontSize: vsmall ? 10 : small ? 11 : 12,
+      fontSize: vsmall ? 11 : small ? 12 : 12,
       color: '#999',
-      marginTop: vsmall ? 1 : small ? 1 : 2,
+      marginTop: vsmall ? 1 : small ? 2 : 2,
       fontFamily: 'Gotham-Rounded-Medium',
     },
     freeText: {
-      fontSize: vsmall ? 12 : small ? 14 : 15,
+      fontSize: vsmall ? 14 : small ? 15 : 15,
       fontFamily: 'Gotham-Rounded-Bold',
       color: 'green',
     },
@@ -1108,15 +1119,15 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       borderTopWidth: 1,
       borderColor: '#F59A11',
       borderStyle: 'dashed',
-      marginVertical: vsmall ? 10 : small ? 12 : 16,
+      marginVertical: vsmall ? 12 : small ? 16 : 16,
     },
     totalPay: {
-      fontSize: vsmall ? 14 : small ? 16 : 18,
+      fontSize: vsmall ? 16 : small ? 18 : 18,
       fontFamily: 'Gotham-Rounded-Bold',
       color: '#000',
     },
     totalPayAmount: {
-      fontSize: vsmall ? 14 : small ? 16 : 18,
+      fontSize: vsmall ? 16 : small ? 18 : 18,
       fontFamily: 'Gotham-Rounded-Bold',
       color: '#000',
     },
@@ -1154,7 +1165,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       paddingVertical: vsmall ? 2 : small ? 3 : 4,
       borderRadius: 12,
       alignSelf: 'flex-start',
-      marginVertical: vsmall ? 2 : small ? 2 : 3,
+      marginVertical: vsmall ? 2 : small ? 3 : 3,
     },
     variantText: {
       fontSize: vsmall ? 10 : small ? 11 : 12,
@@ -1166,21 +1177,38 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       flex: 0.3,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingTop: vsmall ? 8 : small ? 10 : 0,
-      paddingHorizontal: vsmall ? 8 : small ? 10 : 0,
     },
     emptyText: {
       fontSize: vsmall ? 14 : small ? 15 : 16,
       fontFamily: 'Gotham-Rounded-Bold',
       color: 'black',
-      marginTop: vsmall ? 5 : small ? 6 : 8,
     },
     emptySubText: {
       fontSize: vsmall ? 12 : small ? 13 : 14,
       color: 'black',
-      marginTop: vsmall ? 3 : small ? 4 : 6,
+      marginTop: 6,
       textAlign: 'center',
       fontFamily: 'Gotham-Rounded-Medium',
+    },
+    checkAllCoupons: {
+      color: '#0888B1',
+      fontSize: 16,
+      fontFamily: 'Gotham-Rounded-Bold',
+      textAlign: 'center',
+      marginTop: vsmall ? 6 : small ? 8 : 10,
+    },
+
+    // Success overlay
+    successOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.25)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+    },
+    successLottie: {
+      width: SW * 0.5,
+      height: SW * 0.5,
     },
   });
 

@@ -16,8 +16,6 @@ const SearchBar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
-
-  // Breakpoints
   const isXS = width < 340;
   const isSM = width >= 340 && width < 380;
 

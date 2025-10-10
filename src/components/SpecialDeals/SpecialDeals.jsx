@@ -7,12 +7,22 @@ import {
   TouchableOpacity,
   FlatList,
   useWindowDimensions,
+  Dimensions,
+  Platform,
 } from 'react-native';
 import { getProducts } from '../../apis/getProducts';
 import { addProductToCart } from '../../apis/addProductToCart';
 import { addItemToCart } from '../../redux/cartSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+
+// 4–5" tiers; 5.1"+ same UI
+const { width: SW, height: SH } = Dimensions.get('window');
+const isVerySmallRaw = SW <= 340 || SH <= 600; // ~4–4.7"
+const isSmallRaw = SW <= 375 || SH <= 667; // up to ~5.0"
+const isSmallStrict = SW <= 384 || SH <= 684; // avoid 5.1"+
+const useVerySmall = isVerySmallRaw;
+const useSmall = isSmallRaw && isSmallStrict;
 
 const SpecialDealCard = ({ deal, cardWidth, onClaim, isInCart, loading }) => (
   <View style={[styles.card, { width: cardWidth }]}>
@@ -62,7 +72,7 @@ const SpecialDealCard = ({ deal, cardWidth, onClaim, isInCart, loading }) => (
 
 const SpecialDeals = () => {
   const { width } = useWindowDimensions();
-  const cardWidth = Math.min(width * 0.8, 360);
+  const cardWidth = Math.min(width * 0.9, 360);
   const cardSpacing = (width - cardWidth - 32) / 6;
 
   const [bestSellerData, setBestSellerData] = useState([]);
@@ -135,6 +145,7 @@ const SpecialDeals = () => {
     setLoadingMap(prev => ({ ...prev, [deal.id]: true }));
 
     try {
+      // optimistic update
       dispatch(
         addItemToCart({
           productId: deal.productId,
@@ -159,16 +170,12 @@ const SpecialDeals = () => {
     }
   };
 
-  const isProductInCart = (productId, variantId) => {
-    return cartItems.some(
+  const isProductInCart = (productId, variantId) =>
+    cartItems.some(
       item => item.productId === productId && item.variantId === variantId,
     );
-  };
 
-  // Show nothing if no special deals
-  if (bestSellerData.length === 0) {
-    return null;
-  }
+  if (bestSellerData.length === 0) return null;
 
   return (
     <View style={styles.container}>
@@ -207,19 +214,19 @@ const SpecialDeals = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 8,
+    paddingVertical: useVerySmall ? 6 : useSmall ? 8 : 8,
     backgroundColor: '#fff',
   },
   header: {
     color: '#1195d6',
     fontFamily: 'Gotham-Rounded-Bold',
-    fontSize: 19,
-    marginBottom: 2,
+    fontSize: useVerySmall ? 16 : useSmall ? 18 : 19,
+    marginBottom: useVerySmall ? 1 : useSmall ? 2 : 2,
   },
   subHeader: {
     color: '#2ca9dd',
-    fontSize: 14,
-    marginBottom: 11,
+    fontSize: useVerySmall ? 12 : useSmall ? 13 : 14,
+    marginBottom: useVerySmall ? 8 : useSmall ? 10 : 11,
     fontFamily: 'gotham-rounded-book',
   },
   card: {

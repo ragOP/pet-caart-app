@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,87 +11,97 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
+import { ArrowLeft, MoreVertical, CheckCircle } from 'lucide-react-native';
 import {
-  ArrowLeft,
-  MoreVertical,
-  CheckCircle,
-  Edit,
-} from 'lucide-react-native';
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { getAddresses } from '../../apis/getAddresses';
 import { deleteAddress } from '../../apis/deleteAddress';
 import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
 
-const AddressInfoScreen = ({ navigation }) => {
+const AddressInfoScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [menuVisibleId, setMenuVisibleId] = useState(null);
 
-  useEffect(() => {
-    const fetchAddresses = async () => {
-      try {
-        const response = await getAddresses();
-        console.log('address', response);
-        if (response && response.success) {
-          const formattedAddresses = response.data.map(item => ({
-            id: item._id,
-            name: `${item.firstName} ${item.lastName}`,
-            address: item.address,
-            phone: item.phone,
-            city: item.city,
-            country: item.country,
-            state: item.state,
-            zip: item.zip,
-            isDefault: item.isDefault,
-            type: item.type,
-          }));
-          setAddresses(formattedAddresses);
-        } else {
-          setError('Failed to load addresses');
-        }
-      } catch (err) {
-        setError('Failed to load addresses');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const applyOptimisticAppend = useCallback(() => {
+    const optimistic = route.params?.newlyAddedAddress;
+    if (optimistic) {
+      setAddresses(prev => {
+        // avoid duplicate if already present
+        if (prev.some(a => a.id === optimistic.id)) return prev;
+        return [optimistic, ...prev];
+      });
+      // clear param so it doesn't re-append on next focus
+      navigation.setParams({ newlyAddedAddress: undefined });
+    }
+  }, [navigation, route.params]);
 
-    fetchAddresses();
+  const fetchAddresses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await getAddresses();
+      if (response && response.success) {
+        const formatted = response.data.map(item => ({
+          id: item._id,
+          name: `${item.firstName} ${item.lastName}`,
+          address: item.address,
+          phone: item.phone,
+          city: item.city,
+          country: item.country,
+          state: item.state,
+          zip: item.zip,
+          isDefault: item.isDefault,
+          type: item.type,
+        }));
+        setAddresses(formatted);
+      }
+    } catch (e) {
+      // silent
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const toggleMenu = id => {
-    setMenuVisibleId(menuVisibleId === id ? null : id);
-  };
+  // First mount
+  useEffect(() => {
+    fetchAddresses();
+  }, [fetchAddresses]);
+
+  // Focus par hamesha refresh + optimistic param process
+  useFocusEffect(
+    useCallback(() => {
+      applyOptimisticAppend();
+      fetchAddresses();
+    }, [applyOptimisticAppend, fetchAddresses]),
+  );
+
+  const toggleMenu = id => setMenuVisibleId(prev => (prev === id ? null : id));
 
   const handleEdit = id => {
-    const selectedAddress = addresses.find(address => address.id === id);
+    const selectedAddress = addresses.find(a => a.id === id);
     navigation.navigate('AddAddressScreen', { addressData: selectedAddress });
   };
+
   const handleDelete = id => {
     Alert.alert(
       'Delete Address',
       'Are you sure you want to delete this address?',
       [
-        {
-          text: 'No',
-          onPress: () => setMenuVisibleId(null),
-          style: 'cancel',
-        },
+        { text: 'No', onPress: () => setMenuVisibleId(null), style: 'cancel' },
         {
           text: 'Yes',
           onPress: async () => {
             try {
               const response = await deleteAddress({ id });
               if (response && response.success) {
-                setAddresses(prevAddresses =>
-                  prevAddresses.filter(address => address.id !== id),
-                );
-              } else {
-                setError('Failed to delete address');
+                setAddresses(prev => prev.filter(a => a.id !== id));
               }
-            } catch (err) {
-              setError('Failed to delete address');
-            }
+            } catch (e) {}
             setMenuVisibleId(null);
           },
         },
@@ -133,7 +143,6 @@ const AddressInfoScreen = ({ navigation }) => {
                 <TouchableOpacity onPress={() => toggleMenu(item.id)}>
                   <MoreVertical size={20} color="#333" />
                 </TouchableOpacity>
-
                 {menuVisibleId === item.id && (
                   <View style={styles.dropdownMenu}>
                     <TouchableOpacity
@@ -155,7 +164,7 @@ const AddressInfoScreen = ({ navigation }) => {
               <Text style={styles.addressText}>
                 <Text style={styles.boldText}>{item.name}, </Text>
                 {item.address},{item.city},
-                {item.state.charAt(0).toUpperCase() + item.state.slice(1)}-
+                {item.state?.charAt(0).toUpperCase() + item.state?.slice(1)}-
                 {item.zip},{item.country}
               </Text>
 
@@ -181,9 +190,9 @@ const AddressInfoScreen = ({ navigation }) => {
           />
         </View>
       )}
-
       <TouchableOpacity
         onPress={() => navigation.navigate('AddAddressScreen')}
+        activeOpacity={1}
         style={styles.saveButton}
       >
         <Text style={styles.saveText}>+ ADD NEW ADDRESS</Text>
@@ -267,14 +276,8 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     width: 100,
   },
-  menuItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-  },
-  menuText: {
-    fontSize: 14,
-    fontFamily: 'Gotham-Rounded-Medium',
-  },
+  menuItem: { paddingVertical: 8, paddingHorizontal: 10 },
+  menuText: { fontSize: 14, fontFamily: 'Gotham-Rounded-Medium' },
   addressText: {
     fontSize: 14,
     lineHeight: 20,
@@ -282,10 +285,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  phoneText: {
-    fontSize: 14,
-    fontFamily: 'Gotham-Rounded-Medium',
-  },
+  phoneText: { fontSize: 14, fontFamily: 'Gotham-Rounded-Medium' },
   boldText: { fontWeight: 'bold' },
   mobileRow: {
     flexDirection: 'row',

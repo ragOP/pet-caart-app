@@ -112,7 +112,6 @@ const makeStyles = small =>
       overflow: 'hidden',
       justifyContent: 'center',
       alignItems: 'center',
-      borderRadius: small ? 8 : 12,
       marginHorizontal: 0,
     },
     bannerImg: {

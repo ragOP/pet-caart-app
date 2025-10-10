@@ -14,10 +14,13 @@ import {
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { ArrowLeft } from 'lucide-react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import stateList from '../../constants/stateList';
 import { createAddress } from '../../apis/createAddress';
 
-const AddAddressScreen = ({ route, navigation }) => {
+const AddAddressScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
   const { addressData } = route.params || {};
 
   const [firstName, setFirstName] = useState('');
@@ -33,24 +36,27 @@ const AddAddressScreen = ({ route, navigation }) => {
   const [isCountryDropdownFocus, setIsCountryDropdownFocus] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDefaultAddress, setIsDefaultAddress] = useState(false);
+
   useEffect(() => {
     if (addressData) {
-      console.log('Filling form with address data: ', addressData);
-      const [firstName, lastName] = addressData.name.split(' ');
-      setFirstName(firstName);
-      setLastName(lastName);
-      setPhone(addressData.phone);
-      setAddress(addressData.address);
-      setCity(addressData.city);
-      setPostalCode(addressData.zip);
+      const [f, ...rest] = (addressData.name || '').split(' ');
+      setFirstName(f || '');
+      setLastName(rest.join(' ') || '');
+      setPhone(addressData.phone || '');
+      setAddress(addressData.address || '');
+      setCity(addressData.city || '');
+      setPostalCode(addressData.zip || '');
       setAddressType(
-        addressData.type.charAt(0).toUpperCase() + addressData.type.slice(1),
+        addressData.type
+          ? addressData.type.charAt(0).toUpperCase() + addressData.type.slice(1)
+          : '',
       );
-      setCountry(addressData.country);
-      setState(addressData.state);
-      setIsDefaultAddress(addressData.isDefault);
+      setCountry(addressData.country || 'India');
+      setState(addressData.state || '');
+      setIsDefaultAddress(!!addressData.isDefault);
     }
   }, [addressData]);
+
   const handleSave = async () => {
     if (
       !firstName ||
@@ -78,20 +84,38 @@ const AddAddressScreen = ({ route, navigation }) => {
         zip: postalCode,
         country,
         type: addressType.toLowerCase(),
-        iisDefault: isDefaultAddress,
-        state_code: state,
+        isDefault: isDefaultAddress, // fixed key
+        state_code: state, // if API expects this
       };
-      await createAddress({ data });
+
+      const res = await createAddress({ data });
+
+      const optimisticAddress = {
+        id: res?.data?._id || Math.random().toString(36).slice(2),
+        name: `${firstName} ${lastName}`,
+        address,
+        phone,
+        city,
+        country,
+        state,
+        zip: postalCode,
+        isDefault: isDefaultAddress,
+        type: addressType.toLowerCase(),
+      };
+
+      // Navigate back with optimistic address for instant show
+      navigation.navigate('AddressInfoScreen', {
+        newlyAddedAddress: optimisticAddress,
+      });
+
       Alert.alert(
         'Success',
         addressData
           ? 'Address updated successfully'
           : 'Address added successfully',
       );
-      navigation.goBack();
     } catch (error) {
       Alert.alert('Error', 'Could not save address');
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -102,15 +126,16 @@ const AddAddressScreen = ({ route, navigation }) => {
     { label: 'Other', value: 'Other' },
   ];
 
-  const formattedStateList = stateList.map(stateObj => ({
-    label: stateObj.label,
-    value: stateObj.value,
+  const formattedStateList = stateList.map(s => ({
+    label: s.label,
+    value: s.value,
   }));
   const addressTypeOptions = [
     { label: 'Home', value: 'Home' },
     { label: 'Office', value: 'Office' },
     { label: 'Other', value: 'Other' },
   ];
+
   return (
     <View style={styles.container}>
       <StatusBar
@@ -166,6 +191,7 @@ const AddAddressScreen = ({ route, navigation }) => {
           keyboardType="phone-pad"
           placeholderTextColor="#6A6868"
         />
+
         <Text style={styles.label}>Address</Text>
         <TextInput
           style={styles.input}
@@ -174,6 +200,7 @@ const AddAddressScreen = ({ route, navigation }) => {
           onChangeText={setAddress}
           placeholderTextColor="#6A6868"
         />
+
         <Text style={styles.label}>Postal/ZIP Code</Text>
         <TextInput
           style={styles.input}
@@ -183,6 +210,7 @@ const AddAddressScreen = ({ route, navigation }) => {
           keyboardType="numeric"
           placeholderTextColor="#6A6868"
         />
+
         <Text style={styles.label}>City</Text>
         <TextInput
           style={styles.input}
@@ -192,12 +220,11 @@ const AddAddressScreen = ({ route, navigation }) => {
           placeholderTextColor="#6A6868"
         />
 
-        <Text style={styles.label}>State/Province </Text>
+        <Text style={styles.label}>State/Province</Text>
         {country === 'India' ? (
           <Dropdown
             style={[
               styles.dropdown,
-
               isStateDropdownFocus && { borderColor: '#004E6A' },
             ]}
             containerStyle={styles.dropdownContainer}
@@ -228,13 +255,11 @@ const AddAddressScreen = ({ route, navigation }) => {
             placeholderTextColor="#6A6868"
           />
         )}
+
         <Text style={styles.label}>Address Type</Text>
         <Dropdown
           style={[styles.dropdown]}
-          itemTextStyle={{
-            fontSize: 16,
-            fontFamily: 'Gotham-Rounded-Medium',
-          }}
+          itemTextStyle={{ fontSize: 16, fontFamily: 'Gotham-Rounded-Medium' }}
           containerStyle={styles.dropdownContainer}
           placeholderStyle={styles.placeholderStyle}
           selectedTextStyle={styles.selectedTextStyle}
@@ -268,9 +293,7 @@ const AddAddressScreen = ({ route, navigation }) => {
           valueField="value"
           onChange={item => {
             setCountry(item.value);
-            if (item.value !== 'India') {
-              setState('');
-            }
+            if (item.value !== 'India') setState('');
           }}
           value={country}
           onFocus={() => setIsCountryDropdownFocus(true)}
@@ -284,6 +307,7 @@ const AddAddressScreen = ({ route, navigation }) => {
           )}
           search={false}
         />
+
         <View style={styles.checkboxContainer}>
           <TouchableOpacity
             style={styles.checkbox}
@@ -313,10 +337,7 @@ const AddAddressScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
     fontSize: 24,
     flex: 1,
@@ -333,9 +354,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 15,
   },
-  backButton: {
-    paddingRight: 15,
-  },
+  backButton: { paddingRight: 15 },
   subHeader: {
     fontSize: 16,
     padding: 10,
@@ -344,15 +363,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     borderBottomWidth: 0.2,
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
-    fontFamily: 'Gotham-Rounded-Medium',
-  },
+  content: { paddingHorizontal: 20, paddingVertical: 10 },
+  label: { fontSize: 16, marginBottom: 5, fontFamily: 'Gotham-Rounded-Medium' },
   input: {
     height: 45,
     borderWidth: 0.7,
@@ -362,9 +374,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  dropdownContainer: {
-    marginBottom: 20,
-  },
+  dropdownContainer: { marginBottom: 20 },
   dropdown: {
     height: 45,
     borderWidth: 0.7,
@@ -375,13 +385,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     paddingRight: 18,
   },
-  dropdownListItem: {
-    padding: 10,
-  },
-  dropdownListItemText: {
-    fontSize: 16,
-    fontFamily: 'Gotham-Rounded-Medium',
-  },
+  dropdownListItem: { padding: 10 },
+  dropdownListItemText: { fontSize: 16, fontFamily: 'Gotham-Rounded-Medium' },
   placeholderStyle: {
     fontSize: 14,
     fontFamily: 'Gotham-Rounded-Medium',
@@ -426,10 +431,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0888B1',
     borderRadius: 2,
   },
-  checkboxLabel: {
-    fontSize: 16,
-    fontFamily: 'Gotham-Rounded-Medium',
-  },
+  checkboxLabel: { fontSize: 16, fontFamily: 'Gotham-Rounded-Medium' },
 });
 
 export default AddAddressScreen;

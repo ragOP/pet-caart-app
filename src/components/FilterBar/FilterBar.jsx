@@ -161,7 +161,12 @@ const FilterBar = ({
         activeOpacity={1}
         style={styles.switchWrapper}
       >
-        <View style={styles.track} />
+        <View
+          style={[
+            styles.track,
+            { backgroundColor: value ? '#0a0' : '#ebebeb' },
+          ]}
+        />
         <View
           style={[
             styles.thumb,
@@ -295,14 +300,14 @@ const FilterBar = ({
           >
             <View style={styles.filterSection}>
               <Text style={styles.sectionTitle}>Brand</Text>
-              <View style={styles.brandContainer}>
+              <View style={styles.optionRow}>
                 {brands.length > 0 ? (
                   brands.map(brand => (
                     <TouchableOpacity
                       activeOpacity={1}
                       key={brand._id}
                       style={[
-                        styles.brandButton,
+                        styles.optionButton,
                         tempBrandSlugs.includes(brand.slug) &&
                           styles.selectedBrand,
                       ]}
@@ -315,7 +320,7 @@ const FilterBar = ({
                       /> */}
                       <Text
                         style={[
-                          styles.brandText,
+                          styles.optionText,
                           tempBrandSlugs.includes(brand.slug) && {
                             color: 'black',
                           },
@@ -631,7 +636,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#bcdde9',
   },
-  brandLogo: { width: 64, height: 64, marginBottom: 4, borderRadius: 32 },
+  brandLogo: { width: 64, height: 64, marginBottom: 4 },
   brandText: {
     fontSize: 14,
     color: '#333',
@@ -650,7 +655,7 @@ const styles = StyleSheet.create({
   optionButton: {
     backgroundColor: '#e6f5f7',
     paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
     marginRight: 8,
     marginBottom: 10,
     borderRadius: 8,
@@ -664,6 +669,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     fontFamily: 'Gotham-Rounded-Medium',
+    width: '100%',
   },
   fixedButtonsContainer: {
     flexDirection: 'row',
@@ -758,7 +764,7 @@ const styles = StyleSheet.create({
   },
   track: {
     position: 'absolute',
-    width: 60,
+    width: 57,
     height: 14,
     borderRadius: 12,
     backgroundColor: '#ebebeb',

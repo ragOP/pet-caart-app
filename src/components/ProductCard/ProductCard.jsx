@@ -18,8 +18,6 @@ import { addProductToCart } from '../../apis/addProductToCart';
 import { getCart } from '../../apis/getCart';
 import { addItemToCart, removeItemFromCart } from '../../redux/cartSlice';
 import Lottie from 'lottie-react-native';
-
-// Dimension hook (handles rotation)
 const useScreenSize = () => {
   const [dims, setDims] = useState(Dimensions.get('window'));
   useEffect(() => {
@@ -30,35 +28,29 @@ const useScreenSize = () => {
   }, []);
   return dims;
 };
-
-// Unified breakpoint helpers (short-side driven)
 const getBP = (w, h) => {
   const short = Math.min(w, h);
   return {
     xs: short < 360,
     sm: short >= 360 && short < 400,
     md: short >= 400 && short < 480,
-    lg: short >= 480, // phones plus
+    lg: short >= 480,
   };
 };
-
-// Card height formula tuned for all sizes
 const getCardHeight = (w, h) => {
   const { xs, sm, md, lg } = getBP(w, h);
   if (xs) return Math.round(h * 0.58);
-  if (sm) return Math.round(h * 0.52);
-  if (md) return Math.round(h * 0.46);
-  if (lg) return Math.round(h * 0.42);
+  if (sm) return Math.round(h * 0.5);
+  if (md) return Math.round(h * 0.4);
+  if (lg) return Math.round(h * 0.41);
   return Math.round(h * 0.42);
 };
 
 const pct = (n, base) => Math.round(base * n);
-
 const getVariantDiscount = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
 };
-
 const formatWeight = w => {
   const n = Number(w) || 0;
   if (n >= 1000) {
@@ -67,7 +59,6 @@ const formatWeight = w => {
   }
   return `${n}g`;
 };
-
 const ProductCard = ({
   images,
   title,
@@ -76,7 +67,7 @@ const ProductCard = ({
   discount,
   isVeg,
   stock,
-  cardWidth, // let parent pass width; else compute from screen
+  cardWidth,
   brandId,
   isBestSeller,
   productId,
@@ -86,7 +77,6 @@ const ProductCard = ({
   const dispatch = useDispatch();
   const cartItems = useSelector(s => s.cart.items);
   const isLoggedIn = useSelector(s => !!s.auth.user);
-
   const { width: W, height: H } = useScreenSize();
   const BP = useMemo(() => getBP(W, H), [W, H]);
   const CARD_HEIGHT = useMemo(() => getCardHeight(W, H), [W, H]);
@@ -95,21 +85,17 @@ const ProductCard = ({
     if (BP.md && W >= 700) return Math.round(W * 0.32);
     return Math.round(W * 0.46);
   }, [BP, W]);
-
   const widthToUse = cardWidth ?? computedCardWidth;
   const imageH = useMemo(() => {
     if (BP.xs) return pct(0.4, CARD_HEIGHT);
     if (BP.sm) return pct(0.45, CARD_HEIGHT);
-    return pct(0.48, CARD_HEIGHT);
+    return pct(0.5, CARD_HEIGHT);
   }, [BP, CARD_HEIGHT]);
-
   const stepperH = BP.xs ? 30 : BP.sm ? 32 : 36;
   const reserveBottom = stepperH + (BP.xs ? 10 : 14);
-
-  const VAR_CARD_W = Math.round(Math.min(widthToUse, 240) * 0.42);
-  const VAR_CARD_H = BP.xs ? 32 : BP.sm ? 36 : 40;
+  const VAR_CARD_W = Math.round(Math.min(widthToUse, 240) * 0.45);
+  const VAR_CARD_H = BP.xs ? 32 : BP.sm ? 36 : 44;
   const VAR_GAP = BP.xs ? 4 : 6;
-
   const fs = {
     title: BP.xs ? 12.5 : BP.sm ? 13 : 14,
     titleLH: BP.xs ? 15.5 : BP.sm ? 16.5 : 18,

@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   },
   phoneInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: 'Gotham-Rounded-Medium',
   },
   button: {

@@ -46,8 +46,10 @@ const { width: screenWidthFull } = Dimensions.get('window');
 const screenWidth = screenWidthFull * 0.94;
 
 const getDiscountPercent = (price, salePrice) => {
-  if (!price || !salePrice || price <= salePrice) return 0;
-  return Math.round(((price - salePrice) / price) * 100);
+  if (!price || !salePrice || Number(price) <= Number(salePrice)) return 0;
+  return Math.round(
+    ((Number(price) - Number(salePrice)) / Number(price)) * 100,
+  );
 };
 
 const formatWeight = grams => {
@@ -59,8 +61,10 @@ const formatWeight = grams => {
   }
   return `${g}g`;
 };
+
 const containerMarginHorizontal = 12;
 const adjustedSnapInterval = screenWidth + 2 * containerMarginHorizontal;
+
 const coerceStockNumber = obj => {
   const candidates = [
     obj?.stock,
@@ -76,9 +80,18 @@ const coerceStockNumber = obj => {
   return 0;
 };
 
+// ---------- PriceCardsRow WITH Main support ----------
 const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
   const PriceCard = ({ item, isSelected, onPress }) => {
     const discount = getDiscountPercent(item.price, item.salePrice);
+    const topLabel =
+      item.titleOverride ||
+      item.variantName ||
+      item.productLabel ||
+      (Number.isFinite(Number(item.weight))
+        ? `${formatWeight(item.weight)}`
+        : 'Main');
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -89,23 +102,23 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
           <View
             style={[
               styles.topBand,
-              isSelected && {
-                backgroundColor: '#014e6a',
-              },
+              isSelected && { backgroundColor: '#014e6a' },
             ]}
           >
             <Text
               style={[styles.topBandText, isSelected && { color: 'white' }]}
             >
-              {item.titleOverride || `${formatWeight(item.weight)}`}
+              {topLabel}
             </Text>
           </View>
+
           <View style={styles.middleRow}>
             <Text style={styles.saleText}>₹ {item.salePrice}</Text>
             {Number(item.price) > Number(item.salePrice) && (
               <Text style={styles.mrpText}>MRP {item.price}</Text>
             )}
           </View>
+
           <View style={styles.bottomBand}>
             <Text style={styles.bottomBandText}>{discount}% OFF</Text>
           </View>
@@ -134,12 +147,13 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
   );
 };
 
+// ---------- Screen ----------
 const SingleProductScreen = ({ navigation }) => {
   const route = useRoute();
   const { productId } = route.params;
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
-  const isLoggedIn = useSelector(state => !!state.auth.user); // Adjust to your auth state, e.g., state.auth.token
+  const isLoggedIn = useSelector(state => !!state.auth.user);
 
   const [expandedSection, setExpandedSection] = useState(null);
   const [product, setProduct] = useState(null);
@@ -155,18 +169,6 @@ const SingleProductScreen = ({ navigation }) => {
   const toggleSection = section => {
     setExpandedSection(prev => (prev === section ? null : section));
   };
-  // const stripHtmlTagsAndEntities = str => {
-  //   if (!str) return '';
-  //   let text = str.replace(/<[^>]*>/g, ' ');
-  //   text = text
-  //     .replace(/&amp;/g, '&')
-  //     .replace(/&lt;/g, '<')
-  //     .replace(/&gt;/g, '>')
-  //     .replace(/&nbsp;/g, ' ')
-  //     .replace(/&#39;/g, "'")
-  //     .replace(/&quot;/g, '"');
-  //   return text.trim();
-  // };
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -174,16 +176,25 @@ const SingleProductScreen = ({ navigation }) => {
       try {
         const response = await getProductById({ id: productId });
         if (response) {
+          // Make sure images include commonImages everywhere
           const productWithCommonImages = {
             ...response,
-            images: [...response.images, ...(response.commonImages || [])],
-            variants: response.variants.map(variant => ({
+            images: [
+              ...(response.images || []),
+              ...(response.commonImages || []),
+            ],
+            variants: (response.variants || []).map(variant => ({
               ...variant,
-              images: [...variant.images, ...(response.commonImages || [])],
+              images: [
+                ...(variant.images || []),
+                ...(response.commonImages || []),
+              ],
             })),
           };
           setProduct(productWithCommonImages);
         }
+      } catch (e) {
+        setError('Failed to load product');
       } finally {
         setLoading(false);
       }
@@ -200,12 +211,14 @@ const SingleProductScreen = ({ navigation }) => {
     go('BottomTabs', { screen: 'Cart' });
   };
 
+  // Auto-select Main Product
   useEffect(() => {
     if (product && !selectedVariant) {
-      setSelectedVariant(product);
+      setSelectedVariant({ ...product, isMain: true, _id: product._id });
     }
   }, [product, selectedVariant]);
 
+  // Best sellers (unchanged)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -235,13 +248,21 @@ const SingleProductScreen = ({ navigation }) => {
           setBestSellerData(bestSellers);
         }
       } catch (e) {
-        console.error('Error fetching products:', e);
+        // silent
       }
     };
     fetchProducts();
   }, []);
 
   const currentVariant = selectedVariant?._id ? selectedVariant : product;
+
+  // If main product selected, variantId must be null
+  const currentVariantId = selectedVariant?.isMain
+    ? null
+    : selectedVariant?._id === product?._id
+    ? null
+    : selectedVariant?._id || null;
+
   const stockToShow = coerceStockNumber(currentVariant || {});
   const inStockFlag =
     typeof currentVariant?.isInStock === 'boolean'
@@ -250,14 +271,16 @@ const SingleProductScreen = ({ navigation }) => {
   const effectiveInStock = inStockFlag !== null ? inStockFlag : stockToShow > 0;
 
   const shouldShowWeight = selectedVariant && !selectedVariant.isMain;
-  const shownWeight = shouldShowWeight ? currentVariant?.weight : null;
+  const shownWeight = shouldShowWeight
+    ? currentVariant?.weight
+    : product?.weight;
 
   const displayedImages =
     selectedVariant?.images?.length > 0
       ? selectedVariant.images
-      : product?.images || [];
-  const currentVariantId =
-    selectedVariant?._id === product?._id ? null : selectedVariant?._id || null;
+      : product?.images?.length
+      ? product.images
+      : product?.commonImages || [];
 
   const inCartItem = cartItems.find(
     item =>
@@ -287,7 +310,7 @@ const SingleProductScreen = ({ navigation }) => {
       const productData = {
         productId: product._id,
         productTitle: product.title,
-        variantId: currentVariantId,
+        variantId: currentVariantId, // null for Main
         price: currentVariant.price,
         salePrice: currentVariant.salePrice,
         images: product.images,
@@ -298,24 +321,50 @@ const SingleProductScreen = ({ navigation }) => {
       dispatch(addItemToCart(productData));
       await addProductToCart({
         productId: product._id,
-        variantId: currentVariantId,
+        variantId: currentVariantId, // null when main
         quantity: 1,
       });
       setQuantity(1);
       goToCart();
     } catch (error) {
-      console.warn('Failed to add to cart:', error);
+      // silent/log
     } finally {
       setCartLoading(false);
     }
   };
 
-  const priceCardsData = (product?.variants || []).map(v => ({
-    ...v,
-    stock: coerceStockNumber(v),
-    packInfo: v.packInfo,
-    titleOverride: v.title || undefined,
-  }));
+  // Build "Main Product" card and merge with variants
+  const mainProductCard = product
+    ? {
+        _id: product._id, // keep as product id
+        isMain: true,
+        productLabel: product.productLabel, // e.g. "1kg"
+        variantName: product.productLabel, // label fallback
+        price: product.price,
+        salePrice: product.salePrice,
+        weight: product.weight,
+        images: product.images?.length
+          ? product.images
+          : product.commonImages || [],
+        stock: coerceStockNumber(product),
+        titleOverride:
+          product.productLabel ||
+          (Number.isFinite(Number(product.weight))
+            ? formatWeight(product.weight)
+            : 'Main'),
+      }
+    : null;
+
+  const priceCardsData = [
+    ...(mainProductCard ? [mainProductCard] : []),
+    ...((product?.variants || []).map(v => ({
+      ...v,
+      stock: coerceStockNumber(v),
+      packInfo: v.packInfo,
+      titleOverride: v.variantName || v.title || undefined,
+      isMain: false,
+    })) || []),
+  ];
 
   const isAddToCartButtonDisabled = () => {
     if (!effectiveInStock) return true;
@@ -462,7 +511,11 @@ const SingleProductScreen = ({ navigation }) => {
             <PriceCardsRow
               variants={priceCardsData}
               selectedId={selectedVariant?._id}
-              onSelect={item => setSelectedVariant(item || product)}
+              onSelect={item =>
+                setSelectedVariant(
+                  item || { ...product, isMain: true, _id: product._id },
+                )
+              }
             />
           </View>
 
@@ -548,10 +601,6 @@ const SingleProductScreen = ({ navigation }) => {
                   </Text>
                 )}
                 <Text style={styles.accordionInlineText}>
-                  {/* Stock:
-                  {effectiveInStock
-                    ? `In Stock (${stockToShow})`
-                    : 'Out of Stock'} */}
                   Imported By : {product.importedBy}.
                 </Text>
                 <Text style={styles.accordionInlineText}>
@@ -708,9 +757,9 @@ const styles = StyleSheet.create({
   accordionContainer: {
     marginVertical: 14,
     backgroundColor: '#fff',
-    borderRadius: 16, // smoother corners
-    borderWidth: 2, // clear but subtle border
-    borderColor: '#E5E5E5', // light grey border for neat separation
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#E5E5E5',
     overflow: 'hidden',
   },
   accordionHeader: {
@@ -958,11 +1007,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     color: '#222',
   },
-  // lightText:{
-  //      fontSize: 14,
-  //   fontFamily: 'Gotham-Rounded-Medium',
-  //   color: '#222'
-  // }
 });
 
 export default SingleProductScreen;

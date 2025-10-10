@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// components/AddressBottomSheet/AddressBottomSheet.jsx
+import React, { useState, useImperativeHandle, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +10,7 @@ import {
   Image,
 } from 'react-native';
 import RawBottomSheet from 'react-native-raw-bottom-sheet';
-import { MapPin, X } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 import { getAddresses } from '../../apis/getAddresses';
 
 export const AddressBottomSheet = React.forwardRef(
@@ -18,13 +19,14 @@ export const AddressBottomSheet = React.forwardRef(
     ref,
   ) => {
     const [addresses, setAddresses] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const internalRef = useRef(null);
 
     const fetchAddresses = async () => {
       try {
         setLoading(true);
         const response = await getAddresses({ params: {} });
-        if (response && response.success) {
+        if (response?.success) {
           setAddresses(
             response.data.map(item => ({
               id: item._id,
@@ -40,17 +42,21 @@ export const AddressBottomSheet = React.forwardRef(
               isDefault: item.isDefault,
             })),
           );
+        } else {
+          setAddresses([]);
         }
-      } catch (error) {
-        console.error('Error fetching addresses:', error);
+      } catch (e) {
+        setAddresses([]);
       } finally {
         setLoading(false);
       }
     };
 
-    useEffect(() => {
-      fetchAddresses();
-    }, []);
+    useImperativeHandle(ref, () => ({
+      open: () => internalRef.current?.open?.(),
+      close: () => internalRef.current?.close?.(),
+      refresh: fetchAddresses,
+    }));
 
     const renderItem = ({ item }) => {
       const isSelected =
@@ -61,8 +67,8 @@ export const AddressBottomSheet = React.forwardRef(
         <TouchableOpacity
           style={[styles.itemCard, isSelected && styles.selectedCard]}
           onPress={() => {
-            onSelectAddress(item);
-            ref.current.close();
+            onSelectAddress?.(item);
+            internalRef.current?.close?.();
           }}
           activeOpacity={1}
         >
@@ -81,16 +87,19 @@ export const AddressBottomSheet = React.forwardRef(
             {item.city}
             {item.state ? `, ${item.state}` : ''} - {item.zip}
           </Text>
-          {item.phone && <Text style={styles.phone}>Phone: {item.phone}</Text>}
+          {item.phone ? (
+            <Text style={styles.phone}>Phone: {item.phone}</Text>
+          ) : null}
         </TouchableOpacity>
       );
     };
 
     return (
       <RawBottomSheet
-        ref={ref}
+        ref={internalRef}
         height={470}
         closeOnDragDown
+        onOpen={fetchAddresses}
         customStyles={{
           container: styles.bottomSheetContainer,
           draggableIcon: styles.draggableIcon,
@@ -98,17 +107,11 @@ export const AddressBottomSheet = React.forwardRef(
       >
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Select Delivery Address</Text>
-          {/* <TouchableOpacity
-            style={styles.closeIcon}
-            onPress={() => ref.current?.close()}
-            hitSlop={{ top: 10, right: 10, left: 10, bottom: 10 }}
-          >
-            <X size={24} color="#636569" />
-          </TouchableOpacity> */}
         </View>
+
         {loading ? (
           <ActivityIndicator size="large" style={styles.loader} color="#888" />
-        ) : addresses.length ? (
+        ) : addresses?.length ? (
           <FlatList
             data={addresses}
             keyExtractor={item => item.id}
@@ -132,12 +135,13 @@ export const AddressBottomSheet = React.forwardRef(
             </View>
           </View>
         )}
+
         <TouchableOpacity
           activeOpacity={1}
           style={styles.addButton}
           onPress={() => {
-            ref.current.close();
-            onAddAddress();
+            internalRef.current?.close?.();
+            onAddAddress?.();
           }}
         >
           <Text style={styles.addButtonText}>Add New Address</Text>
@@ -183,14 +187,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.2,
     flex: 1,
-  },
-  closeIcon: {
-    position: 'absolute',
-    right: 18,
-    top: '50%',
-    transform: [{ translateY: -12 }],
-    padding: 4,
-    zIndex: 2,
   },
   itemCard: {
     backgroundColor: '#fff',
