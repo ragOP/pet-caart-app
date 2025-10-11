@@ -4,9 +4,9 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   Platform,
   ImageBackground,
+  Dimensions,
 } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
@@ -23,6 +23,7 @@ import CategoryScreen from '../screens/CategoryScreen/CategoryScreen';
 import CartScreen from '../screens/CartScreen/CartScreen';
 import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
 import CollectionScreen from '../screens/CollectionScreen/CollectionScreen';
+import BreedScreen from '../screens/BreedScreen/BreedScreen';
 
 const { width } = Dimensions.get('window');
 const Tab = createBottomTabNavigator();
@@ -102,7 +103,7 @@ export default function BottomNavigation() {
       tabBar={props => <CustomTabBar {...props} />}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Breed" component={CategoryScreen} />
+      <Tab.Screen name="Breed" component={BreedScreen} />
       <Tab.Screen name="CollectionScreen" component={CollectionScreen} />
       <Tab.Screen name="Cart" component={CartScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />

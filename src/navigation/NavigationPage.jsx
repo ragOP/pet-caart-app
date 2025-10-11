@@ -24,6 +24,7 @@ import ContactUsScreen from '../screens/ContactUsScreen/ContactUsScreen';
 import { navigationRef } from '../constants/navigationRef';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BreedDetailScreen from '../screens/BreedDetailScreen/BreedDetailScreen';
 
 const Stack = createStackNavigator();
 
@@ -125,6 +126,11 @@ export default function NavigationPage() {
             <Stack.Screen
               name="ContactUsScreen"
               component={ContactUsScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="BreedDetailScreen"
+              component={BreedDetailScreen}
               screenOptions={{ headerShown: false }}
             />
           </Stack.Navigator>

@@ -3,7 +3,7 @@ import { endpoints } from './endpoints';
 
 export const getAdBanner = async () => {
   const apiResponse = await apiService({
-    endpoint: `${endpoints.banners}?type=app`,
+    endpoint: `${endpoints.banners}?type=web`,
     method: 'GET',
   });
   return apiResponse?.response;
