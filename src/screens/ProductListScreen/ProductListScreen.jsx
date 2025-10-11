@@ -312,11 +312,12 @@ export default function ProductListScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  container: { flex: 1, backgroundColor: '#FFFFFF', overflow: 'visible' },
   headerWrapper: {
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    overflow: 'visible',
   },
   headerRow: {
     flexDirection: 'row',
@@ -346,6 +347,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 15,
+    overflow: 'visible',
   },
   circle: {
     width: 72,

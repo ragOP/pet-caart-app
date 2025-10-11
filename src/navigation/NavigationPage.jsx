@@ -22,108 +22,114 @@ import SingleProductScreen from '../screens/SingleProductScreen/SingleProductScr
 import ProductCollectionScreeen from '../screens/ProductCollectionScreen/ProductCollectionScreen';
 import ContactUsScreen from '../screens/ContactUsScreen/ContactUsScreen';
 import { navigationRef } from '../constants/navigationRef';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Stack = createStackNavigator();
 
 export default function NavigationPage() {
   return (
-    <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator
-        initialRouteName="SplashScreen"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="SplashScreen" component={SplashScreen} />
-        <Stack.Screen
-          name="BottomTabs"
-          component={BottomTabNavigation}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ProfileDetailScreen"
-          component={ProfileDetailScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddressInfoScreen"
-          component={AddressInfoScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddAddressScreen"
-          component={AddAddressScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="MyOrderScreen"
-          component={MyOrderScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="OrderDetailsScreen"
-          component={OrderDetailsScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="LoginScreen"
-          component={LoginScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="SignupScreen"
-          component={SignUpScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="InviteScreen"
-          component={InviteScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Terms"
-          component={Terms}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AllCategoriesScreen"
-          component={AllCategoriesScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="BrandScreen"
-          component={BrandScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ProductListScreen"
-          component={ProductListScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="SingleProductScreen"
-          component={SingleProductScreen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ProductCollectionScreeen"
-          component={ProductCollectionScreeen}
-          screenOptions={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ContactUsScreen"
-          component={ContactUsScreen}
-          screenOptions={{ headerShown: false }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <NavigationContainer ref={navigationRef}>
+          <Stack.Navigator
+            initialRouteName="SplashScreen"
+            screenOptions={{ headerShown: false }}
+          >
+            <Stack.Screen name="SplashScreen" component={SplashScreen} />
+            <Stack.Screen
+              name="BottomTabs"
+              component={BottomTabNavigation}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ProfileDetailScreen"
+              component={ProfileDetailScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AddressInfoScreen"
+              component={AddressInfoScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AddAddressScreen"
+              component={AddAddressScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MyOrderScreen"
+              component={MyOrderScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="OrderDetailsScreen"
+              component={OrderDetailsScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="LoginScreen"
+              component={LoginScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SignupScreen"
+              component={SignUpScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="InviteScreen"
+              component={InviteScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Terms"
+              component={Terms}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AllCategoriesScreen"
+              component={AllCategoriesScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="BrandScreen"
+              component={BrandScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ProductListScreen"
+              component={ProductListScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SingleProductScreen"
+              component={SingleProductScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ProductCollectionScreeen"
+              component={ProductCollectionScreeen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ContactUsScreen"
+              component={ContactUsScreen}
+              screenOptions={{ headerShown: false }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }

@@ -107,19 +107,18 @@ const CartScreen = () => {
 
   const fetchAndSetCurrentCart = async addressId => {
     try {
-      setLoading(true); // start screen loader
+      setLoading(true);
       const effectiveAddressId =
         addressId ?? (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
       const cartResponse = await getCart({
         params: { address_id: effectiveAddressId },
       });
       if (cartResponse.success) {
+        console.log('cartresponse', cartResponse);
         const formattedItems = cartResponse.data.items.map(item => {
           const mrp = item.variantId?.price || item.productId?.price || 0;
           const salePrice = item.price || 0;
-
           const weight = item.variantId?.weight || item.productId?.weight;
-
           const discount =
             mrp && salePrice ? Math.round(((mrp - salePrice) / mrp) * 100) : 0;
 
@@ -139,6 +138,8 @@ const CartScreen = () => {
             productId: item.productId._id || item.productId,
             variantId: item.variantId?._id || null,
             weight,
+            variantName:
+              item.variantId?.variantName || item.variantId?.title || '',
           };
         });
 
@@ -582,11 +583,12 @@ const CartScreen = () => {
                   />
                   <View style={s.details}>
                     <Text style={s.title}>{item.title}</Text>
-
-                    {item.variantId && item.weight && (
+                    {item.variantId && (item.variantName || item.weight) && (
                       <View style={s.variantChip}>
                         <Text style={s.variantText}>
-                          {formatWeight(item.weight)}
+                          {item.variantName
+                            ? item.variantName
+                            : formatWeight(item.weight)}
                         </Text>
                       </View>
                     )}
@@ -650,7 +652,6 @@ const CartScreen = () => {
 
             <SpecialDeals />
 
-            {/* Coupons */}
             <View style={s.couponContainer}>
               <View style={s.couponHeader}>
                 <Image

@@ -1,10 +1,15 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, {
+  useMemo,
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+} from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
   StyleSheet,
   Dimensions,
   Platform,
@@ -15,13 +20,16 @@ import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
 } from 'lucide-react-native';
-import RBSheet from 'react-native-raw-bottom-sheet';
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetBackdrop,
+} from '@gorhom/bottom-sheet';
 import { getBrands } from '../../apis/getBrands';
 import { getBreeds } from '../../apis/getBreeds';
 
 const windowWidth = Dimensions.get('window').width;
 
-// Your filter options (example, actualize as per your data)
 const LIFE_STAGE_OPTIONS = [
   { label: 'Puppy', value: 'puppy' },
   { label: 'Adult', value: 'adult' },
@@ -60,21 +68,9 @@ const FilterBar = ({
   sortOrder,
   onChangeSort,
 }) => {
-  const filterSheetRef = useRef();
-  const sortSheetRef = useRef();
-
+  // data
   const [brands, setBrands] = useState([]);
   const [breeds, setBreeds] = useState([]);
-  const [tempBrandSlugs, setTempBrandSlugs] = useState([]);
-  const [tempBreedSlugs, setTempBreedSlugs] = useState([]);
-  const [tempLifeStages, setTempLifeStages] = useState([]);
-  const [tempProductTypes, setTempProductTypes] = useState([]);
-  const [tempBreedSizes, setTempBreedSizes] = useState([]);
-
-  const sortOptions = [
-    { label: 'Low to High', value: 'lowToHigh', icon: ArrowDownWideNarrow },
-    { label: 'High to Low', value: 'highToLow', icon: ArrowUpNarrowWide },
-  ];
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -84,12 +80,18 @@ const FilterBar = ({
         ]);
         setBrands(brandRes?.data?.data || []);
         setBreeds(breedRes?.data?.data || []);
-      } catch (e) {
-        console.error('Error loading brands/breeds:', e);
-      }
+      } catch {}
     };
     loadData();
   }, []);
+
+  // temp state
+  const [tempBrandSlugs, setTempBrandSlugs] = useState([]);
+  const [tempBreedSlugs, setTempBreedSlugs] = useState([]);
+  const [tempLifeStages, setTempLifeStages] = useState([]);
+  const [tempProductTypes, setTempProductTypes] = useState([]);
+  const [tempBreedSizes, setTempBreedSizes] = useState([]);
+
   useEffect(() => setTempBrandSlugs(selectedBrand || []), [selectedBrand]);
   useEffect(() => setTempBreedSlugs(selectedBreed || []), [selectedBreed]);
   useEffect(
@@ -105,14 +107,34 @@ const FilterBar = ({
     [selectedBreedSize],
   );
 
+  const toggleValue = (prev, v) =>
+    prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v];
+  const filterSheetRef = useRef(null);
+  const sortSheetRef = useRef(null);
+  const filterSnapPoints = useMemo(() => ['60%', '92%'], []);
+  const sortSnapPoints = useMemo(() => ['30%'], []);
+  const renderBackdrop = useCallback(
+    props => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        opacity={0.5}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
   const openFilterSheet = () => {
     setTempBrandSlugs(selectedBrand || []);
     setTempBreedSlugs(selectedBreed || []);
     setTempLifeStages(selectedLifeStage || []);
     setTempProductTypes(selectedProductType || []);
     setTempBreedSizes(selectedBreedSize || []);
-    filterSheetRef.current?.open();
+    filterSheetRef.current?.present?.();
   };
+  const openSortSheet = () => sortSheetRef.current?.present?.();
 
   const handleClearAll = () => {
     setTempBrandSlugs([]);
@@ -126,20 +148,16 @@ const FilterBar = ({
     setSelectedProductType?.([]);
     setSelectedBreedSize?.([]);
     setIsVeg?.(false);
-    filterSheetRef.current?.close();
+    filterSheetRef.current?.dismiss?.();
   };
-
   const handleApplyFilters = () => {
     setSelectedBrand?.(tempBrandSlugs);
     setSelectedBreed?.(tempBreedSlugs);
     setSelectedLifeStage?.(tempLifeStages);
     setSelectedProductType?.(tempProductTypes);
     setSelectedBreedSize?.(tempBreedSizes);
-    filterSheetRef.current?.close();
+    filterSheetRef.current?.dismiss?.();
   };
-
-  const toggleValue = (prev, v) =>
-    prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v];
 
   const handleBrandSelect = slug =>
     setTempBrandSlugs(prev => toggleValue(prev, slug));
@@ -151,8 +169,18 @@ const FilterBar = ({
     setTempProductTypes(prev => toggleValue(prev, v));
   const handleBreedSizeSelect = v =>
     setTempBreedSizes(prev => toggleValue(prev, v));
-
   const handleVegToggle = () => setIsVeg?.(prev => !prev);
+
+  const sortOptions = [
+    { label: 'Low to High', value: 'lowToHigh', icon: ArrowDownWideNarrow },
+    { label: 'High to Low', value: 'highToLow', icon: ArrowUpNarrowWide },
+  ];
+  const brandCount = selectedBrand?.length || 0;
+  const breedCount = selectedBreed?.length || 0;
+  const lifeStageCount = selectedLifeStage?.length || 0;
+  const productTypeCount = selectedProductType?.length || 0;
+  const breedSizeCount = selectedBreedSize?.length || 0;
+  const isSortActive = !!sortOrder;
 
   const GreenSwitchButton = ({ value, onValueChange }) => (
     <View style={styles.vegbutton}>
@@ -183,15 +211,6 @@ const FilterBar = ({
       </TouchableOpacity>
     </View>
   );
-  const openSortSheet = () => {
-    sortSheetRef.current?.open();
-  };
-  const brandCount = selectedBrand?.length || 0;
-  const breedCount = selectedBreed?.length || 0;
-  const lifeStageCount = selectedLifeStage?.length || 0;
-  const productTypeCount = selectedProductType?.length || 0;
-  const breedSizeCount = selectedBreedSize?.length || 0;
-  const isSortActive = !!sortOrder;
 
   return (
     <View style={styles.container}>
@@ -275,223 +294,227 @@ const FilterBar = ({
           </Text>
         </TouchableOpacity>
       </ScrollView>
-      <RBSheet
+
+      {/* Filter sheet with sticky bottom actions */}
+      <BottomSheetModal
         ref={filterSheetRef}
-        height={550}
-        openDuration={250}
-        closeDuration={200}
-        customStyles={{
-          container: {
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            backgroundColor: '#FFF',
-            width: windowWidth,
-          },
-        }}
+        index={0}
+        snapPoints={filterSnapPoints}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.bsBackground}
+        handleIndicatorStyle={{ backgroundColor: '#ccc' }}
+        containerStyle={{ zIndex: 1000 }}
       >
-        <View style={styles.filterSheetRoot}>
-          <View style={styles.filterHeader}>
-            <SlidersHorizontal size={20} color="#333" />
-            <Text style={styles.filterTitle}>FILTERS</Text>
-          </View>
-          <ScrollView
-            style={styles.filterScrollView}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 80 }}
-          >
-            <View style={styles.filterSection}>
-              <Text style={styles.sectionTitle}>Brand</Text>
-              <View style={styles.optionRow}>
-                {brands.length > 0 ? (
-                  brands.map(brand => (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      key={brand._id}
-                      style={[
-                        styles.optionButton,
-                        tempBrandSlugs.includes(brand.slug) &&
-                          styles.selectedBrand,
-                      ]}
-                      onPress={() => handleBrandSelect(brand.slug)}
-                    >
-                      {/* <Image
-                        source={{ uri: brand.logo }}
-                        style={styles.brandLogo}
-                        resizeMode="contain"
-                      /> */}
-                      <Text
-                        style={[
-                          styles.optionText,
-                          tempBrandSlugs.includes(brand.slug) && {
-                            color: 'black',
-                          },
-                        ]}
-                      >
-                        {brand.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <Text>No brands available</Text>
-                )}
-              </View>
+        <BottomSheetView style={{ flex: 1 }}>
+          <View style={styles.filterSheetRoot}>
+            <View style={styles.filterHeader}>
+              <SlidersHorizontal size={20} color="#333" />
+              <Text style={styles.filterTitle}>FILTERS</Text>
             </View>
-            <View style={styles.filterSection}>
-              <Text style={styles.sectionTitle}>Breed</Text>
-              <View style={styles.optionRow}>
-                {breeds.length > 0 ? (
-                  breeds.map(breed => (
+
+            {/* Scroll content padded so sticky bar doesn't overlap */}
+            <ScrollView
+              style={styles.filterScrollView}
+              contentContainerStyle={{
+                paddingHorizontal: 20,
+                paddingBottom: 120,
+              }}
+            >
+              <View style={styles.filterSection}>
+                <Text style={styles.sectionTitle}>Brand</Text>
+                <View style={styles.optionRow}>
+                  {brands.length > 0 ? (
+                    brands.map(brand => (
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        key={brand._id}
+                        style={[
+                          styles.optionButton,
+                          tempBrandSlugs.includes(brand.slug) &&
+                            styles.selectedBrand,
+                        ]}
+                        onPress={() => handleBrandSelect(brand.slug)}
+                      >
+                        <Text
+                          style={[
+                            styles.optionText,
+                            tempBrandSlugs.includes(brand.slug) && {
+                              color: 'black',
+                            },
+                          ]}
+                        >
+                          {brand.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    <Text>No brands available</Text>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.filterSection}>
+                <Text style={styles.sectionTitle}>Breed</Text>
+                <View style={styles.optionRow}>
+                  {breeds.length > 0 ? (
+                    breeds.map(breed => (
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        key={breed._id}
+                        style={[
+                          styles.optionButton,
+                          tempBreedSlugs.includes(breed.slug) &&
+                            styles.selectedBreed,
+                        ]}
+                        onPress={() => handleBreedSelect(breed.slug)}
+                      >
+                        <Text
+                          style={[
+                            styles.optionText,
+                            tempBreedSlugs.includes(breed.slug) && {
+                              color: 'black',
+                            },
+                          ]}
+                        >
+                          {breed.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  ) : (
+                    <Text>No breeds available</Text>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.filterSection}>
+                <Text style={styles.sectionTitle}>Life Stage</Text>
+                <View style={styles.optionRow}>
+                  {LIFE_STAGE_OPTIONS.map(opt => (
                     <TouchableOpacity
                       activeOpacity={1}
-                      key={breed._id}
+                      key={opt.value}
                       style={[
                         styles.optionButton,
-                        tempBreedSlugs.includes(breed.slug) &&
+                        tempLifeStages.includes(opt.value) &&
                           styles.selectedBreed,
                       ]}
-                      onPress={() => handleBreedSelect(breed.slug)}
+                      onPress={() => handleLifeStageSelect(opt.value)}
                     >
                       <Text
                         style={[
                           styles.optionText,
-                          tempBreedSlugs.includes(breed.slug) && {
+                          tempLifeStages.includes(opt.value) && {
                             color: 'black',
                           },
                         ]}
                       >
-                        {breed.name}
+                        {opt.label}
                       </Text>
                     </TouchableOpacity>
-                  ))
-                ) : (
-                  <Text>No breeds available</Text>
-                )}
+                  ))}
+                </View>
               </View>
-            </View>
-            <View style={styles.filterSection}>
-              <Text style={styles.sectionTitle}>Life Stage</Text>
-              <View style={styles.optionRow}>
-                {LIFE_STAGE_OPTIONS.map(opt => (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    key={opt.value}
-                    style={[
-                      styles.optionButton,
-                      tempLifeStages.includes(opt.value) &&
-                        styles.selectedBreed,
-                    ]}
-                    onPress={() => handleLifeStageSelect(opt.value)}
-                  >
-                    <Text
+
+              <View style={styles.filterSection}>
+                <Text style={styles.sectionTitle}>Product Type</Text>
+                <View style={styles.optionRow}>
+                  {PRODUCT_TYPE_OPTIONS.map(opt => (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      key={opt.value}
                       style={[
-                        styles.optionText,
-                        tempLifeStages.includes(opt.value) && {
-                          color: 'black',
-                        },
+                        styles.optionButton,
+                        tempProductTypes.includes(opt.value) &&
+                          styles.selectedBreed,
                       ]}
+                      onPress={() => handleProductTypeSelect(opt.value)}
                     >
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.optionText,
+                          tempProductTypes.includes(opt.value) && {
+                            color: 'black',
+                          },
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-            </View>
-            <View style={styles.filterSection}>
-              <Text style={styles.sectionTitle}>Product Type</Text>
-              <View style={styles.optionRow}>
-                {PRODUCT_TYPE_OPTIONS.map(opt => (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    key={opt.value}
-                    style={[
-                      styles.optionButton,
-                      tempProductTypes.includes(opt.value) &&
-                        styles.selectedBreed,
-                    ]}
-                    onPress={() => handleProductTypeSelect(opt.value)}
-                  >
-                    <Text
+
+              <View style={styles.filterSection}>
+                <Text style={styles.sectionTitle}>Breed Size</Text>
+                <View style={styles.optionRow}>
+                  {BREED_SIZE_OPTIONS.map(opt => (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      key={opt.value}
                       style={[
-                        styles.optionText,
-                        tempProductTypes.includes(opt.value) && {
-                          color: 'black',
-                        },
+                        styles.optionButton,
+                        tempBreedSizes.includes(opt.value) &&
+                          styles.selectedBreed,
                       ]}
+                      onPress={() => handleBreedSizeSelect(opt.value)}
                     >
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                      <Text
+                        style={[
+                          styles.optionText,
+                          tempBreedSizes.includes(opt.value) && {
+                            color: 'black',
+                          },
+                        ]}
+                      >
+                        {opt.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
+            </ScrollView>
+
+            {/* Sticky bottom bar */}
+            <View style={styles.stickyActions}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.clearButton}
+                onPress={handleClearAll}
+              >
+                <Text style={styles.clearText}>CLEAR ALL</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.applyButton}
+                onPress={handleApplyFilters}
+              >
+                <Text style={styles.applyText}>APPLY</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.filterSection}>
-              <Text style={styles.sectionTitle}>Breed Size</Text>
-              <View style={styles.optionRow}>
-                {BREED_SIZE_OPTIONS.map(opt => (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    key={opt.value}
-                    style={[
-                      styles.optionButton,
-                      tempBreedSizes.includes(opt.value) &&
-                        styles.selectedBreed,
-                    ]}
-                    onPress={() => handleBreedSizeSelect(opt.value)}
-                  >
-                    <Text
-                      style={[
-                        styles.optionText,
-                        tempBreedSizes.includes(opt.value) && {
-                          color: 'black',
-                        },
-                      ]}
-                    >
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </ScrollView>
-          <View style={styles.fixedButtonsContainer}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.clearButton}
-              onPress={handleClearAll}
-            >
-              <Text style={styles.clearText}>CLEAR ALL</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.applyButton}
-              onPress={handleApplyFilters}
-            >
-              <Text style={styles.applyText}>APPLY</Text>
-            </TouchableOpacity>
           </View>
-        </View>
-      </RBSheet>
-      <RBSheet
+        </BottomSheetView>
+      </BottomSheetModal>
+
+      {/* Sort sheet */}
+      <BottomSheetModal
         ref={sortSheetRef}
-        height={180}
-        openDuration={220}
-        closeDuration={180}
-        customStyles={{
-          container: {
-            borderTopLeftRadius: 16,
-            borderTopRightRadius: 16,
-            backgroundColor: '#FFF',
-            width: windowWidth,
-          },
-        }}
+        index={0}
+        snapPoints={sortSnapPoints}
+        enablePanDownToClose
+        backdropComponent={renderBackdrop}
+        backgroundStyle={styles.bsBackground}
+        handleIndicatorStyle={{ backgroundColor: '#ccc' }}
+        containerStyle={{ zIndex: 1000 }}
       >
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 24 }}>
+        <BottomSheetView style={{ padding: 16, paddingBottom: 24 }}>
           <View style={styles.sortHeader}>
             <Text style={styles.sortTitle}>Sort By</Text>
             {sortOrder && (
               <TouchableOpacity
                 onPress={() => {
                   onChangeSort?.(null);
-                  sortSheetRef.current?.close();
+                  sortSheetRef.current?.dismiss?.();
                 }}
                 style={styles.sortClearPill}
               >
@@ -500,6 +523,7 @@ const FilterBar = ({
               </TouchableOpacity>
             )}
           </View>
+
           {sortOptions.map(({ label, value, icon: Icon }) => {
             const active = sortOrder === value;
             return (
@@ -508,7 +532,7 @@ const FilterBar = ({
                 style={[styles.sortRowItem, active && styles.sortRowItemActive]}
                 onPress={() => {
                   onChangeSort?.(value);
-                  sortSheetRef.current?.close();
+                  sortSheetRef.current?.dismiss?.();
                 }}
                 activeOpacity={0.9}
               >
@@ -529,8 +553,8 @@ const FilterBar = ({
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
-      </RBSheet>
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 };
@@ -545,29 +569,8 @@ const styles = StyleSheet.create({
       android: { paddingBottom: 0 },
     }),
   },
-  quickVegFilter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#f5f5f5',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    marginTop: -8,
-  },
-  quickVegLabel: {
-    fontSize: 16,
-    marginRight: 12,
-    fontFamily: 'Gotham-Rounded-Medium',
-    color: '#333',
-  },
   scrollView: { flexDirection: 'row' },
-  scrollViewContent: {
-    paddingVertical: 0,
-    marginBottom: 2,
-  },
+  scrollViewContent: { paddingVertical: 0, marginBottom: 2 },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -589,10 +592,59 @@ const styles = StyleSheet.create({
     color: '#555',
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  activeText: {
-    color: '#000',
-    fontFamily: 'Gotham-Rounded-Bold',
+  activeText: { color: '#000', fontFamily: 'Gotham-Rounded-Bold' },
+
+  vegbutton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    height: 36,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    borderColor: '#E5E5E5',
+    borderWidth: 2,
   },
+  switchWrapper: { width: 60, height: 32, marginTop: 3 },
+  track: {
+    position: 'absolute',
+    width: 57,
+    height: 14,
+    borderRadius: 12,
+    backgroundColor: '#ebebeb',
+    top: 7.5,
+  },
+  thumb: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    top: 2.2,
+  },
+  thumbInner: {
+    width: 16,
+    height: 16,
+    borderRadius: 9,
+    backgroundColor: '#0a0',
+  },
+
+  // sheet backgrounds
+  bsBackground: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    ...(Platform.OS === 'android'
+      ? { elevation: 12 }
+      : {
+          shadowColor: '#000',
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -4 },
+        }),
+  },
+
   filterSheetRoot: {
     flex: 1,
     backgroundColor: '#FFF',
@@ -619,39 +671,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  brandContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  brandButton: {
-    width: '25%',
-    backgroundColor: '#e6f5f7',
-    padding: 8,
-    marginRight: '2.5%',
-    marginBottom: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#bcdde9',
-  },
-  brandLogo: { width: 64, height: 64, marginBottom: 4 },
-  brandText: {
-    fontSize: 14,
-    color: '#333',
-    fontFamily: 'Gotham-Rounded-Medium',
-    marginTop: 2,
-  },
-  selectedBrand: {
-    borderColor: '#F59A11',
-    backgroundColor: '#F59A111A',
-  },
-  optionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 6,
-  },
+  optionRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 },
   optionButton: {
     backgroundColor: '#e6f5f7',
     paddingVertical: 8,
@@ -664,6 +684,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  selectedBrand: { borderColor: '#F59A11', backgroundColor: '#F59A111A' },
   selectedBreed: { borderColor: '#F59A11', backgroundColor: '#F59A111A' },
   optionText: {
     fontSize: 14,
@@ -671,40 +692,33 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     width: '100%',
   },
-  fixedButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-    backgroundColor: '#fff',
+
+  // sticky actions
+  stickyActions: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
-  },
-  clearButton: {
-    paddingVertical: 12,
+    bottom: 0,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
+  clearButton: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 },
   applyButton: {
     backgroundColor: '#0888B1',
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     borderRadius: 8,
   },
-  clearText: {
-    fontSize: 16,
-    color: '#0888B1',
-    fontWeight: 'bold',
-  },
-  applyText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
+  clearText: { fontSize: 16, color: '#0888B1', fontWeight: 'bold' },
+  applyText: { fontSize: 16, color: '#fff', fontWeight: 'bold' },
+
+  // sort sheet
   sortHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -736,16 +750,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   sortRowItemActive: { backgroundColor: '#F59A111A', borderColor: '#F59A11' },
-  sortRowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
+  sortRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   sortRowText: { fontSize: 16, color: '#444' },
-  sortRowTextActive: {
-    color: '#000',
-    fontFamily: 'Gotham-Rounded-Bold',
-  },
+  sortRowTextActive: { color: '#000', fontFamily: 'Gotham-Rounded-Bold' },
   sortRadio: {
     width: 16,
     height: 16,
@@ -753,49 +760,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#bbb',
   },
-  sortRadioActive: {
-    borderColor: '#F59A11',
-    backgroundColor: '#F59A11',
-  },
-  switchWrapper: {
-    width: 60,
-    height: 32,
-    marginTop: 3,
-  },
-  track: {
-    position: 'absolute',
-    width: 57,
-    height: 14,
-    borderRadius: 12,
-    backgroundColor: '#ebebeb',
-    top: 7.5,
-  },
-  thumb: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    top: 2.2,
-  },
-  thumbInner: {
-    width: 16,
-    height: 16,
-    borderRadius: 9,
-    backgroundColor: '#0a0',
-  },
-  vegbutton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    height: 36,
-    borderRadius: 6,
-    backgroundColor: '#fff',
-    borderColor: '#E5E5E5',
-    borderWidth: 2,
-  },
+  sortRadioActive: { borderColor: '#F59A11', backgroundColor: '#F59A11' },
 });
 
 export default FilterBar;
