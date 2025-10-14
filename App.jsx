@@ -10,9 +10,23 @@ import NavigationPage from './src/navigation/NavigationPage';
 
 const queryClient = new QueryClient();
 
+const AS_KEYS = {
+  FCM: 'fcmToken',
+  APNS: 'apnToken',
+};
+
+const saveToken = async (key, val) => {
+  try {
+    if (val) await AsyncStorage.setItem(key, String(val));
+  } catch (e) {
+    console.warn('AsyncStorage save error:', key, e);
+  }
+};
+
 const App = () => {
   const [initializing, setInitializing] = useState(false);
 
+  // ---- Permissions (Android runtime + Firebase request) ----
   const requestUserPermission = useCallback(async () => {
     if (Platform.OS === 'android') {
       try {
@@ -23,13 +37,16 @@ const App = () => {
         console.warn('POST_NOTIFICATIONS request failed:', e);
       }
     }
+
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
     return enabled;
   }, []);
 
+  // ---- Foreground FCM handler (no Notifee, use Alert/UI) ----
   const onMessageReceived = useCallback(async message => {
     console.log('📨 FG message:', message);
     const title = message?.notification?.title ?? 'New message';
@@ -39,19 +56,65 @@ const App = () => {
     Alert.alert(title, body);
   }, []);
 
+  const fetchAndPersistAPNSToken = useCallback(async () => {
+    if (Platform.OS !== 'ios') return;
+    try {
+      const apns = await messaging().getAPNSToken();
+      if (apns) {
+        console.log('🍏 APNs Token (hex):', apns);
+        await saveToken(AS_KEYS.APNS, apns);
+      } else {
+        console.log('⚠️ APNs token not yet available.');
+      }
+      // Best-effort re-read shortly after registration to catch late availability
+      setTimeout(async () => {
+        try {
+          const apns2 = await messaging().getAPNSToken();
+          if (apns2) await saveToken(AS_KEYS.APNS, apns2);
+        } catch {}
+      }, 2000);
+    } catch (e) {
+      console.warn('getAPNSToken() error:', e);
+    }
+  }, []);
+
   const registerAndGetTokens = useCallback(async () => {
     console.log('📲 Registering for remote messages…');
     await messaging().registerDeviceForRemoteMessages();
+
+    await fetchAndPersistAPNSToken();
+
+    // FCM token
     const fcm = await messaging().getToken();
     console.log('🔥 FCM Token:', fcm);
-    await AsyncStorage.setItem('fcmToken', fcm);
-  }, []);
+    await saveToken(AS_KEYS.FCM, fcm);
 
+    // Keep in sync on refresh (FCM)
+    messaging().onTokenRefresh(async newToken => {
+      console.log('♻️ FCM token refreshed:', newToken);
+      await saveToken(AS_KEYS.FCM, newToken);
+
+      // Opportunistic APNs re-check on iOS
+      if (Platform.OS === 'ios') {
+        try {
+          const apnsNow = await messaging().getAPNSToken();
+          if (apnsNow) await saveToken(AS_KEYS.APNS, apnsNow);
+        } catch {}
+      }
+    });
+  }, [fetchAndPersistAPNSToken]);
+
+  // ---- Subscribe to app-level notification events ----
   useEffect(() => {
+    // Foreground
     const unsubOnMsg = messaging().onMessage(onMessageReceived);
+
+    // Opened from background
     const unsubOpened = messaging().onNotificationOpenedApp(remoteMessage => {
       console.log('🔁 Opened from BG:', remoteMessage?.data);
     });
+
+    // Opened from quit
     messaging()
       .getInitialNotification()
       .then(remoteMessage => {
@@ -59,12 +122,14 @@ const App = () => {
           console.log('🚀 Opened from quit:', remoteMessage?.data);
         }
       });
+
     return () => {
       unsubOnMsg();
       unsubOpened();
     };
   }, [onMessageReceived]);
 
+  // ---- Init on mount ----
   useEffect(() => {
     (async () => {
       setInitializing(true);

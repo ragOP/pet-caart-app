@@ -29,14 +29,14 @@ import { updateProfile } from '../../apis/updateProfile';
 const AS_KEYS = {
   PHONE: '@user_phone',
   EMAIL: '@user_email',
+  FCM: 'fcmToken',
+  APNS: 'apnToken',
 };
 
 const setItem = async (key, val) => {
   try {
     await AsyncStorage.setItem(key, String(val ?? ''));
-  } catch (e) {
-    // no-op
-  }
+  } catch (e) {}
 };
 const getItem = async key => {
   try {
@@ -60,6 +60,24 @@ const LoginScreen = ({ navigation }) => {
   const [otpSending, setOtpSending] = useState(false);
 
   const currentStep = showEmailInput ? 3 : showOtpInput ? 2 : 1;
+  useEffect(() => {
+    (async () => {
+      try {
+        const apns = await AsyncStorage.getItem(AS_KEYS.APNS);
+        console.log(
+          'APNs (mount, LoginScreen):',
+          apns,
+          'Platform:',
+          Platform.OS,
+        );
+        if (Platform.OS === 'ios' && !apns) {
+          console.warn('APNs not yet available on iOS (LoginScreen mount).');
+        }
+      } catch (e) {
+        console.warn('Error reading APNs from storage:', e);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     let interval = null;
@@ -101,7 +119,6 @@ const LoginScreen = ({ navigation }) => {
       if (response?.success) {
         setResendDisabled(true);
         setTimer(60);
-        Alert.alert('Success', 'OTP resent successfully');
       } else {
         Alert.alert('Failed', response?.message || 'Failed to resend OTP');
       }
@@ -112,16 +129,34 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (phoneNumber.length === 10 && otp.length === 6) {
-      const fcmToken = await AsyncStorage.getItem('fcmToken');
-      const payload = { phoneNumber, otp, fcmToken };
+      const [fcmToken, apnsToken] = await Promise.all([
+        AsyncStorage.getItem(AS_KEYS.FCM),
+        AsyncStorage.getItem(AS_KEYS.APNS),
+      ]);
+      console.log(
+        'APNs from storage (LoginScreen handleLogin):',
+        apnsToken,
+        'Platform:',
+        Platform.OS,
+      );
+      if (Platform.OS === 'ios' && !apnsToken) {
+        console.warn('APNs token is not available yet on iOS (handleLogin).');
+      }
+
+      const payload = {
+        phoneNumber,
+        otp,
+        fcmToken: fcmToken || null,
+        apnToken: Platform.OS === 'ios' ? apnsToken || null : null,
+        devicePlatform: Platform.OS,
+      };
+
       dispatch(loginRequest());
       try {
         const response = await loginUser(payload);
 
         if (response?.user && response?.token) {
-          // New user flow
           if (response?.isExisitinguser === false) {
-            // Persist phone for ProfileDetailScreen hydration
             await setItem(AS_KEYS.PHONE, String(phoneNumber).trim());
             setShowEmailInput(true);
           } else {
@@ -173,10 +208,7 @@ const LoginScreen = ({ navigation }) => {
           dispatch(loginSuccess({ token: null, user }));
         }
 
-        // Option A: Go to ProfileDetail to complete name with a new-user banner
         navigation.navigate('BottomTabs', { isNew: true });
-        // Option B: If not needed, go to BottomTabs instead
-        // navigation.navigate('BottomTabs');
       } else {
         Alert.alert('Failed', response?.message || 'Registration failed');
       }
