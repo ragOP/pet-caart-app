@@ -41,12 +41,13 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
 
   return (
     <View style={styles.accordionRoot}>
-      <LinearGradient
+      {/* <LinearGradient
         colors={['#F59A11', '#8B9259', '#0888B1']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.accordionBorder}
-      >
+      > */}
+      <View style={styles.accordionBorder}>
         <TouchableOpacity onPress={handleToggle} activeOpacity={1}>
           <ImageBackground
             source={require('../../assets/images/profilebg.png')}
@@ -75,7 +76,8 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
             )}
           </ImageBackground>
         </TouchableOpacity>
-      </LinearGradient>
+      </View>
+      {/* </LinearGradient> */}
       {isOpen && <View style={styles.accordionBody}>{children}</View>}
     </View>
   );
@@ -169,7 +171,6 @@ export default function AllCategoriesScreen({ navigation }) {
     }
   };
 
-  // Collection click handler
   const handleCollectionClick = (
     categorySlug,
     collectionSlug,
@@ -187,7 +188,6 @@ export default function AllCategoriesScreen({ navigation }) {
     });
   };
 
-  // Loading state
   const loading =
     isLoadingCategories || isLoadingSubcategories || isLoadingCollections;
 
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   headerWrapper: {
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 54,
   },
   headerRow: {
     flexDirection: 'row',
@@ -319,7 +319,12 @@ const styles = StyleSheet.create({
   backButton: { paddingRight: 15 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   accordionRoot: { marginVertical: 2 },
-  accordionBorder: { padding: 5, borderRadius: 16 },
+  accordionBorder: {
+    padding: 5,
+    borderRadius: 16,
+    borderColor: '#F59A11',
+    borderWidth: 1,
+  },
   accordionHeader: {
     backgroundColor: '#fff',
     flexDirection: 'row',
@@ -354,12 +359,11 @@ const styles = StyleSheet.create({
   },
   foodCardsHorizontal: {
     flexDirection: 'row',
-    paddingHorizontal: 8,
     paddingVertical: 8,
   },
   foodCardContainer: {
     width: 120,
-    marginRight: 12,
+    marginRight: 10,
   },
   foodCardOuter: {
     alignItems: 'center',

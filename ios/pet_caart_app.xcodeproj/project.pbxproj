@@ -11,7 +11,7 @@
 		4010BD5480F94E87A8E29D85 /* Gotham-Rounded-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F93A64A970504A6BBD526751 /* Gotham-Rounded-Bold.ttf */; };
 		423A4930492D4060958AB177 /* Gotham-Book.otf in Resources */ = {isa = PBXBuildFile; fileRef = 098607D39503439DA4CD04CD /* Gotham-Book.otf */; };
 		6328FAF58A7921DE571F54C2 /* Pods_pet_caart_app.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61A73921F695E8A05E829854 /* Pods_pet_caart_app.framework */; };
-		75F5305E2E9E5418006B4919 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75F5305D2E9E5418006B4919 /* GoogleService-Info.plist */; };
+		75D0E25C2E9EF7A80082F538 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75D0E25B2E9EF7A80082F538 /* GoogleService-Info.plist */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		95092CCD1C7240269F48E457 /* Gotham-Rounded-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2757EAACCBA9416195272B6B /* Gotham-Rounded-Light.ttf */; };
@@ -35,7 +35,7 @@
 		5AC7FFCD70DF4AC996ED6B57 /* gotham-rounded-book.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "gotham-rounded-book.otf"; path = "../src/assets/fonts/gotham-rounded-book.otf"; sourceTree = "<group>"; };
 		61A73921F695E8A05E829854 /* Pods_pet_caart_app.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_pet_caart_app.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7581D9072E9D72ED00A7F8DF /* pet_caart_app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = pet_caart_app.entitlements; path = pet_caart_app/pet_caart_app.entitlements; sourceTree = "<group>"; };
-		75F5305D2E9E5418006B4919 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		75D0E25B2E9EF7A80082F538 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = pet_caart_app/AppDelegate.swift; sourceTree = "<group>"; };
 		7BFF28ABC99A6031498998EF /* Pods-pet_caart_app.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-pet_caart_app.release.xcconfig"; path = "Target Support Files/Pods-pet_caart_app/Pods-pet_caart_app.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = pet_caart_app/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -102,7 +102,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				75F5305D2E9E5418006B4919 /* GoogleService-Info.plist */,
+				75D0E25B2E9EF7A80082F538 /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* pet_caart_app */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -202,7 +202,7 @@
 				95092CCD1C7240269F48E457 /* Gotham-Rounded-Light.ttf in Resources */,
 				FFD8E6D3C3D74A9B80C04788 /* Gotham-Rounded-Medium.ttf in Resources */,
 				423A4930492D4060958AB177 /* Gotham-Book.otf in Resources */,
-				75F5305E2E9E5418006B4919 /* GoogleService-Info.plist in Resources */,
+				75D0E25C2E9EF7A80082F538 /* GoogleService-Info.plist in Resources */,
 				B3E91CA50D14424C88664B7B /* gotham-rounded-book.otf in Resources */,
 				9590C741CE154DEDAD407EB2 /* HoltwoodOneSC.ttf in Resources */,
 			);
@@ -330,7 +330,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P664Y97J88;
+				DEVELOPMENT_TEAM = B77D778SQT;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = pet_caart_app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Pet Caart";
@@ -365,7 +365,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = P664Y97J88;
+				DEVELOPMENT_TEAM = B77D778SQT;
 				INFOPLIST_FILE = pet_caart_app/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Pet Caart";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
@@ -422,8 +422,7 @@
 				DEVELOPMENT_TEAM = B77D778SQT;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -512,7 +511,7 @@
 				DEVELOPMENT_TEAM = B77D778SQT;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;

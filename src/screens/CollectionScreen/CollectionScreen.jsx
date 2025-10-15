@@ -86,14 +86,20 @@ const makeStyles = small =>
     container: { flex: 1, backgroundColor: '#FFFFFF' },
     headerWrapper: {
       backgroundColor: '#FFFFFF',
-      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 50,
     },
     headerRow: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: small ? 10 : 15,
-      paddingVertical: small ? 6 : 10,
+      paddingVertical: small ? 6 : 8,
       gap: small ? 6 : 10,
+      ...Platform.select({
+        ios: {
+          paddingVertical: 0,
+          paddingTop: 8,
+        },
+      }),
     },
     backButton: {
       paddingRight: small ? 8 : 15,

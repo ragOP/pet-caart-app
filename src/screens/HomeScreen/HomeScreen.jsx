@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 50,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 60,
   },
   headerRow: {
     flexDirection: 'row',
@@ -173,8 +173,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     ...Platform.select({
       ios: {
-        shadowColor: '#4040400D',
-        shadowOffset: { width: 0, height: 3 },
+        shadowColor: '#404040',
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
       },

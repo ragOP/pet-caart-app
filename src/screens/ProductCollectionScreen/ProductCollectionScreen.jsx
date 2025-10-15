@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   headerWrapper: {
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 54,
   },
   headerRow: {
     flexDirection: 'row',

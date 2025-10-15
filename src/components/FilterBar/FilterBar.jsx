@@ -24,7 +24,12 @@ import {
   BottomSheetModal,
   BottomSheetView,
   BottomSheetBackdrop,
+  BottomSheetFooter,
 } from '@gorhom/bottom-sheet';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { getBrands } from '../../apis/getBrands';
 import { getBreeds } from '../../apis/getBreeds';
 
@@ -50,6 +55,36 @@ const BREED_SIZE_OPTIONS = [
   { label: 'Large', value: 'large' },
   { label: 'Giant', value: 'giant' },
 ];
+
+const FilterFooter = ({ onClear, onApply }) => {
+  const insets = useSafeAreaInsets();
+  return (
+    <View
+      style={[
+        styles.stickyActions,
+        {
+          position: 'relative',
+          paddingBottom: (Platform.OS === 'ios' ? insets.bottom : 16) + 6,
+        },
+      ]}
+    >
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.clearButton}
+        onPress={onClear}
+      >
+        <Text style={styles.clearText}>CLEAR ALL</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.applyButton}
+        onPress={onApply}
+      >
+        <Text style={styles.applyText}>APPLY</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const FilterBar = ({
   selectedBrand = [],
@@ -109,6 +144,7 @@ const FilterBar = ({
 
   const toggleValue = (prev, v) =>
     prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v];
+
   const filterSheetRef = useRef(null);
   const sortSheetRef = useRef(null);
   const filterSnapPoints = useMemo(() => ['60%', '92%'], []);
@@ -295,7 +331,7 @@ const FilterBar = ({
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Filter sheet with sticky bottom actions */}
+      {/* Filter sheet with footerComponent */}
       <BottomSheetModal
         ref={filterSheetRef}
         index={0}
@@ -305,6 +341,14 @@ const FilterBar = ({
         backgroundStyle={styles.bsBackground}
         handleIndicatorStyle={{ backgroundColor: '#ccc' }}
         containerStyle={{ zIndex: 1000 }}
+        footerComponent={props => (
+          <BottomSheetFooter {...props} bottomInset={0}>
+            <FilterFooter
+              onClear={handleClearAll}
+              onApply={handleApplyFilters}
+            />
+          </BottomSheetFooter>
+        )}
       >
         <BottomSheetView style={{ flex: 1 }}>
           <View style={styles.filterSheetRoot}>
@@ -313,12 +357,12 @@ const FilterBar = ({
               <Text style={styles.filterTitle}>FILTERS</Text>
             </View>
 
-            {/* Scroll content padded so sticky bar doesn't overlap */}
+            {/* Scroll content - remove big bottom padding; footer handles space */}
             <ScrollView
               style={styles.filterScrollView}
               contentContainerStyle={{
                 paddingHorizontal: 20,
-                paddingBottom: 120,
+                paddingBottom: 20,
               }}
             >
               <View style={styles.filterSection}>
@@ -474,29 +518,11 @@ const FilterBar = ({
                 </View>
               </View>
             </ScrollView>
-
-            {/* Sticky bottom bar */}
-            <View style={styles.stickyActions}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.clearButton}
-                onPress={handleClearAll}
-              >
-                <Text style={styles.clearText}>CLEAR ALL</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.applyButton}
-                onPress={handleApplyFilters}
-              >
-                <Text style={styles.applyText}>APPLY</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </BottomSheetView>
       </BottomSheetModal>
 
-      {/* Sort sheet */}
+      {/* Sort sheet (unchanged UI) */}
       <BottomSheetModal
         ref={sortSheetRef}
         index={0}
@@ -524,7 +550,18 @@ const FilterBar = ({
             )}
           </View>
 
-          {sortOptions.map(({ label, value, icon: Icon }) => {
+          {[
+            {
+              label: 'Low to High',
+              value: 'lowToHigh',
+              icon: ArrowDownWideNarrow,
+            },
+            {
+              label: 'High to Low',
+              value: 'highToLow',
+              icon: ArrowUpNarrowWide,
+            },
+          ].map(({ label, value, icon: Icon }) => {
             const active = sortOrder === value;
             return (
               <TouchableOpacity
@@ -630,7 +667,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a0',
   },
 
-  // sheet backgrounds
   bsBackground: {
     backgroundColor: '#FFF',
     borderTopLeftRadius: 20,
@@ -693,15 +729,12 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 
-  // sticky actions
+  // footer (now non-absolute)
   stickyActions: {
-    position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#ddd',
@@ -764,3 +797,7 @@ const styles = StyleSheet.create({
 });
 
 export default FilterBar;
+
+export const AppRoot = ({ children }) => (
+  <SafeAreaProvider>{children}</SafeAreaProvider>
+);

@@ -137,10 +137,10 @@ const ProfileScreen = ({ navigation }) => {
       headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: clamp(headerPadH, 10, 24),
+        paddingHorizontal: clamp(headerPadH, 10, 22),
         gap: wp(2),
       },
-      backButton: { paddingRight: wp(3) },
+      backButton: { paddingRight: wp(1) },
 
       guestHeaderBox: {
         backgroundColor: '#FFFFFF',
@@ -150,15 +150,21 @@ const ProfileScreen = ({ navigation }) => {
         borderRadius: 12,
         paddingVertical: hp(1.6),
         paddingHorizontal: wp(3.5),
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        ...Platform.select({
+          ios: {
+            shadowColor: '#404040',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.2,
+            shadowRadius: 6,
+          },
+          android: {
+            elevation: 3,
+          },
+        }),
       },
       guestRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: hp(1),
       },
 
       avatarWrapper: {

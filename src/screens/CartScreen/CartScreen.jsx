@@ -808,12 +808,10 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       backgroundColor: '#FFFFFF',
       paddingTop:
         Platform.OS === 'android'
-          ? StatusBar.currentHeight
-          : vsmall
-          ? 18
-          : small
-          ? 22
-          : 30,
+          ? StatusBar.currentHeight || (vsmall ? 18 : small ? 22 : 40)
+          : Platform.OS === 'ios'
+          ? StatusBar.currentHeight || 50 // Use a fallback value of 30 if StatusBar.currentHeight is undefined
+          : 0, // Default for any other platform, in case it's needed
     },
     headerRow: {
       flexDirection: 'row',

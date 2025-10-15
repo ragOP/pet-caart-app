@@ -41,7 +41,7 @@ const getCardHeight = (w, h) => {
   const { xs, sm, md, lg } = getBP(w, h);
   if (xs) return Math.round(h * 0.58);
   if (sm) return Math.round(h * 0.5);
-  if (md) return Math.round(h * 0.4);
+  if (md) return Math.round(h * 0.44);
   if (lg) return Math.round(h * 0.41);
   return Math.round(h * 0.42);
 };
@@ -418,12 +418,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     ...Platform.select({
       ios: {
-        shadowColor: '#fff',
-        shadowOffset: { width: 2, height: 3 },
+        shadowColor: '#404040',
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.2,
         shadowRadius: 6,
       },
-      android: { elevation: 1.5 },
+      android: {
+        elevation: 3,
+      },
     }),
   },
   cardInner: { flex: 1, justifyContent: 'flex-start' },
@@ -446,6 +448,10 @@ const styles = StyleSheet.create({
     top: 0,
     left: 1,
     zIndex: 1,
+    width: Platform.select({
+      ios: 95,
+      android: 100,
+    }),
   },
   bestsellerText: { color: '#fff', fontFamily: 'Gotham-Rounded-Bold' },
   swiper: { width: '100%' },
