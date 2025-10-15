@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Image,
   ScrollView,
   Platform,
+  Animated,
 } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
@@ -36,6 +37,32 @@ export default function BreedDetailScreen({ route, navigation }) {
     weight = {},
     height = {},
   } = breed;
+
+  // Read More + Image animation
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [numberOfLines, setNumberOfLines] = useState(2);
+  const imageY = useRef(new Animated.Value(0)).current;
+
+  const toggleExpand = () => {
+    const newState = !isExpanded;
+    setIsExpanded(newState);
+    Animated.timing(imageY, {
+      toValue: newState ? -40 : 0, // image move up by 40 on expand
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleTextReady = ({ nativeEvent: { lines } }) => {
+    if (!isReady) {
+      const canExpand = lines.length > 2;
+      setNumberOfLines(canExpand ? 2 : lines.length);
+      setIsReady(true);
+    }
+  };
+
+  const displayText = short || 'A loyal and intelligent companion.';
 
   return (
     <View style={styles.container}>
@@ -77,21 +104,45 @@ export default function BreedDetailScreen({ route, navigation }) {
         <View style={styles.row}>
           <View style={styles.heroCard}>
             <View style={styles.heroInner}>
-              <Image
-                source={
-                  typeof breed.hero === 'number'
-                    ? breed.hero
-                    : { uri: breed.hero }
-                }
-                style={styles.heroImage}
-              />
+              <Animated.View style={[styles.heroImageContainer]}>
+                <Image
+                  source={
+                    typeof breed.hero === 'number'
+                      ? breed.hero
+                      : { uri: breed.hero }
+                  }
+                  style={styles.heroImage}
+                />
+              </Animated.View>
+
+              {/* Title line: Name bold + description label (kept minimal to keep layout) */}
               <Text style={styles.heroTitle}>
                 <Text style={styles.heroTitleEm}>{name}</Text>
-                <Text style={styles.heroTitleRest}>
-                  {' '}
-                  {short || 'A loyal and intelligent companion.'}
-                </Text>
+                <Text style={styles.heroTitleRest}> </Text>
               </Text>
+
+              {/* Collapsible description with Read More */}
+              <Text
+                onTextLayout={handleTextReady}
+                numberOfLines={
+                  isReady ? (isExpanded ? undefined : numberOfLines) : 2
+                }
+                style={styles.heroDescription}
+                ellipsizeMode="tail"
+              >
+                {displayText}
+              </Text>
+
+              {isReady && numberOfLines === 2 && (
+                <TouchableOpacity
+                  onPress={toggleExpand}
+                  style={styles.readMoreButton}
+                >
+                  <Text style={styles.readMoreText}>
+                    {isExpanded ? 'Read Less' : 'Read More'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -122,6 +173,7 @@ export default function BreedDetailScreen({ route, navigation }) {
           </View>
         </View>
 
+        {/* Specs */}
         <View style={styles.specsOuter}>
           <View style={styles.specsCard}>
             {/* Color row */}
@@ -584,7 +636,7 @@ const makeStyles = tier => {
 
     headerWrapper: {
       backgroundColor: '#FFFFFF',
-      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+      paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 50,
     },
     headerRow: {
       flexDirection: 'row',
@@ -663,11 +715,13 @@ const makeStyles = tier => {
       alignItems: 'center',
       backgroundColor: '#bfbfbf',
     },
+    heroImageContainer: {
+      width: '100%',
+    },
     heroImage: {
       width: '100%',
       height: isSmall ? 130 : isCompact ? 160 : 190,
-      borderRadius: sz(10),
-      backgroundColor: '#bfbfbf',
+      bottom: 5,
     },
     heroTitle: {
       marginTop: sz(6),
@@ -680,6 +734,25 @@ const makeStyles = tier => {
     },
     heroTitleEm: { color: '#0E79B2', fontFamily: 'Gotham-Rounded-Bold' },
     heroTitleRest: { color: '#2B2B2B' },
+    heroDescription: {
+      fontSize: fs(13),
+      color: '#2B2B2B',
+      lineHeight: Math.round(fs(13) * 1.4),
+      textAlign: 'left',
+      width: '100%',
+      fontFamily: 'Gotham-Rounded-Medium',
+      marginTop: sz(4),
+    },
+    readMoreButton: {
+      marginTop: sz(8),
+      paddingVertical: sz(4),
+      alignSelf: 'flex-start',
+    },
+    readMoreText: {
+      color: '#0E79B2',
+      fontFamily: 'Gotham-Rounded-Bold',
+      fontSize: fs(12),
+    },
 
     factsCard: {
       flex: 1,

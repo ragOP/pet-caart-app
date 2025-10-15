@@ -41,7 +41,9 @@ import Lottie from 'lottie-react-native';
 import { go } from '../../constants/navigationRef';
 import OffersBottomSheet from '../../components/OffersBottomSheet/OffersBottomSheet';
 import RenderHtml from 'react-native-render-html';
-import ImageView from 'react-native-image-viewing'; // pinch-zoom modal [web:27][web:12]
+import ImageView from 'react-native-image-viewing';
+import HandPicked from '../../components/HandPicked/HandPicked';
+import RecommendedForYou from '../../components/RecommendedForYou/RecommendedForYou';
 
 const { width: screenWidthFull } = Dimensions.get('window');
 const screenWidth = screenWidthFull * 0.94;
@@ -150,6 +152,7 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
 const SingleProductScreen = ({ navigation }) => {
   const route = useRoute();
   const { productId } = route.params;
+
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
   const isLoggedIn = useSelector(state => !!state.auth.user);
@@ -159,7 +162,9 @@ const SingleProductScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
-  const [bestSellerData, setBestSellerData] = useState([]);
+
+  // bestSellerData removed; we will render HandPicked instead
+
   const [cartLoading, setCartLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -216,39 +221,6 @@ const SingleProductScreen = ({ navigation }) => {
       setSelectedVariant({ ...product, isMain: true, _id: product._id });
     }
   }, [product, selectedVariant]);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await getProducts();
-        const allProducts = response?.data?.data;
-        if (Array.isArray(allProducts)) {
-          const bestSellers = allProducts
-            .filter(item => item.isBestSeller && Number(item.salePrice) < 599)
-            .map(item => {
-              const price = Number(item.price) || 0;
-              const sale = Number(item.salePrice) || 0;
-              const discountPercent =
-                sale && price > 0
-                  ? Math.round(((price - sale) / price) * 100)
-                  : 0;
-              return {
-                _id: item._id,
-                title: item.title,
-                rating: item.ratings?.average || 0,
-                price: item.price,
-                discount: discountPercent > 0 ? discountPercent + '%' : '0%',
-                images: item.images || item.variants?.[0]?.images || [],
-                isVeg: item.isVeg || false,
-                brandId: item.brandId,
-              };
-            });
-          setBestSellerData(bestSellers);
-        }
-      } catch (e) {}
-    };
-    fetchProducts();
-  }, []);
 
   const currentVariant = selectedVariant?._id ? selectedVariant : product;
 
@@ -435,7 +407,7 @@ const SingleProductScreen = ({ navigation }) => {
                 renderItem={({ item, index }) => (
                   <TouchableOpacity
                     activeOpacity={0.9}
-                    onPress={() => openViewerAt(index)} // open zoom viewer
+                    onPress={() => openViewerAt(index)}
                     style={[
                       styles.shadowBox,
                       { marginHorizontal: containerMarginHorizontal },
@@ -641,20 +613,14 @@ const SingleProductScreen = ({ navigation }) => {
               )}
             </View>
           </View>
-
+          <View style={{ paddingHorizontal: 10 }}>
+            <RecommendedForYou productId={productId} type="similar" />
+          </View>
           <Banner />
 
-          {bestSellerData.length === 0 ? (
-            <ProductSliderShimmer />
-          ) : (
-            <ProductSlider
-              headingIcon={require('../../assets/icons/paw2.png')}
-              headingTextOrange="Handpicked"
-              headingTextBlue="For You"
-              products={bestSellerData}
-              navigation={navigation}
-            />
-          )}
+          <View style={{ paddingHorizontal: 10 }}>
+            <HandPicked productId={productId} type="related" />
+          </View>
         </ScrollView>
 
         {product && (
