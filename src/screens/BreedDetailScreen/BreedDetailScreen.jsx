@@ -616,13 +616,11 @@ export default function BreedDetailScreen({ route, navigation }) {
     </View>
   );
 }
-
 const makeStyles = tier => {
   const isSmall = tier === 'small';
   const isCompact = tier === 'compact';
   const baseScale = isSmall ? 0.78 : isCompact ? 0.9 : 1;
   const fontScale = isSmall ? 0.84 : isCompact ? 0.92 : 1;
-
   const fs = v => Math.max(10, Math.round(v * fontScale));
   const sz = v => Math.max(2, Math.round(v * baseScale));
 
@@ -721,10 +719,10 @@ const makeStyles = tier => {
     heroImage: {
       width: '100%',
       height: isSmall ? 130 : isCompact ? 160 : 190,
-      bottom: 5,
+      bottom: 0,
     },
     heroTitle: {
-      marginTop: sz(6),
+      marginTop: 0,
       fontSize: fs(13),
       color: '#2B2B2B',
       lineHeight: Math.round(fs(13) * 1.4),
@@ -744,7 +742,6 @@ const makeStyles = tier => {
       marginTop: sz(4),
     },
     readMoreButton: {
-      marginTop: sz(8),
       paddingVertical: sz(4),
       alignSelf: 'flex-start',
     },

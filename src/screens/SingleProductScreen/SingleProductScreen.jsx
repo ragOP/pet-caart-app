@@ -614,12 +614,20 @@ const SingleProductScreen = ({ navigation }) => {
             </View>
           </View>
           <View style={{ paddingHorizontal: 10 }}>
-            <RecommendedForYou productId={productId} type="similar" />
+            <RecommendedForYou
+              headingIcon={require('../../assets/icons/paw2.png')}
+              productId={productId}
+              type="similar"
+            />
           </View>
           <Banner />
 
           <View style={{ paddingHorizontal: 10 }}>
-            <HandPicked productId={productId} type="related" />
+            <HandPicked
+              headingIcon={require('../../assets/icons/paw2.png')}
+              productId={productId}
+              type="related"
+            />
           </View>
         </ScrollView>
 

@@ -173,18 +173,16 @@ const styles = StyleSheet.create({
   headingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   iconImage: {
     width: 40,
     height: 40,
     marginRight: 4,
-    marginBottom: 10,
+    paddingBottom: 5,
   },
   headingText: {
     fontSize: 20,
     fontFamily: 'Gotham-Rounded-Bold',
-    paddingBottom: 10,
   },
   orange: {
     color: '#f39c12',

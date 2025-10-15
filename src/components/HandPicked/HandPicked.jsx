@@ -51,7 +51,6 @@ const mapProduct = item => {
     variantId: activeVariant?._id || activeVariant?.id || null,
   };
 };
-
 const HandPicked = ({ productId, type = 'related', headingIcon }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -176,18 +175,16 @@ const styles = StyleSheet.create({
   headingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   iconImage: {
     width: 40,
     height: 40,
     marginRight: 4,
-    marginBottom: 10,
+    paddingBottom: 5,
   },
   headingText: {
     fontSize: 20,
     fontFamily: 'Gotham-Rounded-Bold',
-    paddingBottom: 10,
   },
   orange: {
     color: '#f39c12',
@@ -197,9 +194,7 @@ const styles = StyleSheet.create({
     color: '#3498db',
     fontFamily: 'Gotham-Rounded-Bold',
   },
-  scrollContent: {
-    paddingRight: 12,
-  },
+  scrollContent: {},
   cardWrapper: {
     marginRight: 12,
   },
