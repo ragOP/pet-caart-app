@@ -40,7 +40,7 @@ export default function BreedDetailScreen({ route, navigation }) {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [numberOfLines, setNumberOfLines] = useState(3);
+  const [numberOfLines, setNumberOfLines] = useState(2);
   const imageY = useRef(new Animated.Value(0)).current;
 
   const toggleExpand = () => {
@@ -55,8 +55,8 @@ export default function BreedDetailScreen({ route, navigation }) {
 
   const handleTextReady = ({ nativeEvent: { lines } }) => {
     if (!isReady) {
-      const canExpand = lines.length > 3;
-      setNumberOfLines(canExpand ? 3 : lines.length);
+      const canExpand = lines.length > 2;
+      setNumberOfLines(canExpand ? 2 : lines.length);
       setIsReady(true);
     }
   };
@@ -121,7 +121,7 @@ export default function BreedDetailScreen({ route, navigation }) {
               <Text
                 onTextLayout={handleTextReady}
                 numberOfLines={
-                  isReady ? (isExpanded ? undefined : numberOfLines) : 3
+                  isReady ? (isExpanded ? undefined : numberOfLines) : 2
                 }
                 style={styles.heroDescription}
                 ellipsizeMode="tail"
@@ -129,7 +129,7 @@ export default function BreedDetailScreen({ route, navigation }) {
                 {displayText}
               </Text>
 
-              {isReady && numberOfLines === 3 && (
+              {isReady && numberOfLines === 2 && (
                 <TouchableOpacity
                   onPress={toggleExpand}
                   style={styles.readMoreButton}
@@ -725,11 +725,13 @@ const makeStyles = tier => {
       textAlign: 'left',
       width: '100%',
       fontFamily: 'Gotham-Rounded-Medium',
-      marginTop: sz(4),
+      bottom: 20,
     },
     readMoreButton: {
       paddingVertical: sz(4),
       alignSelf: 'flex-start',
+      marginTop: sz(4),
+      mbottom: 20,
     },
     readMoreText: {
       color: '#0E79B2',
