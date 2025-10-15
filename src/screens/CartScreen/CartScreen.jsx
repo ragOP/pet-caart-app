@@ -400,7 +400,10 @@ const CartScreen = () => {
       await playSuccessAndNavigate();
     } catch (err) {
       console.log('Payment error', err);
-      Alert.alert('Payment failed', err?.message || 'Something went wrong');
+      Alert.alert(
+        'Please Select Address',
+        err?.message || 'Something went wrong',
+      );
     } finally {
       setIsPaying(false);
     }
@@ -852,10 +855,9 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     },
 
     banner: {
-      paddingVertical: vsmall ? 6 : small ? 8 : 10,
+      paddingVertical: Platform.OS === 'ios' ? 0 : vsmall ? 6 : small ? 8 : 10,
       marginBottom: vsmall ? 8 : small ? 12 : 16,
-      height:
-        Platform.OS === 'ios' ? (vsmall ? 44 : small ? 52 : 60) : undefined,
+      height: Platform.OS === 'ios' ? 40 : vsmall ? 44 : small ? 52 : 60,
       justifyContent: 'center',
     },
     bannerText: {

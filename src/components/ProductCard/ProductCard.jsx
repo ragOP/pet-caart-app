@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     justifyContent: 'center',
     position: 'absolute',
-    top: 0,
+    top: 5,
     left: 1,
     zIndex: 1,
     width: Platform.select({

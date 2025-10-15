@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   Platform,
   ActivityIndicator,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { ArrowLeft } from 'lucide-react-native';
@@ -84,8 +85,8 @@ const AddAddressScreen = () => {
         zip: postalCode,
         country,
         type: addressType.toLowerCase(),
-        isDefault: isDefaultAddress, // fixed key
-        state_code: state, // if API expects this
+        isDefault: isDefaultAddress,
+        state_code: state,
       };
 
       const res = await createAddress({ data });
@@ -103,7 +104,6 @@ const AddAddressScreen = () => {
         type: addressType.toLowerCase(),
       };
 
-      // Navigate back with optimistic address for instant show
       navigation.navigate('AddressInfoScreen', {
         newlyAddedAddress: optimisticAddress,
       });
@@ -137,189 +137,197 @@ const AddAddressScreen = () => {
   ];
 
   return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#FFFFFF"
-        translucent={false}
-      />
-      <View style={styles.headerWrapper}>
-        <SafeAreaView>
-          <View style={styles.headerRow}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backButton}
-            >
-              <ArrowLeft size={30} color="#000" />
-            </TouchableOpacity>
-            <Text style={styles.header}>
-              {addressData ? 'Edit Address' : 'Add Address'}
-            </Text>
-          </View>
-        </SafeAreaView>
-      </View>
-
-      <Text style={styles.subHeader}>
-        {addressData ? 'Edit Your Address' : 'New Address'}
-      </Text>
-
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.label}>First Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your first name"
-          value={firstName}
-          onChangeText={setFirstName}
-          placeholderTextColor="#6A6868"
+    <>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor="#FFFFFF"
+          translucent={false}
         />
+        <View style={styles.headerWrapper}>
+          <SafeAreaView>
+            <View style={styles.headerRow}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
+              >
+                <ArrowLeft size={30} color="#000" />
+              </TouchableOpacity>
+              <Text style={styles.header}>
+                {addressData ? 'Edit Address' : 'Add Address'}
+              </Text>
+            </View>
+          </SafeAreaView>
+        </View>
 
-        <Text style={styles.label}>Last Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your last name"
-          value={lastName}
-          onChangeText={setLastName}
-          placeholderTextColor="#6A6868"
-        />
+        <Text style={styles.subHeader}>
+          {addressData ? 'Edit Your Address' : 'New Address'}
+        </Text>
 
-        <Text style={styles.label}>Phone Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter mobile number"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          placeholderTextColor="#6A6868"
-        />
+        <ScrollView contentContainerStyle={styles.content}>
+          <Text style={styles.label}>First Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your first name"
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholderTextColor="#6A6868"
+          />
 
-        <Text style={styles.label}>Address</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your address"
-          value={address}
-          onChangeText={setAddress}
-          placeholderTextColor="#6A6868"
-        />
+          <Text style={styles.label}>Last Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your last name"
+            value={lastName}
+            onChangeText={setLastName}
+            placeholderTextColor="#6A6868"
+          />
 
-        <Text style={styles.label}>Postal/ZIP Code</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your Postal/ZIP Code"
-          value={postalCode}
-          onChangeText={setPostalCode}
-          keyboardType="numeric"
-          placeholderTextColor="#6A6868"
-        />
+          <Text style={styles.label}>Phone Number</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter mobile number"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            placeholderTextColor="#6A6868"
+          />
 
-        <Text style={styles.label}>City</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your city"
-          value={city}
-          onChangeText={setCity}
-          placeholderTextColor="#6A6868"
-        />
+          <Text style={styles.label}>Address</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your address"
+            value={address}
+            onChangeText={setAddress}
+            placeholderTextColor="#6A6868"
+          />
 
-        <Text style={styles.label}>State/Province</Text>
-        {country === 'India' ? (
+          <Text style={styles.label}>Postal/ZIP Code</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your Postal/ZIP Code"
+            value={postalCode}
+            onChangeText={setPostalCode}
+            keyboardType="numeric"
+            placeholderTextColor="#6A6868"
+          />
+
+          <Text style={styles.label}>City</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your city"
+            value={city}
+            onChangeText={setCity}
+            placeholderTextColor="#6A6868"
+          />
+
+          <Text style={styles.label}>State/Province</Text>
+          {country === 'India' ? (
+            <Dropdown
+              style={[
+                styles.dropdown,
+                isStateDropdownFocus && { borderColor: '#004E6A' },
+              ]}
+              containerStyle={styles.dropdownContainer}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              data={formattedStateList}
+              labelField="label"
+              valueField="value"
+              onChange={item => setState(item.value)}
+              value={state}
+              onFocus={() => setIsStateDropdownFocus(true)}
+              onBlur={() => setIsStateDropdownFocus(false)}
+              placeholder="Select your state"
+              dropdownPosition="bottom"
+              renderItem={item => (
+                <View style={styles.dropdownListItem}>
+                  <Text style={styles.dropdownListItemText}>{item.label}</Text>
+                </View>
+              )}
+              search={true}
+            />
+          ) : (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your state"
+              value={state}
+              onChangeText={setState}
+              placeholderTextColor="#6A6868"
+            />
+          )}
+
+          <Text style={styles.label}>Address Type</Text>
+          <Dropdown
+            style={[styles.dropdown]}
+            itemTextStyle={{
+              fontSize: 16,
+              fontFamily: 'Gotham-Rounded-Medium',
+            }}
+            containerStyle={styles.dropdownContainer}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            data={addressTypeOptions}
+            labelField="label"
+            valueField="value"
+            onChange={item => setAddressType(item.value)}
+            value={addressType}
+            placeholder="Select address type"
+            renderItem={item => (
+              <View style={styles.dropdownListItem}>
+                <Text style={{ ...styles.dropdownListItemText, fontSize: 16 }}>
+                  {item.label}
+                </Text>
+              </View>
+            )}
+            search={false}
+          />
+
+          <Text style={styles.label}>Country/Region</Text>
           <Dropdown
             style={[
               styles.dropdown,
-              isStateDropdownFocus && { borderColor: '#004E6A' },
+              isCountryDropdownFocus && { borderColor: '#004E6A' },
             ]}
             containerStyle={styles.dropdownContainer}
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
-            data={formattedStateList}
+            data={countryList}
             labelField="label"
             valueField="value"
-            onChange={item => setState(item.value)}
-            value={state}
-            onFocus={() => setIsStateDropdownFocus(true)}
-            onBlur={() => setIsStateDropdownFocus(false)}
-            placeholder="Select your state"
+            onChange={item => {
+              setCountry(item.value);
+              if (item.value !== 'India') setState('');
+            }}
+            value={country}
+            onFocus={() => setIsCountryDropdownFocus(true)}
+            onBlur={() => setIsCountryDropdownFocus(false)}
+            placeholder="Select your country"
             dropdownPosition="bottom"
             renderItem={item => (
               <View style={styles.dropdownListItem}>
                 <Text style={styles.dropdownListItemText}>{item.label}</Text>
               </View>
             )}
-            search={true}
+            search={false}
           />
-        ) : (
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your state"
-            value={state}
-            onChangeText={setState}
-            placeholderTextColor="#6A6868"
-          />
-        )}
 
-        <Text style={styles.label}>Address Type</Text>
-        <Dropdown
-          style={[styles.dropdown]}
-          itemTextStyle={{ fontSize: 16, fontFamily: 'Gotham-Rounded-Medium' }}
-          containerStyle={styles.dropdownContainer}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          data={addressTypeOptions}
-          labelField="label"
-          valueField="value"
-          onChange={item => setAddressType(item.value)}
-          value={addressType}
-          placeholder="Select address type"
-          renderItem={item => (
-            <View style={styles.dropdownListItem}>
-              <Text style={{ ...styles.dropdownListItemText, fontSize: 16 }}>
-                {item.label}
-              </Text>
-            </View>
-          )}
-          search={false}
-        />
-
-        <Text style={styles.label}>Country/Region</Text>
-        <Dropdown
-          style={[
-            styles.dropdown,
-            isCountryDropdownFocus && { borderColor: '#004E6A' },
-          ]}
-          containerStyle={styles.dropdownContainer}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          data={countryList}
-          labelField="label"
-          valueField="value"
-          onChange={item => {
-            setCountry(item.value);
-            if (item.value !== 'India') setState('');
-          }}
-          value={country}
-          onFocus={() => setIsCountryDropdownFocus(true)}
-          onBlur={() => setIsCountryDropdownFocus(false)}
-          placeholder="Select your country"
-          dropdownPosition="bottom"
-          renderItem={item => (
-            <View style={styles.dropdownListItem}>
-              <Text style={styles.dropdownListItemText}>{item.label}</Text>
-            </View>
-          )}
-          search={false}
-        />
-
-        <View style={styles.checkboxContainer}>
-          <TouchableOpacity
-            style={styles.checkbox}
-            activeOpacity={1}
-            onPress={() => setIsDefaultAddress(!isDefaultAddress)}
-          >
-            {isDefaultAddress && <View style={styles.checkboxTick} />}
-          </TouchableOpacity>
-          <Text style={styles.checkboxLabel}>Set as default address</Text>
-        </View>
-      </ScrollView>
-
+          <View style={styles.checkboxContainer}>
+            <TouchableOpacity
+              style={styles.checkbox}
+              activeOpacity={1}
+              onPress={() => setIsDefaultAddress(!isDefaultAddress)}
+            >
+              {isDefaultAddress && <View style={styles.checkboxTick} />}
+            </TouchableOpacity>
+            <Text style={styles.checkboxLabel}>Set as default address</Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <TouchableOpacity
         style={styles.saveButton}
         onPress={handleSave}
@@ -332,7 +340,7 @@ const AddAddressScreen = () => {
           <Text style={styles.saveText}>SAVE ADDRESS</Text>
         )}
       </TouchableOpacity>
-    </View>
+    </>
   );
 };
 

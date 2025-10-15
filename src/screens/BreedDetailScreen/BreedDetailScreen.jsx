@@ -38,17 +38,16 @@ export default function BreedDetailScreen({ route, navigation }) {
     height = {},
   } = breed;
 
-  // Read More + Image animation
   const [isExpanded, setIsExpanded] = useState(false);
   const [isReady, setIsReady] = useState(false);
-  const [numberOfLines, setNumberOfLines] = useState(2);
+  const [numberOfLines, setNumberOfLines] = useState(3);
   const imageY = useRef(new Animated.Value(0)).current;
 
   const toggleExpand = () => {
     const newState = !isExpanded;
     setIsExpanded(newState);
     Animated.timing(imageY, {
-      toValue: newState ? -40 : 0, // image move up by 40 on expand
+      toValue: newState ? -40 : 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
@@ -56,8 +55,8 @@ export default function BreedDetailScreen({ route, navigation }) {
 
   const handleTextReady = ({ nativeEvent: { lines } }) => {
     if (!isReady) {
-      const canExpand = lines.length > 2;
-      setNumberOfLines(canExpand ? 2 : lines.length);
+      const canExpand = lines.length > 3;
+      setNumberOfLines(canExpand ? 3 : lines.length);
       setIsReady(true);
     }
   };
@@ -83,7 +82,6 @@ export default function BreedDetailScreen({ route, navigation }) {
       <ScrollView
         contentContainerStyle={{ paddingBottom: styles.pagePaddingBottom }}
       >
-        {/* Top chips row */}
         <View style={styles.topChipsRow}>
           {['ABOUT', 'DIET', 'TRAINING', 'GROOMING'].map((t, i) => (
             <View key={i} style={styles.topChip}>
@@ -115,17 +113,15 @@ export default function BreedDetailScreen({ route, navigation }) {
                 />
               </Animated.View>
 
-              {/* Title line: Name bold + description label (kept minimal to keep layout) */}
-              <Text style={styles.heroTitle}>
-                <Text style={styles.heroTitleEm}>{name}</Text>
-                <Text style={styles.heroTitleRest}> </Text>
-              </Text>
+              {/* <Text style={styles.heroTitle}> */}
+              {/* <Text style={styles.heroTitleEm}>{name}</Text> */}
+              {/* <Text style={styles.heroTitleRest}> </Text>
+              </Text> */}
 
-              {/* Collapsible description with Read More */}
               <Text
                 onTextLayout={handleTextReady}
                 numberOfLines={
-                  isReady ? (isExpanded ? undefined : numberOfLines) : 2
+                  isReady ? (isExpanded ? undefined : numberOfLines) : 3
                 }
                 style={styles.heroDescription}
                 ellipsizeMode="tail"
@@ -133,7 +129,7 @@ export default function BreedDetailScreen({ route, navigation }) {
                 {displayText}
               </Text>
 
-              {isReady && numberOfLines === 2 && (
+              {isReady && numberOfLines === 3 && (
                 <TouchableOpacity
                   onPress={toggleExpand}
                   style={styles.readMoreButton}
@@ -718,20 +714,10 @@ const makeStyles = tier => {
     },
     heroImage: {
       width: '100%',
-      height: isSmall ? 130 : isCompact ? 160 : 190,
-      bottom: 0,
+      height: isSmall ? 130 : isCompact ? 160 : 170,
+      bottom: 20,
     },
-    heroTitle: {
-      marginTop: 0,
-      fontSize: fs(13),
-      color: '#2B2B2B',
-      lineHeight: Math.round(fs(13) * 1.4),
-      textAlign: 'left',
-      width: '100%',
-      fontFamily: 'Gotham-Rounded-Medium',
-    },
-    heroTitleEm: { color: '#0E79B2', fontFamily: 'Gotham-Rounded-Bold' },
-    heroTitleRest: { color: '#2B2B2B' },
+
     heroDescription: {
       fontSize: fs(13),
       color: '#2B2B2B',
@@ -837,12 +823,12 @@ const makeStyles = tier => {
       paddingVertical: sz(6),
       paddingHorizontal: sz(10),
       borderRadius: sz(8),
-      maxWidth: Math.min(140, Math.round(SCREEN_WIDTH / 2) - sz(22)),
+      maxWidth: Math.min(100, Math.round(SCREEN_WIDTH / 2) - sz(22)),
     },
-    colorPillDarkBorder: {
-      borderColor: '#222',
-      borderWidth: StyleSheet.hairlineWidth,
-    },
+    // colorPillDarkBorder: {
+    //   borderColor: '#222',
+    //   borderWidth: StyleSheet.hairlineWidth,
+    // },
     colorText: {
       color: '#222',
       fontFamily: 'Gotham-Rounded-Bold',
