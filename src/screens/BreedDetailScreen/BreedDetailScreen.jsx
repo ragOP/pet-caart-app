@@ -14,10 +14,14 @@ import {
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import LinearGradient from 'react-native-linear-gradient';
+import Svg, {
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+  Rect,
+} from 'react-native-svg';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-// Size tier helper: small (≤320dp ~4.55"), compact (321–360dp ~5.8"), normal (>360dp)
 const getSizeTier = () => {
   if (SCREEN_WIDTH <= 320) return 'small';
   if (SCREEN_WIDTH <= 360) return 'compact';
@@ -42,17 +46,11 @@ export default function BreedDetailScreen({ route, navigation }) {
   const [isReady, setIsReady] = useState(false);
   const [numberOfLines, setNumberOfLines] = useState(2);
 
-  // animated Y for the hero image
   const imageY = useRef(new Animated.Value(0)).current;
 
   const toggleExpand = () => {
     const newState = !isExpanded;
     setIsExpanded(newState);
-    Animated.timing(imageY, {
-      toValue: newState ? -40 : 0, // lift the image slightly when expanded
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
   };
 
   const handleTextReady = ({ nativeEvent: { lines } }) => {
@@ -62,9 +60,55 @@ export default function BreedDetailScreen({ route, navigation }) {
       setIsReady(true);
     }
   };
+  const COLOR_MAP = (label, index) => {
+    const isBlackOnly = /black/i.test(label) && !/tan/i.test(label);
+    const isWhite = /white/i.test(label);
+    const isBlackTan = /black/i.test(label) && /tan/i.test(label);
 
+    if (isBlackTan || index === 0) {
+      return { base: '#d29f5d', shine: 'rgba(255, 230, 170, 0.28)' }; // gold shine
+    }
+    if (isBlackOnly) {
+      return { base: '#242726', shine: 'rgba(200, 200, 200, 0.22)' }; // silver shine
+    }
+    if (isWhite) {
+      return { base: '#e5e5e5', shine: 'rgba(255, 255, 255, 0.45)' }; // soft highlight
+    }
+    return { base: '#e5e5e5', shine: 'rgba(255, 255, 255, 0.35)' };
+  };
   const displayText = short || 'A loyal and intelligent companion.';
-
+  function TempCard({ colors, start = [0, 0], end = [1, 1], style, children }) {
+    return (
+      <Svg height={style.height} width="100%" style={style}>
+        <Defs>
+          <SvgLinearGradient
+            id="grad"
+            x1={`${start[0] * 100}%`}
+            y1={`${start[1] * 100}%`}
+            x2={`${end[0] * 100}%`}
+            y2={`${end[1] * 100}%`}
+          >
+            {colors.map((c, i) => (
+              <Stop
+                key={i}
+                offset={`${(i / (colors.length - 1)) * 100}%`}
+                stopColor={c}
+                stopOpacity="1"
+              />
+            ))}
+          </SvgLinearGradient>
+        </Defs>
+        <Rect
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
+          rx="16"
+          fill="url(#grad)"
+        />
+      </Svg>
+    );
+  }
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -91,8 +135,6 @@ export default function BreedDetailScreen({ route, navigation }) {
             </View>
           ))}
         </View>
-
-        {/* Heading */}
         <View style={styles.headingRow}>
           <Image
             source={require('../../assets/icons/paw2.png')}
@@ -187,24 +229,29 @@ export default function BreedDetailScreen({ route, navigation }) {
                 ).map((c, i) => {
                   const isBlackOnly = /black/i.test(c) && !/tan/i.test(c);
                   const useLightText = i === 0 || isBlackOnly;
-                  const grad =
-                    i === 0
-                      ? ['#C59155', '#E2A968', '#E0A15E', '#E2A968', '#C59155']
-                      : isBlackOnly
-                      ? ['#232323', '#343434', '#303030', '#343434', '#232323']
-                      : ['#FFFFFF', '#E5E4E4', '#E5E5E5', '#EEEEEE', '#FFFFFF'];
+                  const palette = COLOR_MAP(c, i);
 
                   return (
-                    <LinearGradient
+                    <View
                       key={`${c}-${i}`}
-                      colors={grad}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
                       style={[
-                        styles.colorPillGrad,
+                        styles.colorPillBase,
+                        { backgroundColor: palette.base },
                         useLightText && styles.colorPillDarkBorder,
                       ]}
                     >
+                      {/* Top soft highlight line */}
+                      <View style={styles.topHighlight} />
+
+                      {/* Diagonal shine overlay for metallic/gloss feel */}
+                      <View
+                        pointerEvents="none"
+                        style={[
+                          styles.diagonalShine,
+                          { backgroundColor: palette.shine },
+                        ]}
+                      />
+
                       <Text
                         style={[
                           styles.colorText,
@@ -214,7 +261,7 @@ export default function BreedDetailScreen({ route, navigation }) {
                       >
                         {c}
                       </Text>
-                    </LinearGradient>
+                    </View>
                   );
                 })}
               </View>
@@ -827,23 +874,38 @@ const makeStyles = tier => {
       flexWrap: 'wrap',
       gap: sz(8),
     },
-    colorPillGrad: {
-      paddingVertical: sz(6),
-      paddingHorizontal: sz(10),
-      borderRadius: sz(8),
-      maxWidth: Math.min(100, Math.round(SCREEN_WIDTH / 2) - sz(22)),
+    colorPillBase: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      minHeight: 32,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      borderBottomLeftRadius: 8,
+      borderBottomRightRadius: 8,
     },
-    // colorPillDarkBorder: {
-    //   borderColor: '#222',
-    //   borderWidth: StyleSheet.hairlineWidth,
-    // },
+    colorPillDarkBorder: {
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.28)',
+    },
     colorText: {
+      fontSize: 13,
       color: '#222',
-      fontFamily: 'Gotham-Rounded-Bold',
-      fontSize: fs(12),
     },
-    colorTextLight: { color: '#FFF' },
+    colorTextLight: {
+      color: '#fff',
+    },
 
+    diagonalShine: {
+      position: 'absolute',
+      width: '140%',
+      height: '140%',
+      top: '-20%',
+      left: '-20%',
+      transform: [{ rotate: '20deg' }],
+      borderRadius: 4,
+      opacity: 0.5,
+    },
     specRightKV: {
       flex: 1,
       flexDirection: 'row',
@@ -908,10 +970,10 @@ const makeStyles = tier => {
     tempCard: {
       flexDirection: 'row',
       alignItems: 'center',
-      borderRadius: sz(12),
+      borderRadius: sz(8),
       paddingVertical: sz(10),
       paddingHorizontal: sz(12),
-      borderWidth: 1,
+
       borderColor: '#E6B76F',
       shadowColor: '#000',
       shadowOpacity: 0.08,
@@ -919,7 +981,16 @@ const makeStyles = tier => {
       shadowOffset: { width: 0, height: 2 },
       elevation: 2,
       backgroundColor: 'transparent',
+      ...Platform.select({
+        ios: {
+          height: 50,
+          paddingVertical: 0,
+          right: 14,
+          width: 220,
+        },
+      }),
     },
+
     tempIcon: {
       width: sz(28),
       height: sz(28),
@@ -929,12 +1000,22 @@ const makeStyles = tier => {
       color: '#0E2D3A',
       fontFamily: 'Gotham-Rounded-Medium',
       fontSize: fs(10.3),
+      ...Platform.select({
+        ios: {
+          fontSize: fs(12),
+        },
+      }),
     },
     tempValue: {
       color: '#0E2D3A',
       fontFamily: 'Gotham-Rounded-Medium',
       fontSize: fs(12),
       marginTop: sz(2),
+      ...Platform.select({
+        ios: {
+          fontSize: fs(14),
+        },
+      }),
     },
     tempValueEm: { color: '#0E79B2', fontFamily: 'Gotham-Rounded-Bold' },
     tempCardGap: sz(10),
