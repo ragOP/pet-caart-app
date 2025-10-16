@@ -25,6 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import { updateProfile } from '../../apis/updateProfile';
+import messaging from '@react-native-firebase/messaging';
 
 const AS_KEYS = {
   PHONE: '@user_phone',
@@ -46,6 +47,21 @@ const getItem = async key => {
   }
 };
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// short retry for APNs right before login (optional)
+const getApnsTokenWithRetry = async (attempts = 3, gapMs = 800) => {
+  if (Platform.OS !== 'ios') return null;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const t = await messaging().getAPNSToken(); // may be null if APNs not registered yet [web:5]
+      if (t) return t;
+    } catch {}
+    await sleep(gapMs);
+  }
+  return null;
+};
+
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { loading } = useSelector(state => state.auth);
@@ -60,6 +76,7 @@ const LoginScreen = ({ navigation }) => {
   const [otpSending, setOtpSending] = useState(false);
 
   const currentStep = showEmailInput ? 3 : showOtpInput ? 2 : 1;
+
   useEffect(() => {
     (async () => {
       try {
@@ -71,7 +88,7 @@ const LoginScreen = ({ navigation }) => {
           Platform.OS,
         );
         if (Platform.OS === 'ios' && !apns) {
-          console.warn('APNs not yet available on iOS (LoginScreen mount).');
+          console.warn('APNs not yet available on iOS (LoginScreen mount).'); // can be null initially [web:5]
         }
       } catch (e) {
         console.warn('Error reading APNs from storage:', e);
@@ -129,10 +146,19 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (phoneNumber.length === 10 && otp.length === 6) {
-      const [fcmToken, apnsToken] = await Promise.all([
-        AsyncStorage.getItem(AS_KEYS.FCM),
-        AsyncStorage.getItem(AS_KEYS.APNS),
-      ]);
+      // sequential, simpler reads (no Promise.all) [web:60][web:54]
+      let fcmToken = await AsyncStorage.getItem(AS_KEYS.FCM);
+      let apnsToken = await AsyncStorage.getItem(AS_KEYS.APNS);
+
+      // optional: last-chance APNs retry before payload on iOS [web:5][web:4]
+      if (Platform.OS === 'ios' && !apnsToken) {
+        const fetched = await getApnsTokenWithRetry(3, 800);
+        if (fetched) {
+          apnsToken = fetched;
+          await AsyncStorage.setItem(AS_KEYS.APNS, fetched);
+        }
+      }
+
       console.log(
         'APNs from storage (LoginScreen handleLogin):',
         apnsToken,
@@ -140,21 +166,20 @@ const LoginScreen = ({ navigation }) => {
         Platform.OS,
       );
       if (Platform.OS === 'ios' && !apnsToken) {
-        console.warn('APNs token is not available yet on iOS (handleLogin).');
+        console.warn('APNs token is not available yet on iOS (handleLogin).'); // normal if APNs is still registering [web:5]
       }
 
       const payload = {
         phoneNumber,
         otp,
-        fcmToken: fcmToken || null,
-        apnToken: Platform.OS === 'ios' ? apnsToken || null : null,
+        fcmToken: fcmToken || null, // used for FCM sends [web:24]
+        apnToken: Platform.OS === 'ios' ? apnsToken || null : null, // iOS-only include [web:4]
         devicePlatform: Platform.OS,
       };
 
       dispatch(loginRequest());
       try {
         const response = await loginUser(payload);
-
         if (response?.user && response?.token) {
           if (response?.isExisitinguser === false) {
             await setItem(AS_KEYS.PHONE, String(phoneNumber).trim());
@@ -190,11 +215,9 @@ const LoginScreen = ({ navigation }) => {
       });
 
       if (response?.success) {
-        // Persist locally for future hydration
         await setItem(AS_KEYS.PHONE, String(phoneNumber || '').trim());
         await setItem(AS_KEYS.EMAIL, cleanEmail);
 
-        // If backend returns fresh token/user use it; else fallback to previous
         const token = response?.token ?? null;
         const user = response?.user ??
           response?.data?.user ?? {

@@ -8,13 +8,23 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { store, persistor } from './src/redux/store';
 import NavigationPage from './src/navigation/NavigationPage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
 const queryClient = new QueryClient();
+const sleep = ms => new Promise(res => setTimeout(res, ms));
+async function getApnsTokenWithRetry(maxAttempts = 5, intervalMs = 1000) {
+  if (Platform.OS !== 'ios') return null;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const apns = await messaging().getAPNSToken();
+      if (apns) return apns;
+    } catch (e) {}
+    await sleep(intervalMs);
+  }
+  return null;
+}
 
 const App = () => {
   const [initializing, setInitializing] = useState(false);
 
-  // ---- Permissions (Android runtime + Firebase request) ----
   const requestUserPermission = useCallback(async () => {
     if (Platform.OS === 'android') {
       try {
@@ -25,16 +35,13 @@ const App = () => {
         console.warn('POST_NOTIFICATIONS request failed:', e);
       }
     }
-
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
     return enabled;
   }, []);
 
-  // ---- Foreground FCM handler (no Notifee, use Alert/UI) ----
   const onMessageReceived = useCallback(async message => {
     console.log('📨 FG message:', message);
     const title = message?.notification?.title ?? 'New message';
@@ -45,32 +52,23 @@ const App = () => {
   }, []);
 
   const registerAndGetTokens = useCallback(async () => {
-    console.log('📲 Registering for remote messages…');
+    // Explicit registration (needed if auto-registration disabled; safe otherwise) [web:4]
     await messaging().registerDeviceForRemoteMessages();
 
     if (Platform.OS === 'ios') {
-      try {
-        const apns = await messaging().getAPNSToken();
-        if (apns) {
-          console.log('🍏 APNs Token (hex):', apns);
-          await AsyncStorage.setItem('apnToken', apns);
-          console.log('💾 APNs Token saved to AsyncStorage');
-        } else {
-          console.log(
-            '⚠️ APNs token not yet available (will be provided after registration).',
-          );
-        }
-      } catch (e) {
-        console.warn('getAPNSToken() error:', e);
+      const apns = await getApnsTokenWithRetry(5, 1000); // brief retry to avoid intermittent nulls [web:4]
+      if (apns) {
+        console.log('🍏 APNs Token (hex):', apns);
+        await AsyncStorage.setItem('apnToken', apns);
+      } else {
+        console.log('⚠️ APNs token not yet available after retries.'); // acceptable if timing-late [web:4]
       }
     }
 
-    // FCM token
-    const fcm = await messaging().getToken();
+    const fcm = await messaging().getToken(); // primary token used for FCM sends [web:4]
     console.log('🔥 FCM Token:', fcm);
     await AsyncStorage.setItem('fcmToken', fcm);
 
-    // Keep in sync on refresh
     messaging().onTokenRefresh(async newToken => {
       console.log('♻️ FCM token refreshed:', newToken);
       await AsyncStorage.setItem('fcmToken', newToken);
@@ -78,12 +76,10 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const unsubOnMsg = messaging().onMessage(onMessageReceived);
-
+    const unsubOnMsg = messaging().onMessage(onMessageReceived); // foreground messages [web:17]
     const unsubOpened = messaging().onNotificationOpenedApp(remoteMessage => {
       console.log('🔁 Opened from BG:', remoteMessage?.data);
     });
-
     messaging()
       .getInitialNotification()
       .then(remoteMessage => {
@@ -91,14 +87,12 @@ const App = () => {
           console.log('🚀 Opened from quit:', remoteMessage?.data);
         }
       });
-
     return () => {
       unsubOnMsg();
       unsubOpened();
     };
   }, [onMessageReceived]);
 
-  // ---- Init on mount ----
   useEffect(() => {
     (async () => {
       setInitializing(true);

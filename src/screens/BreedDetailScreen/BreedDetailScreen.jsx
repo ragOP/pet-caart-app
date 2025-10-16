@@ -41,13 +41,15 @@ export default function BreedDetailScreen({ route, navigation }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [numberOfLines, setNumberOfLines] = useState(2);
+
+  // animated Y for the hero image
   const imageY = useRef(new Animated.Value(0)).current;
 
   const toggleExpand = () => {
     const newState = !isExpanded;
     setIsExpanded(newState);
     Animated.timing(imageY, {
-      toValue: newState ? -40 : 0,
+      toValue: newState ? -40 : 0, // lift the image slightly when expanded
       duration: 300,
       useNativeDriver: true,
     }).start();
@@ -55,8 +57,8 @@ export default function BreedDetailScreen({ route, navigation }) {
 
   const handleTextReady = ({ nativeEvent: { lines } }) => {
     if (!isReady) {
-      const canExpand = lines.length > 2;
-      setNumberOfLines(canExpand ? 2 : lines.length);
+      const canExpand = lines.length > 3;
+      setNumberOfLines(canExpand ? 3 : lines.length);
       setIsReady(true);
     }
   };
@@ -102,7 +104,12 @@ export default function BreedDetailScreen({ route, navigation }) {
         <View style={styles.row}>
           <View style={styles.heroCard}>
             <View style={styles.heroInner}>
-              <Animated.View style={[styles.heroImageContainer]}>
+              <Animated.View
+                style={[
+                  styles.heroImageContainer,
+                  { transform: [{ translateY: imageY }] },
+                ]}
+              >
                 <Image
                   source={
                     typeof breed.hero === 'number'
@@ -113,15 +120,10 @@ export default function BreedDetailScreen({ route, navigation }) {
                 />
               </Animated.View>
 
-              {/* <Text style={styles.heroTitle}> */}
-              {/* <Text style={styles.heroTitleEm}>{name}</Text> */}
-              {/* <Text style={styles.heroTitleRest}> </Text>
-              </Text> */}
-
               <Text
                 onTextLayout={handleTextReady}
                 numberOfLines={
-                  isReady ? (isExpanded ? undefined : numberOfLines) : 2
+                  isReady ? (isExpanded ? undefined : numberOfLines) : 3
                 }
                 style={styles.heroDescription}
                 ellipsizeMode="tail"
@@ -129,7 +131,7 @@ export default function BreedDetailScreen({ route, navigation }) {
                 {displayText}
               </Text>
 
-              {isReady && numberOfLines === 2 && (
+              {isReady && numberOfLines === 3 && (
                 <TouchableOpacity
                   onPress={toggleExpand}
                   style={styles.readMoreButton}
@@ -536,7 +538,10 @@ export default function BreedDetailScreen({ route, navigation }) {
             </View>
           );
         })}
+
         <View style={styles.bottomSpacer} />
+
+        {/* Grooming */}
         <View style={styles.dietHeaderRow}>
           <Image
             source={require('../../assets/icons/paw2.png')}
@@ -579,6 +584,7 @@ export default function BreedDetailScreen({ route, navigation }) {
             </Text>
           </View>
         </View>
+
         {breed.grooming?.tips?.map((tip, idx) => {
           const orientation = tip.orientation || 'left';
           return (
@@ -612,6 +618,7 @@ export default function BreedDetailScreen({ route, navigation }) {
     </View>
   );
 }
+
 const makeStyles = tier => {
   const isSmall = tier === 'small';
   const isCompact = tier === 'compact';
@@ -715,7 +722,6 @@ const makeStyles = tier => {
     heroImage: {
       width: '100%',
       height: isSmall ? 130 : isCompact ? 160 : 170,
-      bottom: 20,
     },
 
     heroDescription: {
@@ -725,13 +731,13 @@ const makeStyles = tier => {
       textAlign: 'left',
       width: '100%',
       fontFamily: 'Gotham-Rounded-Medium',
-      bottom: 20,
+      // removed bottom offset to avoid extra gap
     },
     readMoreButton: {
       paddingVertical: sz(4),
       alignSelf: 'flex-start',
       marginTop: sz(4),
-      mbottom: 20,
+      // removed bottom offset
     },
     readMoreText: {
       color: '#0E79B2',
