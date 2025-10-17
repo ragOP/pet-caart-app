@@ -46,7 +46,7 @@ export const endpoints = {
 
   // cart
   cart: 'api/cart',
-
+  reorderCart: 'api/cart/previous-order',
   // coupons
   coupons: 'api/coupon',
 

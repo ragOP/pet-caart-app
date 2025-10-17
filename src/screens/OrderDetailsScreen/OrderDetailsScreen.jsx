@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,112 @@ import {
   Platform,
 } from 'react-native';
 import { ArrowLeft, CheckCircle } from 'lucide-react-native';
+import { useRoute } from '@react-navigation/native';
+
+const formatBillDate = iso => {
+  try {
+    const d = new Date(iso);
+    const dd = d.getDate().toString().padStart(2, '0');
+    const mm = (d.getMonth() + 1).toString().padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  } catch {
+    return '';
+  }
+};
+
+const formatINR = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+}); // [web:6][web:12][web:15]
+
+const currency = v => {
+  if (typeof v === 'number') return formatINR.format(v);
+  if (!v && v !== 0) return '—';
+  const n = Number(v);
+  return Number.isFinite(n) ? formatINR.format(n) : '—';
+}; // [web:6][web:12][web:15]
+
+const statusPalette = status => {
+  switch ((status || '').toLowerCase()) {
+    case 'delivered':
+    case 'confirmed':
+      return { bg: '#21803233', text: '#218032', icon: '#1AA75D' };
+    case 'shipped':
+      return { bg: '#004E6A1A', text: '#004E6A', icon: '#004E6A' };
+    case 'pending':
+      return { bg: '#F59A111A', text: '#F59A11', icon: '#F59A11' };
+    case 'cancelled':
+    case 'canceled':
+      return { bg: '#E539351A', text: '#E53935', icon: '#E53935' };
+    default:
+      return { bg: '#E0E0E033', text: '#555', icon: '#555' };
+  }
+};
+
+const pickTitle = it => {
+  const p = it?.productId;
+  if (it?.variantId?.variantName) return it.variantId.variantName;
+  if (p?.title) return p.title;
+  if (p?.name) return p.name;
+  if (it?.variantId?.sku) return it.variantId.sku;
+  return 'Order item';
+};
+
+const pickBrand = it => it?.productId?.brand || it?.productId?.vendor || '';
+
+const pickImageUrl = it => {
+  const vImg = it?.variantId?.images?.[0];
+  const pImg = it?.productId?.images?.[0];
+  return (
+    (typeof vImg === 'string' && vImg) ||
+    (typeof pImg === 'string' && pImg) ||
+    null
+  );
+};
 
 const OrderDetailsScreen = ({ navigation }) => {
+  const { params } = useRoute();
+  const order = params?.order || {};
+  const bill = useMemo(() => {
+    const items = Array.isArray(order?.items) ? order.items : [];
+    const subtotal = items.reduce((sum, it) => {
+      const price = Number(it?.price ?? it?.variantId?.price ?? 0);
+      const qty = Number(it?.quantity ?? 1);
+      return sum + price * qty;
+    }, 0);
+    const couponDiscount = Number(
+      order?.discountedAmount ?? order?.couponDiscount ?? 0,
+    );
+    const providedShipping = Number(order?.shipping ?? 0);
+    const grand = Number.isFinite(Number(order?.totalAmount))
+      ? Number(order.totalAmount)
+      : Math.max(0, subtotal - couponDiscount + providedShipping);
+
+    const computedShipping = Math.max(0, grand - subtotal);
+
+    return {
+      subtotal,
+      couponDiscount,
+      shippingForDisplay: computedShipping,
+      grand,
+    };
+  }, [order]);
+
+  const palette = statusPalette(order?.status);
+
+  const addressLine = (() => {
+    const a = order?.address || {};
+    const parts = [a?.address, a?.city, a?.state, a?.country, a?.pincode]
+      .map(s => (typeof s === 'string' ? s.trim() : s))
+      .filter(Boolean);
+    return parts.join(', ');
+  })();
+
+  const isShippingFree = Math.abs(bill.grand - bill.subtotal) < 0.005;
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -29,44 +133,100 @@ const OrderDetailsScreen = ({ navigation }) => {
           </View>
         </SafeAreaView>
       </View>
+
       <Text style={styles.subHeader}>Recent Orders</Text>
+
       <ScrollView contentContainerStyle={{ padding: 15 }}>
         <View style={styles.orderInfoCard}>
           <View style={styles.orderInfoRow}>
             <Text style={styles.orderIdText}>
-              ORDER ID : <Text style={styles.boldText}>2548514851</Text>
+              ORDER ID :{' '}
+              <Text style={styles.boldText}>{order?.orderId || '—'}</Text>
             </Text>
             <TouchableOpacity>
               <Text style={styles.helpText}>HELP</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.deliveredText}>DELIVERED | 10-05-2025</Text>
-        </View>
-        <Text style={styles.sectionTitle}>ITEM DETAILS</Text>
-        <View style={styles.itemCard}>
-          <Image
-            source={require('../../assets/images/product.png')}
-            style={styles.productImage}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.productTitle}>
-              Applod Crunch-a-Licious Gluten Free Chicken & Cheese Dog Biscuits
-            </Text>
-            <Text style={styles.brand}>Applod</Text>
-            <View style={styles.tagRow}>
-              <Text style={styles.tagText}>14×3Kg | 10% OFF</Text>
+
+          <View style={[styles.statusBadge, { backgroundColor: palette.bg }]}>
+            <View style={styles.statusIconWrap}>
+              <CheckCircle size={14} color={palette.icon} />
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+              <Text style={[styles.statusText, { color: palette.text }]}>
+                {(order?.status || '').toUpperCase()}
+              </Text>
             </View>
           </View>
-          <Text style={styles.price}>₹109</Text>
+          {/* <Text style={[styles.statusText, { color: palette.text }]}>
+            {formatBillDate(order?.createdAt)}
+          </Text> */}
         </View>
+
+        <Text style={styles.sectionTitle}>ITEM DETAILS</Text>
+        {(order?.items || []).map((it, idx) => {
+          const title = pickTitle(it);
+          const brand = pickBrand(it);
+          const imageUrl = pickImageUrl(it);
+          const qty = Number(it?.quantity ?? 1);
+          const productLabel = it?.productId?.productLabel;
+
+          const tagBits = [];
+          if (qty) tagBits.push(`${qty}×`);
+          if (productLabel) tagBits.push(productLabel);
+          const tagText = tagBits.join(' | ');
+
+          return (
+            <View key={it?._id ?? idx} style={styles.itemCard}>
+              {imageUrl ? (
+                <Image source={{ uri: imageUrl }} style={styles.productImage} />
+              ) : (
+                <View
+                  style={[styles.productImage, { backgroundColor: '#F1F5F9' }]}
+                />
+              )}
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.productTitle}>{title}</Text>
+                {!!brand && <Text style={styles.brand}>{brand}</Text>}
+
+                {!!tagText && (
+                  <View style={styles.tagRow}>
+                    <Text style={styles.tagText}>{tagText}</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          );
+        })}
+
         <Text style={styles.sectionTitle}>TOTAL ORDER BILL DETAILS</Text>
         <View style={styles.billCard}>
-          <BillRow label="Total MRP Price" value="₹109" />
-          <BillRow label="Coupon Discount" value="₹109" />
-          <BillRow label="Discount on MRP" value="₹109" />
-          <BillRow label="Shipping Charges" value="FREE" isFree />
+          <BillRow label="Total MRP Price" value={currency(bill.subtotal)} />
+          <BillRow
+            label="Coupon Discount"
+            value={
+              bill.couponDiscount
+                ? `- ${currency(bill.couponDiscount)}`
+                : currency(0)
+            }
+          />
+          <BillRow
+            label="Shipping Charges"
+            value={isShippingFree ? 'FREE' : currency(bill.shippingForDisplay)}
+            isFree={isShippingFree}
+          />
           <View style={styles.separator} />
-          <BillRow label="Grand Total" value="₹109" isBold />
+          <BillRow label="Grand Total" value={currency(bill.grand)} isBold />
+        </View>
+
+        {/* Address under Grand Total */}
+        <View style={styles.addressCard}>
+          <Text style={styles.addressTitle}>DELIVERY ADDRESS</Text>
+          <Text style={styles.addressLine}>
+            {order?.address?.name || '—'} • {order?.address?.mobile || '—'}
+          </Text>
+          <Text style={styles.addressLine}>{addressLine || '—'}</Text>
         </View>
       </ScrollView>
     </View>
@@ -101,15 +261,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   backButton: { paddingRight: 15 },
-  header: {
-    fontSize: 24,
+  header: { fontSize: 24, fontFamily: 'Gotham-Rounded-Medium' },
+
+  subHeader: {
+    fontSize: 16,
+    padding: 10,
+    color: '#555',
+    marginVertical: 10,
     fontFamily: 'Gotham-Rounded-Medium',
+    borderBottomWidth: 0.2,
+    borderColor: '#E0E0E0',
   },
+
   orderInfoCard: {
     backgroundColor: '#F59A111A',
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
+    gap: 8,
   },
   orderInfoRow: {
     flexDirection: 'row',
@@ -130,12 +299,23 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Gotham-Rounded-Bold',
   },
-  deliveredText: {
-    color: '#888',
+
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 6,
+  },
+  statusIconWrap: { transform: [{ translateY: 1 }] },
+  statusText: {
     fontSize: 12,
-    marginTop: 8,
+    lineHeight: 14,
     fontFamily: 'Gotham-Rounded-Medium',
   },
+
   sectionTitle: {
     fontSize: 14,
     marginBottom: 8,
@@ -143,14 +323,7 @@ const styles = StyleSheet.create({
     color: '#888',
     paddingLeft: 12,
   },
-  subHeader: {
-    fontSize: 16,
-    padding: 10,
-    color: '#555',
-    marginVertical: 10,
-    fontFamily: 'Gotham-Rounded-Medium',
-    borderBottomWidth: 0.2,
-  },
+
   itemCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -160,16 +333,19 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   productImage: {
-    width: 50,
-    height: 70,
+    width: 80,
+    height: 80,
     resizeMode: 'contain',
     marginRight: 10,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
   },
   productTitle: {
     fontSize: 14,
     fontFamily: 'Gotham-Rounded-Medium',
     marginBottom: 4,
     color: '#000',
+    lineHeight: 18,
   },
   brand: {
     fontSize: 12,
@@ -189,13 +365,7 @@ const styles = StyleSheet.create({
     color: '#555',
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  price: {
-    fontSize: 14,
-    fontFamily: 'Gotham-Rounded-Bold',
-    color: '#000',
-    marginLeft: 10,
-    marginTop: 2,
-  },
+
   billCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -225,6 +395,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.8,
     borderBottomColor: '#EEE',
     marginVertical: 10,
+  },
+
+  addressCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginTop: 12,
+    gap: 6,
+  },
+  addressTitle: {
+    fontSize: 13,
+    color: '#666',
+    fontFamily: 'Gotham-Rounded-Bold',
+    marginBottom: 4,
+  },
+  addressLine: {
+    fontSize: 13,
+    color: '#111',
+    fontFamily: 'Gotham-Rounded-Medium',
   },
 });
 

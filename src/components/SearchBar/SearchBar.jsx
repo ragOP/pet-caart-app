@@ -69,27 +69,29 @@ const SearchBar = () => {
 const styles = StyleSheet.create({
   shadowWrapper: {
     width: '100%',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#404040',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    // ...Platform.select({
+    //   ios: {
+    //     shadowColor: '#404040',
+    //     shadowOffset: { width: 0, height: 2 },
+    //     shadowOpacity: 0.2,
+    //     shadowRadius: 6,
+    //   },
+    //   android: {
+    //     elevation: 3,
+    //   },
+    // }),
     borderRadius: 12,
     flex: 1,
   },
   searchContainer: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 8,
     paddingHorizontal: 16,
     alignItems: 'center',
     height: 50,
+    borderWidth: 1.5,
+    borderColor: '#E5E5E5',
   },
   input: {
     flex: 1,

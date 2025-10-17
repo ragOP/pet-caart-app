@@ -20,14 +20,14 @@ import {
   Scale,
   ImageIcon,
 } from 'lucide-react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getOrders } from '../../apis/getOrders';
+import { reorder } from '../../apis/reorder';
 
 const { width } = Dimensions.get('window');
 const CARD_IMAGE_W = Math.min(84, Math.max(60, width * 0.2));
 const CARD_IMAGE_H = Math.round(CARD_IMAGE_W * 1.33);
 
-// Helpers
 const formatUiDate = iso => {
   try {
     const d = new Date(iso);
@@ -66,7 +66,6 @@ const toInitials = (text = '') => {
   return letters || 'PR';
 };
 
-// First image only, else preview
 const pickImage = (item, title) => {
   const vImg = item?.variantId?.images?.[0];
   const pImg = item?.productId?.images?.[0];
@@ -131,6 +130,8 @@ const ProductImage = ({ item, title }) => {
 };
 
 const MyOrderScreen = ({ navigation }) => {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['orders', { page: 1, limit: 20 }],
     queryFn: () => getOrders({ params: { page: 1, limit: 20 } }),
@@ -138,13 +139,40 @@ const MyOrderScreen = ({ navigation }) => {
     staleTime: 30_000,
   });
 
-  const orders = Array.isArray(data) ? data : [];
+  const {
+    mutate: reorderMutate,
+    isLoading: isReordering,
+    variables: reorderVars,
+  } = useMutation({
+    mutationFn: ({ orderId }) => reorder({ orderId }),
+    onMutate: vars => {
+      console.log('[REORDER] onMutate vars:', vars);
+    },
+    onSuccess: (res, vars) => {
+      console.log('[REORDER] success response:', res);
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      navigation.navigate('BottomTabs', { screen: 'Cart' });
+    },
+    onError: (err, vars) => {
+      console.log('[REORDER] error vars:', vars);
+      console.log('[REORDER] error:', err);
+    },
+    onSettled: (res, err, vars) => {
+      console.log('[REORDER] settled. err?', !!err, 'vars:', vars);
+    },
+  });
+
+  // Newest first for "Recent Orders"
+  const orders = Array.isArray(data)
+    ? [...data].sort(
+        (a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0),
+      )
+    : [];
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Header */}
       <View style={styles.headerWrapper}>
         <SafeAreaView>
           <View style={styles.headerRow}>
@@ -204,6 +232,8 @@ const MyOrderScreen = ({ navigation }) => {
             const item = primaryItem(order);
             const title = pickTitle(item);
             const palette = statusPalette(order?.status);
+            const isThisOrderReordering =
+              isReordering && reorderVars?.orderId === order?._id;
 
             return (
               <TouchableOpacity
@@ -212,13 +242,35 @@ const MyOrderScreen = ({ navigation }) => {
                 activeOpacity={0.9}
                 onPress={() =>
                   navigation.navigate('OrderDetailsScreen', {
-                    orderId: order?._id,
-                    orderNumber: order?.orderId,
+                    order, // pass full order object
                   })
                 }
               >
-                <ProductImage item={item} title={title} />
+                {/* Left column: Image + Reorder below image */}
+                <View style={styles.leftCol}>
+                  <ProductImage item={item} title={title} />
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    style={[
+                      styles.reorderBtnBelowImage,
+                      isThisOrderReordering && styles.reorderBtnDisabled,
+                    ]}
+                    onPress={e => {
+                      e.stopPropagation();
+                      if (!order?._id) return;
+                      reorderMutate({ orderId: order._id });
+                    }}
+                    disabled={isThisOrderReordering}
+                  >
+                    {isThisOrderReordering ? (
+                      <ActivityIndicator size="small" color="#004E6A" />
+                    ) : (
+                      <Text style={styles.reorderText}>Reorder</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
 
+                {/* Right column: Content */}
                 <View style={styles.orderContent}>
                   <Text style={styles.orderId}>
                     <Text style={styles.orderIdBold}>{order?.orderId}</Text>
@@ -227,11 +279,11 @@ const MyOrderScreen = ({ navigation }) => {
                   <Text numberOfLines={2} style={styles.productTitle}>
                     {title}
                   </Text>
+
                   <View style={styles.dateWeightRow}>
                     <Text style={styles.orderDate}>
                       {formatUiDate(order?.createdAt)}
                     </Text>
-
                     <View style={styles.qwChip}>
                       <Scale size={14} color="#004E6A" />
                       <Text style={styles.qwText}>
@@ -239,14 +291,18 @@ const MyOrderScreen = ({ navigation }) => {
                       </Text>
                     </View>
                   </View>
-                  <View style={styles.statusRow}>
+
+                  {/* Footer: status + chevron */}
+                  <View style={styles.footerRow}>
                     <View
                       style={[
                         styles.statusBadge,
                         { backgroundColor: palette.bg },
                       ]}
                     >
-                      <CheckCircle size={14} color={palette.icon} />
+                      <View style={styles.statusIconWrap}>
+                        <CheckCircle size={14} color={palette.icon} />
+                      </View>
                       <Text
                         style={[styles.statusText, { color: palette.text }]}
                       >
@@ -302,18 +358,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
+
+  // Left column with image and button
+  leftCol: {
+    alignItems: 'center',
+    marginRight: 12,
+  },
   productImage: {
     width: CARD_IMAGE_W,
     height: CARD_IMAGE_H,
-    marginRight: 12,
     resizeMode: 'contain',
     borderRadius: 8,
     backgroundColor: '#FFFFFF',
   },
+  reorderBtnBelowImage: {
+    marginTop: 8,
+    backgroundColor: '#004E6A0D',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'stretch',
+    minWidth: CARD_IMAGE_W,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#004E6A22',
+  },
+  reorderBtnDisabled: { opacity: 0.6 },
+  reorderText: {
+    color: '#004E6A',
+    fontSize: 12,
+    fontFamily: 'Gotham-Rounded-Medium',
+    letterSpacing: 0.2,
+  },
+
   previewBox: {
     width: CARD_IMAGE_W,
     height: CARD_IMAGE_H,
-    marginRight: 12,
     borderRadius: 8,
     backgroundColor: '#F1F5F9',
     borderWidth: 1,
@@ -337,7 +418,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     letterSpacing: 0.5,
   },
-  orderContent: { flex: 1, minWidth: 0 },
+
+  orderContent: { flex: 1, minWidth: 0, marginLeft: 4 },
   orderId: {
     fontSize: 13,
     color: '#004E6A',
@@ -383,10 +465,13 @@ const styles = StyleSheet.create({
     color: '#004E6A',
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  statusRow: {
+
+  footerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: '7%',
+    gap: 8,
   },
   statusBadge: {
     flexDirection: 'row',
@@ -394,14 +479,15 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 10,
     gap: 4,
+    alignItems: 'center',
   },
+  statusIconWrap: { transform: [{ translateY: 1 }] },
   statusText: {
     fontSize: 12,
+    lineHeight: 14,
     fontFamily: 'Gotham-Rounded-Medium',
     marginLeft: 4,
   },
-
-  // Empty / Loading / Error
   emptyContainer: {
     justifyContent: 'center',
     alignItems: 'center',

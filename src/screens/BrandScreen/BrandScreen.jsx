@@ -56,7 +56,7 @@ const BrandScreen = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#FFF5E1"
+        backgroundColor="#FFFFFF"
         translucent={false}
       />
       {/* Header */}
@@ -96,11 +96,11 @@ const BrandScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFBF6' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerWrapper: {
     paddingVertical: 18,
-    backgroundColor: '#FEF5E7',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#FFFFFF',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 50,
   },
   headerRow: {
     flexDirection: 'row',
@@ -115,6 +115,11 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingVertical: 14,
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        height: 85,
+      },
+    }),
   },
   title: {
     fontSize: 27,
@@ -122,6 +127,11 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     color: '#fff',
     textAlign: 'center',
+    ...Platform.select({
+      ios: {
+        fontSize: 24,
+      },
+    }),
   },
   grid: {
     paddingHorizontal: 15,

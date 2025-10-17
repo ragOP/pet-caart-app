@@ -304,10 +304,7 @@ const CartScreen = () => {
       await new Promise(res => setTimeout(res, 1800));
     } finally {
       setShowSuccessAnim(false);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'MyOrderScreen' }],
-      });
+      navigation.navigate('MyOrderScreen');
     }
   };
 
@@ -400,10 +397,7 @@ const CartScreen = () => {
       await playSuccessAndNavigate();
     } catch (err) {
       console.log('Payment error', err);
-      Alert.alert(
-        'Please Select Address',
-        err?.message || 'Something went wrong',
-      );
+      Alert.alert(err?.message || 'Something went wrong');
     } finally {
       setIsPaying(false);
     }

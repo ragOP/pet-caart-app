@@ -40,7 +40,7 @@ const getBP = (w, h) => {
 const getCardHeight = (w, h) => {
   const { xs, sm, md, lg } = getBP(w, h);
   if (xs) return Math.round(h * 0.58);
-  if (sm) return Math.round(h * 0.5);
+  if (sm) return Math.round(h * 0.4);
   if (md) return Math.round(h * 0.44);
   if (lg) return Math.round(h * 0.41);
   return Math.round(h * 0.42);
@@ -94,7 +94,7 @@ const ProductCard = ({
   const stepperH = BP.xs ? 30 : BP.sm ? 32 : 36;
   const reserveBottom = stepperH + (BP.xs ? 10 : 14);
   const VAR_CARD_W = Math.round(Math.min(widthToUse, 240) * 0.45);
-  const VAR_CARD_H = BP.xs ? 32 : BP.sm ? 36 : 44;
+  const VAR_CARD_H = BP.xs ? 32 : BP.sm ? 40 : 44;
   const VAR_GAP = BP.xs ? 4 : 6;
   const fs = {
     title: BP.xs ? 12.5 : BP.sm ? 13 : 14,
@@ -449,8 +449,8 @@ const styles = StyleSheet.create({
     left: 1,
     zIndex: 1,
     width: Platform.select({
-      ios: 95,
-      android: 100,
+      ios: 96,
+      android: 'auto',
     }),
   },
   bestsellerText: { color: '#fff', fontFamily: 'Gotham-Rounded-Bold' },

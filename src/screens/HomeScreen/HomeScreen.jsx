@@ -168,20 +168,22 @@ const styles = StyleSheet.create({
   },
   locationButton: {
     backgroundColor: '#fff',
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
     marginLeft: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#404040',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    // ...Platform.select({
+    //   ios: {
+    //     shadowColor: '#404040',
+    //     shadowOffset: { width: 0, height: 2 },
+    //     shadowOpacity: 0.2,
+    //     shadowRadius: 6,
+    //   },
+    //   android: {
+    //     elevation: 3,
+    //   },
+    // }),
+    borderWidth: 2,
+    borderColor: '#E5E5E5',
   },
   scrollContent: {
     marginTop: 15,

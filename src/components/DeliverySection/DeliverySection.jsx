@@ -99,8 +99,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     marginTop: 12,
-    borderWidth: 2, // clear but subtle border
-    borderColor: '#E5E5E5', // light grey border for neat separation
+    borderWidth: 2,
+    borderColor: '#E5E5E5',
   },
   heading: {
     fontSize: 19,
