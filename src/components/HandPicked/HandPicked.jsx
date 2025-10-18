@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import ProductCard from '../ProductCard/ProductCard';
 import { getRecommendations } from '../../apis/getRecommendations';
+import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_MARGIN = 12;
@@ -104,17 +105,17 @@ const HandPicked = ({ productId, type = 'related', headingIcon }) => {
     [headingIcon],
   );
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        {headingNode}
-        <View style={styles.loaderWrap}>
-          <ActivityIndicator size="small" color="#3498db" />
-          <Text style={styles.loaderText}>Loading recommendations…</Text>
-        </View>
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View style={styles.container}>
+  //       {headingNode}
+  //       <View style={styles.loaderWrap}>
+  //         <ActivityIndicator size="small" color="#3498db" />
+  //         <Text style={styles.loaderText}>Loading recommendations…</Text>
+  //       </View>
+  //     </View>
+  //   );
+  // }
 
   if (err) {
     return (
@@ -162,7 +163,7 @@ const HandPicked = ({ productId, type = 'related', headingIcon }) => {
           ))}
         </ScrollView>
       ) : (
-        <Text style={styles.emptyText}>No recommendations found.</Text>
+        <ProductSliderShimmer horizontal cardWidth={CARD_WIDTH} />
       )}
     </View>
   );

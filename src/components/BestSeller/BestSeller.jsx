@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { getProducts } from '../../apis/getProducts';
 import ProductCard from '../ProductCard/ProductCard';
+import ProductListShimmer from '../../ui/Shimmer/ProductListShimmer';
+import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_MARGIN = 12;
@@ -122,7 +124,7 @@ const BestSeller = ({
           ))}
         </ScrollView>
       ) : (
-        <Text style={styles.emptyText}>No bestsellers found.</Text>
+        <ProductSliderShimmer horizontal cardWidth={CARD_WIDTH} />
       )}
     </View>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Animated, FlatList, StyleSheet, Dimensions } from 'react-native';
 
 const windowWidth = Dimensions.get('window').width;
-const ITEM_WIDTH = windowWidth / 2;
+const ITEM_WIDTH = windowWidth / 2.1;
 
 const shimmerItems = [1, 2];
 
@@ -45,7 +45,7 @@ const ProductSliderShimmer = () => {
         renderItem={renderItem}
         showsHorizontalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
-        contentContainerStyle={{ paddingHorizontal: 15 }}
+        contentContainerStyle={{ paddingHorizontal: 0 }}
       />
     </View>
   );
@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
     height: 220,
-    marginTop: 40,
   },
   card: {
     width: ITEM_WIDTH,
@@ -65,7 +64,7 @@ const styles = StyleSheet.create({
   },
   cardBackground: {
     width: '100%',
-    height: 120,
+    height: 130,
     borderRadius: 10,
     backgroundColor: '#e0e0e0',
     overflow: 'hidden',

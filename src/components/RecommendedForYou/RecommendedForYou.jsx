@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import ProductCard from '../ProductCard/ProductCard';
 import { getSimilar } from '../../apis/getSimilar';
+import ProductSliderShimmer from '../../ui/Shimmer/ProductSliderShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_MARGIN = 12;
@@ -102,17 +103,17 @@ const RecommendedForYou = ({ productId, type = 'similar', headingIcon }) => {
     [headingIcon],
   );
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        {headingNode}
-        <View style={styles.loaderWrap}>
-          <ActivityIndicator size="small" color="#3498db" />
-          <Text style={styles.loaderText}>Loading recommendations…</Text>
-        </View>
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View style={styles.container}>
+  //       {headingNode}
+  //       <View style={styles.loaderWrap}>
+  //         <ActivityIndicator size="small" color="#3498db" />
+  //         <Text style={styles.loaderText}>Loading recommendations…</Text>
+  //       </View>
+  //     </View>
+  //   );
+  // }
 
   if (err) {
     return (
@@ -160,7 +161,7 @@ const RecommendedForYou = ({ productId, type = 'similar', headingIcon }) => {
           ))}
         </ScrollView>
       ) : (
-        <Text style={styles.emptyText}>No recommendations found.</Text>
+        <ProductSliderShimmer horizontal cardWidth={CARD_WIDTH} />
       )}
     </View>
   );
