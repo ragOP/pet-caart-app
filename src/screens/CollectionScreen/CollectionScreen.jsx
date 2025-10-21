@@ -27,7 +27,7 @@ const banners = [
   },
   {
     label: 'SHOP BY BREED',
-    nav: 'BreedScreen',
+    nav: 'Breed',
     image: require('../../assets/images/Breed.png'),
   },
   {

@@ -8,8 +8,6 @@ import {
   StatusBar,
   TouchableOpacity,
   Platform,
-  FlatList,
-  Image,
 } from 'react-native';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { getProducts } from '../../apis/getProducts';
@@ -37,7 +35,10 @@ export default function ProductListScreen({ route, navigation }) {
     subcategoryId,
     initialBrandSlugs = [],
     brandSlug = null,
-  } = route.params;
+    categoryId = null,
+    subCategorySlug = null,
+  } = route.params || {};
+
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [allCollectionProducts, setAllCollectionProducts] = useState([]);
@@ -68,6 +69,8 @@ export default function ProductListScreen({ route, navigation }) {
     searchQuery,
     sortOrder,
     isVeg,
+    categoryId,
+    subCategorySlug,
   ]);
 
   const norm = v =>
@@ -79,6 +82,7 @@ export default function ProductListScreen({ route, navigation }) {
     try {
       setLoading(true);
       const params = { categorySlug, collectionSlug };
+
       if (selectedBrand?.length) params.brandSlug = selectedBrand.join(',');
       if (selectedBreed?.length) params.breedSlug = selectedBreed.join(',');
       if (selectedLifeStage?.length)
@@ -87,14 +91,20 @@ export default function ProductListScreen({ route, navigation }) {
         params.productType = selectedProductType.join(',');
       if (selectedBreedSize?.length)
         params.breedSize = selectedBreedSize.join(',');
+      if (categoryId) params.categoryId = categoryId;
+      if (subcategoryId) params.subcategoryId = subcategoryId;
+      if (subCategorySlug) params.subCategorySlug = subCategorySlug;
+
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
+
       let filtered = fetchedProducts;
+
       if (isVeg) {
         filtered = filtered.filter(product => product.isVeg === true);
-        // console.log('Filtered products (veg):', filtered);
       }
+
       if (searchQuery && String(searchQuery).trim() !== '') {
         const searchTerm = norm(searchQuery);
         filtered = filtered.filter(product => {
@@ -137,14 +147,17 @@ export default function ProductListScreen({ route, navigation }) {
           );
         });
       }
+
       filtered = filtered.filter(product => {
         const brandMatches =
           !selectedBrand?.length ||
           (product.brandId?.slug &&
             selectedBrand.includes(product.brandId.slug));
+
         const breedMatches =
           !selectedBreed?.length ||
           (product.breedId || []).some(b => selectedBreed.includes(b.slug));
+
         const productLifeStages = Array.isArray(product.lifeStage)
           ? product.lifeStage
           : product.lifeStage
@@ -159,6 +172,7 @@ export default function ProductListScreen({ route, navigation }) {
           normalizedProductStages.some(ls =>
             normalizedSelectedStages.includes(ls),
           );
+
         const typeVal = norm(product.productType);
         const normalizedSelectedTypes = (selectedProductType || []).map(v =>
           norm(v),
@@ -166,6 +180,7 @@ export default function ProductListScreen({ route, navigation }) {
         const typeMatches =
           !normalizedSelectedTypes.length ||
           normalizedSelectedTypes.includes(typeVal);
+
         const sizeVal = norm(product.breedSize);
         const normalizedSelectedSizes = (selectedBreedSize || []).map(v =>
           norm(v),
@@ -173,6 +188,7 @@ export default function ProductListScreen({ route, navigation }) {
         const sizeMatches =
           !normalizedSelectedSizes.length ||
           normalizedSelectedSizes.includes(sizeVal);
+
         return (
           brandMatches &&
           breedMatches &&
@@ -181,6 +197,7 @@ export default function ProductListScreen({ route, navigation }) {
           sizeMatches
         );
       });
+
       const getPriceNum = p => {
         const v = p?.salePrice ?? p?.price ?? 0;
         const n = typeof v === 'string' ? parseFloat(v) : Number(v);
@@ -198,7 +215,7 @@ export default function ProductListScreen({ route, navigation }) {
           );
         }
       }
-      console.log('Final products to render:', filtered);
+
       setProducts(filtered);
     } catch (error) {
       console.error('Product fetch error:', error);
@@ -207,9 +224,11 @@ export default function ProductListScreen({ route, navigation }) {
       setLoading(false);
     }
   };
+
   const handleSearchChange = query => {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
+
   const handleBrandChange = brandSlugs => {
     setSelectedBrand(Array.isArray(brandSlugs) ? brandSlugs : []);
   };
@@ -249,7 +268,6 @@ export default function ProductListScreen({ route, navigation }) {
           />
         </View>
       </View>
-      {/* <Text style={styles.subcategoryNameText}>{subcategoryName}</Text> */}
 
       <View style={styles.filterBarWrapper}>
         <FilterBar
@@ -270,6 +288,7 @@ export default function ProductListScreen({ route, navigation }) {
           onChangeSort={setSortOrder}
         />
       </View>
+
       {loading ? (
         <ProductListShimmer />
       ) : (

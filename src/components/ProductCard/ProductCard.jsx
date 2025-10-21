@@ -43,7 +43,7 @@ const getCardHeight = (w, h) => {
   if (sm) return Math.round(h * 0.4);
   if (md) return Math.round(h * 0.44);
   if (lg) return Math.round(h * 0.41);
-  return Math.round(h * 0.42);
+  return Math.round(h * 0.46);
 };
 
 const pct = (n, base) => Math.round(base * n);
@@ -212,7 +212,11 @@ const ProductCard = ({
         <View
           style={[
             styles.imageSection,
-            { height: imageH, padding: BP.xs ? 8 : 10 },
+            {
+              height: imageH,
+              paddingVertical: BP.xs ? 8 : 10,
+              paddingHorizontal: BP.xs ? 0 : 0,
+            },
           ]}
         >
           {isBestSeller && (
@@ -241,14 +245,16 @@ const ProductCard = ({
                   key={i}
                   source={{ uri: src }}
                   style={styles.productImage}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
               ))
             ) : (
               <Text>No images available</Text>
             )}
           </Swiper>
-          <Text style={[styles.ratingText]}>{`⭐ ${rating}`}</Text>
+          {/* <View style={styles.ratingBadge}>
+            <Text style={styles.ratingText}>{`⭐ ${rating}`}</Text>
+          </View> */}
         </View>
 
         {!!normalizedVariants?.length && (
@@ -437,8 +443,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderColor: '#F59A11',
     borderWidth: 1,
-    marginHorizontal: 1,
-    marginTop: 7,
   },
   bestsellerContainer: {
     borderRadius: 5,
@@ -446,21 +450,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     top: 5,
-    left: 1,
+    left: 5,
     zIndex: 1,
     width: Platform.select({
       ios: 96,
       android: 'auto',
+      left: 1,
     }),
   },
   bestsellerText: { color: '#fff', fontFamily: 'Gotham-Rounded-Bold' },
   swiper: { width: '100%' },
   productImage: { width: '100%', height: '100%' },
+  ratingBadge: {
+    position: 'absolute',
+    left: 8,
+    bottom: 8,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+
   ratingText: {
     fontSize: 10,
-    color: '#333',
+    color: '#fff',
     alignSelf: 'flex-start',
-    marginTop: 3,
     fontFamily: 'Gotham-Rounded-Bold',
   },
   titleRow: {

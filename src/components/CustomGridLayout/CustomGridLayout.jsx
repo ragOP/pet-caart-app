@@ -43,18 +43,41 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
   const itemHeight = itemWidth * 1.15;
 
   const handleItemClick = item => {
-    if (onItemPress) {
-      onItemPress(item);
-      return;
-    }
+    if (onItemPress) return onItemPress(item);
+
     if (item.link) {
-      if (item.link.startsWith('http')) {
-        Linking.openURL(item.link);
-      } else {
-        navigation.navigate(item.link);
-      }
-    } else if (item.itemId?._id) {
-      navigation.navigate('ProductListScreen', { id: item.itemId._id });
+      return item.link.startsWith('http')
+        ? Linking.openURL(item.link)
+        : navigation.navigate(item.link);
+    }
+
+    if (item.itemId?._id) {
+      return navigation.navigate('ProductListScreen', { id: item.itemId._id });
+    }
+
+    // if (item.categoryId?._id) {
+    //   return navigation.navigate('ProductListScreen', { categoryId: item.categoryId._id });
+    // }
+    if (item.categoryId?.slug) {
+      return navigation.navigate('ProductListScreen', {
+        categorySlug: item.categoryId.slug,
+      });
+    }
+
+    if (item.subCategoryId?.slug) {
+      return navigation.navigate('ProductListScreen', {
+        subCategorySlug: item.subCategoryId.slug,
+      });
+    }
+    if (item.brandId?.slug) {
+      return navigation.navigate('ProductListScreen', {
+        brandSlug: item.brandId.slug,
+      });
+    }
+    if (item.slug) {
+      return navigation.navigate('ProductListScreen', {
+        collectionSlug: item.slug,
+      });
     }
   };
 

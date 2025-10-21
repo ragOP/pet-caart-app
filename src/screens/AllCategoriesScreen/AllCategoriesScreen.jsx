@@ -97,7 +97,6 @@ export default function AllCategoriesScreen({ navigation }) {
   const [activeTab, setActiveTab] = useState(0);
   const underlineAnim = useRef(new Animated.Value(0)).current;
 
-  // Categories Query
   const { data: apiCategories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -108,7 +107,6 @@ export default function AllCategoriesScreen({ navigation }) {
     },
   });
 
-  // Subcategories Query (depends on categories)
   const { data: apiSubcategories, isLoading: isLoadingSubcategories } =
     useQuery({
       queryKey: ['subcategories'],
