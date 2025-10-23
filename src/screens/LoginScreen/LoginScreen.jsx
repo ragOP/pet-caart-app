@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   View,
@@ -54,7 +54,7 @@ const getApnsTokenWithRetry = async (attempts = 3, gapMs = 800) => {
   if (Platform.OS !== 'ios') return null;
   for (let i = 0; i < attempts; i++) {
     try {
-      const t = await messaging().getAPNSToken(); // may be null if APNs not registered yet [web:5]
+      const t = await messaging().getAPNSToken(); // may be null if APNs not registered yet [web:9]
       if (t) return t;
     } catch {}
     await sleep(gapMs);
@@ -71,11 +71,18 @@ const LoginScreen = ({ navigation }) => {
   const [otp, setOtp] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState('');
+  const [referralCode, setReferralCode] = useState(''); // NEW
   const [resendDisabled, setResendDisabled] = useState(false);
   const [timer, setTimer] = useState(60);
   const [otpSending, setOtpSending] = useState(false);
 
   const currentStep = showEmailInput ? 3 : showOtpInput ? 2 : 1;
+
+  // refs for better "Next" navigation on the keyboard
+  const phoneRef = useRef(null);
+  const otpRef = useRef(null);
+  const emailRef = useRef(null);
+  const referralRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -88,7 +95,7 @@ const LoginScreen = ({ navigation }) => {
           Platform.OS,
         );
         if (Platform.OS === 'ios' && !apns) {
-          console.warn('APNs not yet available on iOS (LoginScreen mount).'); // can be null initially [web:5]
+          console.warn('APNs not yet available on iOS (LoginScreen mount).'); // can be null initially [web:9]
         }
       } catch (e) {
         console.warn('Error reading APNs from storage:', e);
@@ -121,6 +128,7 @@ const LoginScreen = ({ navigation }) => {
         setShowOtpInput(true);
         setResendDisabled(true);
         setTimer(60);
+        setTimeout(() => otpRef.current?.focus(), 200);
       } else {
         Alert.alert('Failed', response?.message || 'Failed to send OTP');
       }
@@ -146,11 +154,11 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (phoneNumber.length === 10 && otp.length === 6) {
-      // sequential, simpler reads (no Promise.all) [web:60][web:54]
+      // sequential, simpler reads (no Promise.all)
       let fcmToken = await AsyncStorage.getItem(AS_KEYS.FCM);
       let apnsToken = await AsyncStorage.getItem(AS_KEYS.APNS);
 
-      // optional: last-chance APNs retry before payload on iOS [web:5][web:4]
+      // optional: last-chance APNs retry before payload on iOS
       if (Platform.OS === 'ios' && !apnsToken) {
         const fetched = await getApnsTokenWithRetry(3, 800);
         if (fetched) {
@@ -166,14 +174,14 @@ const LoginScreen = ({ navigation }) => {
         Platform.OS,
       );
       if (Platform.OS === 'ios' && !apnsToken) {
-        console.warn('APNs token is not available yet on iOS (handleLogin).'); // normal if APNs is still registering [web:5]
+        console.warn('APNs token is not available yet on iOS (handleLogin).'); // normal if APNs is still registering [web:9]
       }
 
       const payload = {
         phoneNumber,
         otp,
-        fcmToken: fcmToken || null, // used for FCM sends [web:24]
-        apnToken: Platform.OS === 'ios' ? apnsToken || null : null, // iOS-only include [web:4]
+        fcmToken: fcmToken || null, // used for FCM sends
+        apnToken: Platform.OS === 'ios' ? apnsToken || null : null, // iOS-only include
         devicePlatform: Platform.OS,
       };
 
@@ -184,6 +192,7 @@ const LoginScreen = ({ navigation }) => {
           if (response?.isExisitinguser === false) {
             await setItem(AS_KEYS.PHONE, String(phoneNumber).trim());
             setShowEmailInput(true);
+            setTimeout(() => emailRef.current?.focus(), 300);
           } else {
             dispatch(
               loginSuccess({ token: response.token, user: response.user }),
@@ -205,13 +214,21 @@ const LoginScreen = ({ navigation }) => {
 
   const handleCompleteRegistration = async () => {
     const cleanEmail = (email || '').trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
+    const cleanReferral = (referralCode || '').trim();
+
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       Alert.alert('Invalid', 'Please enter a valid email address');
       return;
     }
+
     try {
       const response = await updateProfile({
-        data: { phoneNumber, email: cleanEmail },
+        data: {
+          phoneNumber,
+          email: cleanEmail,
+          // send only if non-empty to keep it optional
+          referralCode: cleanReferral ? cleanReferral : undefined,
+        },
       });
 
       if (response?.success) {
@@ -223,6 +240,7 @@ const LoginScreen = ({ navigation }) => {
           response?.data?.user ?? {
             phoneNumber,
             email: cleanEmail,
+            referralCode: cleanReferral || undefined,
           };
 
         if (token && user) {
@@ -338,6 +356,7 @@ const LoginScreen = ({ navigation }) => {
               <View style={styles.phoneInputWrapper}>
                 <Text style={styles.countryCode}>+91</Text>
                 <TextInput
+                  ref={phoneRef}
                   style={styles.phoneInput}
                   value={phoneNumber}
                   onChangeText={text => {
@@ -346,6 +365,8 @@ const LoginScreen = ({ navigation }) => {
                   }}
                   placeholder="Enter Mobile Number"
                   keyboardType="number-pad"
+                  returnKeyType="send"
+                  onSubmitEditing={handleSendOtp}
                 />
               </View>
               <TouchableOpacity
@@ -399,6 +420,7 @@ const LoginScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
               <TextInput
+                ref={otpRef}
                 style={styles.input}
                 value={otp}
                 onChangeText={text => {
@@ -407,6 +429,8 @@ const LoginScreen = ({ navigation }) => {
                 }}
                 placeholder="Enter 6-digit OTP"
                 keyboardType="number-pad"
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
               />
               <TouchableOpacity
                 style={[
@@ -443,13 +467,36 @@ const LoginScreen = ({ navigation }) => {
             <>
               <Text style={styles.label}>Email Address</Text>
               <TextInput
+                ref={emailRef}
                 style={styles.input}
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Enter your email address"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+                onSubmitEditing={() => referralRef.current?.focus()}
+                blurOnSubmit={false}
               />
+              <Text style={[styles.label, { marginTop: 8 }]}>
+                Referral Code (optional)
+              </Text>
+              <TextInput
+                ref={referralRef}
+                style={styles.input}
+                value={referralCode}
+                onChangeText={t =>
+                  setReferralCode((t || '').replace(/\s+/g, '').toUpperCase())
+                }
+                placeholder="Enter referral code (if any)"
+                autoCapitalize="characters"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={handleCompleteRegistration}
+                maxLength={20}
+              />
+
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCompleteRegistration}
@@ -459,7 +506,6 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </>
           )}
-
           <Text style={styles.terms}>By continuing, you agree to our </Text>
           <Text style={styles.termsCol}>
             Terms of Service and Privacy Policy
@@ -513,7 +559,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 1,
     borderRadius: 10,
     marginBottom: 20,
   },

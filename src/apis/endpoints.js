@@ -5,7 +5,7 @@ export const endpoints = {
   update_profile: 'api/auth/user/update-profile',
   generateReferralCode: 'api/auth/user/generate-referral-code',
   walletTransactions: 'api/auth/user/get-all-wallet-transactions',
-  checkUserWallet: 'api/auth/user/check-user-wallet',
+  checkUserWallet: 'api/users/check-user-wallet',
   // products
   products: 'api/product',
 

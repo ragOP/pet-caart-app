@@ -1,4 +1,3 @@
-// screens/Cart/CartScreen.jsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
@@ -13,6 +12,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Switch,
 } from 'react-native';
 import { Trash2, MapPinHouse } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,6 +24,7 @@ import { getCoupons } from '../../apis/getCoupons';
 import { addProductToCart } from '../../apis/addProductToCart';
 import { getAddresses } from '../../apis/getAddresses';
 import { apiService } from '../../apis/apiService';
+import { checkUserWallet } from '../../apis/checkUserWallet';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { setCart, resetCart } from '../../redux/cartSlice';
@@ -69,6 +70,13 @@ const CartScreen = () => {
   const [isPaying, setIsPaying] = useState(false);
   const [checkoutNote, setCheckoutNote] = useState('');
   const [showSuccessAnim, setShowSuccessAnim] = useState(false);
+
+  // Wallet from API only
+  const [walletSwitch, setWalletSwitch] = useState(false); // controlled by API round-trip
+  const [walletBalance, setWalletBalance] = useState(0); // from API
+  const [walletDiscount, setWalletDiscount] = useState(0); // from API
+  const [serverGrandTotal, setServerGrandTotal] = useState(null); // from API
+
   const successAnimRef = useRef(null);
   const couponSheetRef = useRef();
   const addressSheetRef = useRef();
@@ -90,31 +98,35 @@ const CartScreen = () => {
         const addr = list.find(a => a.id === savedId);
         if (addr) setSelectedAddress(addr);
       }
-    } catch (e) {
-      console.error('Failed to load selected address ID', e);
-    }
+    } catch {}
   };
 
   const handleSelectAddress = async address => {
     setSelectedAddress(address);
     try {
       await AsyncStorage.setItem(SELECTED_ADDRESS_KEY, address.id);
-    } catch (e) {
-      console.error('Failed to save selected address ID', e);
-    }
-    await fetchAndSetCurrentCart(address.id);
+    } catch {}
+    await fetchAndSetCurrentCart(address.id, walletSwitch);
   };
 
-  const fetchAndSetCurrentCart = async addressId => {
+  // Core fetch that always asks server whether wallet should be used
+  const fetchAndSetCurrentCart = async (
+    addressId,
+    useWalletFlag = walletSwitch,
+  ) => {
     try {
       setLoading(true);
       const effectiveAddressId =
         addressId ?? (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
-      const cartResponse = await getCart({
-        params: { address_id: effectiveAddressId },
-      });
-      if (cartResponse.success) {
-        console.log('cartresponse', cartResponse);
+
+      const params = {
+        address_id: effectiveAddressId,
+        isUsingWalletAmount: useWalletFlag ? 'true' : 'false',
+      };
+
+      const cartResponse = await getCart({ params });
+
+      if (cartResponse?.success) {
         const formattedItems = cartResponse.data.items.map(item => {
           const mrp = item.variantId?.price || item.productId?.price || 0;
           const salePrice = item.price || 0;
@@ -126,8 +138,8 @@ const CartScreen = () => {
             id: item._id,
             title: item.productId?.title || 'No Title',
             price: mrp,
-            salePrice: salePrice,
-            discount: discount,
+            salePrice,
+            discount,
             quantity: item.quantity || 1,
             total: item.total || salePrice * item.quantity,
             cgst: item.cgst || 0,
@@ -147,11 +159,27 @@ const CartScreen = () => {
         setShippingCost(cartResponse.data.shippingDetails?.totalCost || 0);
         setShippingDate(cartResponse.data.shippingDetails?.estimatedDate || '');
         setCartId(cartResponse.data?._id || null);
+
+        // Wallet fields driven by API
+        setWalletDiscount(Number(cartResponse.data?.walletDiscount || 0));
+        setWalletBalance(Number(cartResponse.data?.walletBalance || 0));
+        setServerGrandTotal(
+          typeof cartResponse.data?.total_price_with_shipping_and_discount ===
+            'number'
+            ? cartResponse.data.total_price_with_shipping_and_discount
+            : null,
+        );
+
+        // Sync the switch to whatever server applied: treat walletDiscount > 0 as ON
+        setWalletSwitch((cartResponse.data?.walletDiscount || 0) > 0);
       } else {
         dispatch(setCart([]));
         setShippingCost(0);
         setShippingDate('');
         setCartId(null);
+        setWalletDiscount(0);
+        setWalletBalance(0);
+        setServerGrandTotal(null);
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -160,9 +188,10 @@ const CartScreen = () => {
     }
   };
 
+  // Initial data
   useEffect(() => {
     if (!isLoggedIn) return;
-    const fetchAllData = async () => {
+    (async () => {
       try {
         setLoading(true);
 
@@ -194,16 +223,34 @@ const CartScreen = () => {
           selectedAddress?.id ??
           (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
 
-        await fetchAndSetCurrentCart(addressId);
+        await fetchAndSetCurrentCart(addressId, false);
       } catch (error) {
         console.error('Error in initial fetch:', error);
       } finally {
         setLoading(false);
       }
-    };
-    fetchAllData();
+    })();
   }, [isLoggedIn, dispatch]);
 
+  // Wallet balance fetch (optional; UI shows balance regardless)
+  useEffect(() => {
+    (async () => {
+      if (!isLoggedIn) return;
+      try {
+        const resp = await checkUserWallet();
+        const bal = resp?.data?.walletBalance;
+        if (typeof bal === 'number') setWalletBalance(bal);
+      } catch {}
+    })();
+  }, [isLoggedIn]);
+
+  // Toggle switch -> request server to apply/remove wallet, then refresh
+  const onWalletSwitchChange = async val => {
+    setWalletSwitch(val);
+    await fetchAndSetCurrentCart(undefined, val);
+  };
+
+  // Mutations refetch with current server-intended flag
   const updateQuantity = async (id, newQuantity) => {
     const item = cartItems.find(i => i.id === id);
     if (!item) return;
@@ -214,7 +261,7 @@ const CartScreen = () => {
         variantId: item.variantId,
         quantity: newQuantity,
       });
-      await fetchAndSetCurrentCart();
+      await fetchAndSetCurrentCart(undefined, walletSwitch);
     } catch (error) {
       console.error('Error updating quantity:', error);
     } finally {
@@ -244,7 +291,7 @@ const CartScreen = () => {
         variantId: item.variantId,
         quantity: 0,
       });
-      await fetchAndSetCurrentCart();
+      await fetchAndSetCurrentCart(undefined, walletSwitch);
     } catch (error) {
       console.error('Error deleting item:', error);
     } finally {
@@ -252,11 +299,11 @@ const CartScreen = () => {
     }
   };
 
+  // Client-side sums (shown alongside server-calculated fields)
   const totalMRP = cartItems.reduce(
     (sum, item) => sum + item.salePrice * item.quantity,
     0,
   );
-
   const cgst = cartItems.reduce(
     (sum, item) => sum + (item.cgst || 0) * item.quantity,
     0,
@@ -286,8 +333,14 @@ const CartScreen = () => {
     }
   }
 
-  const totalPayable =
+  const localSubtotal =
     totalMRP + cgst + sgst + cess + igst - couponDiscount + shippingCost;
+
+  // Prefer server total; otherwise subtract server wallet discount when switch is ON
+  const totalPayable =
+    typeof serverGrandTotal === 'number'
+      ? serverGrandTotal
+      : Math.max(0, localSubtotal - (walletSwitch ? walletDiscount : 0));
 
   const getEffectiveAddressId = async () => {
     const savedId = await AsyncStorage.getItem(SELECTED_ADDRESS_KEY);
@@ -325,12 +378,9 @@ const CartScreen = () => {
       const note = checkoutNote || '';
       const effectiveCartId = cartId || cartIdFromItems;
 
-      if (!effectiveCartId) {
+      if (!effectiveCartId)
         throw new Error('Cart is not ready yet. Please try again.');
-      }
-      if (!addressId) {
-        throw new Error('Please select a delivery address.');
-      }
+      if (!addressId) throw new Error('Please select a delivery address.');
 
       const createPaymentResp = await apiService({
         endpoint: 'api/razorpay/create-payment',
@@ -340,6 +390,7 @@ const CartScreen = () => {
           cartId: effectiveCartId,
           couponId,
           note,
+          isUsingWalletAmount: walletSwitch,
         },
       });
 
@@ -384,36 +435,40 @@ const CartScreen = () => {
           cartId: effectiveCartId,
           couponId,
           note,
+          isUsingWalletAmount: walletSwitch,
           razorpayOrderId: razorpay_order_id,
           razorpayPaymentId: razorpay_payment_id,
           razorpaySignature: razorpay_signature,
         },
       });
+
       dispatch(resetCart());
       setAppliedCoupon(null);
       setCouponCode('');
       setCouponError('');
-      await fetchAndSetCurrentCart(addressId);
+
+      await fetchAndSetCurrentCart(addressId, false);
       await playSuccessAndNavigate();
     } catch (err) {
-      console.log('Payment error', err);
       Alert.alert(err?.message || 'Something went wrong');
     } finally {
       setIsPaying(false);
     }
   };
 
-  const handleCouponApply = (coupon, isSelected) => {
+  const handleCouponApply = coupon => {
     if (coupon && totalMRP >= coupon.minPurchase) {
       setAppliedCoupon(coupon);
       setCouponCode(coupon.code);
       setCouponError('');
       couponSheetRef.current?.close();
+      fetchAndSetCurrentCart(undefined, walletSwitch);
     } else if (!coupon) {
       setAppliedCoupon(null);
       setCouponCode('');
       setCouponError('');
       couponSheetRef.current?.close();
+      fetchAndSetCurrentCart(undefined, walletSwitch);
     } else {
       setCouponError('Minimum purchase not met');
     }
@@ -433,6 +488,7 @@ const CartScreen = () => {
     }
     setAppliedCoupon(foundCoupon);
     setCouponError('');
+    fetchAndSetCurrentCart(undefined, walletSwitch);
   };
 
   const formatWeight = grams => {
@@ -525,7 +581,10 @@ const CartScreen = () => {
             <Text style={s.bannerText}>
               🎉 You’re saving{' '}
               <Text style={{ fontWeight: 'bold' }}>
-                ₹{couponDiscount.toFixed(2)}
+                ₹
+                {(couponDiscount + (walletSwitch ? walletDiscount : 0)).toFixed(
+                  2,
+                )}
               </Text>{' '}
               on this order
             </Text>
@@ -649,6 +708,7 @@ const CartScreen = () => {
 
             <SpecialDeals />
 
+            {/* Coupons */}
             <View style={s.couponContainer}>
               <View style={s.couponHeader}>
                 <Image
@@ -689,6 +749,30 @@ const CartScreen = () => {
                 <Text style={s.checkAllCoupons}>Check All Coupons</Text>
               </TouchableOpacity>
             </View>
+
+            {/* Wallet preference driven by API */}
+            <View style={s.walletContainer}>
+              <View style={s.walletLeft}>
+                {/* <Image
+                  source={require('../../assets/icons/wallet.png')}
+                  style={s.walletIcon}
+                /> */}
+                <View>
+                  <Text style={s.walletTitle}>Use Wallet Balance</Text>
+                  <Text style={s.walletSub}>
+                    Available: ₹{Number(walletBalance || 0).toFixed(2)}
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={walletSwitch}
+                onValueChange={onWalletSwitchChange}
+                trackColor={{ false: '#d9d9d9', true: '#9be7f3' }}
+                thumbColor={walletSwitch ? '#0888B1' : '#f4f3f4'}
+              />
+            </View>
+
+            {/* GST */}
             <View style={s.gstContainer}>
               <View style={s.gstHeader}>
                 <Image
@@ -741,6 +825,13 @@ const CartScreen = () => {
                 <Text style={s.freeText}>₹{shippingCost.toFixed(2)}</Text>
               </View>
 
+              {walletSwitch && walletDiscount > 0 ? (
+                <View style={s.priceRow}>
+                  <Text style={s.label}>Wallet Discount</Text>
+                  <Text style={s.freeText}>- ₹{walletDiscount.toFixed(2)}</Text>
+                </View>
+              ) : null}
+
               <View style={s.dashedLine} />
 
               <View style={s.priceRow}>
@@ -789,14 +880,12 @@ const CartScreen = () => {
             autoPlay
             loop={false}
             style={s.successLottie}
-            // onAnimationFinish={() => { /* alternative to timeout */ }}
           />
         </View>
       )}
     </View>
   );
 };
-
 const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: '#FFFFFF' },
@@ -807,8 +896,8 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
         Platform.OS === 'android'
           ? StatusBar.currentHeight || (vsmall ? 18 : small ? 22 : 40)
           : Platform.OS === 'ios'
-          ? StatusBar.currentHeight || 50 // Use a fallback value of 30 if StatusBar.currentHeight is undefined
-          : 0, // Default for any other platform, in case it's needed
+          ? StatusBar.currentHeight || 50
+          : 0,
     },
     headerRow: {
       flexDirection: 'row',
@@ -1027,6 +1116,78 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     },
     couponError: { color: 'red', marginTop: vsmall ? 4 : small ? 6 : 6 },
 
+    // Wallet styles (only visible on true)
+    walletContainer: {
+      backgroundColor: '#F2FFFB',
+      borderColor: '#00BFA5',
+      borderWidth: 1,
+      borderRadius: vsmall ? 10 : small ? 12 : 16,
+      padding: vsmall ? 10 : small ? 12 : 16,
+      marginTop: vsmall ? 6 : small ? 8 : 10,
+      marginBottom: vsmall ? 10 : small ? 14 : 20,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    walletLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    walletIcon: {
+      width: vsmall ? 18 : small ? 20 : 22,
+      height: vsmall ? 18 : small ? 20 : 22,
+      resizeMode: 'contain',
+      marginRight: 8,
+    },
+    walletTitle: {
+      fontSize: vsmall ? 14 : small ? 15 : 16,
+      fontFamily: 'Gotham-Rounded-Bold',
+      color: '#114A3A',
+    },
+    walletSub: {
+      fontSize: vsmall ? 12 : small ? 13 : 13,
+      fontFamily: 'Gotham-Rounded-Medium',
+      color: '#247C66',
+      marginTop: 2,
+    },
+    switchOuter: {
+      width: 48,
+      height: 28,
+      borderRadius: 16,
+      padding: 3,
+      justifyContent: 'center',
+      backgroundColor: '#00BFA5',
+      alignItems: 'flex-end',
+    },
+    switchKnob: {
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: '#fff',
+    },
+
+    // Choice buttons (tri-state UX)
+    choiceBtn: {
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderColor: '#C9EDE7',
+      borderRadius: 8,
+      backgroundColor: '#F7FFFD',
+    },
+    choiceBtnActive: {
+      borderColor: '#00BFA5',
+      backgroundColor: '#E9FFFA',
+    },
+    choiceBtnText: {
+      color: '#20655A',
+      fontFamily: 'Gotham-Rounded-Bold',
+    },
+    choiceBtnTextActive: {
+      color: '#0a4f44',
+    },
+
     // GST
     gstContainer: {
       backgroundColor: '#FFFFFF',
@@ -1075,7 +1236,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       borderWidth: 1,
       borderColor: '#F59A11',
       padding: 16,
-      marginBottom: '45%',
+      marginBottom: '15%',
     },
     priceDetailsTitle: {
       fontSize: vsmall ? 16 : small ? 18 : 18,

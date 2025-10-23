@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getWalletTransactions } from '../../apis/getWalletTransactions';
+import { checkUserWallet } from '../../apis/checkUserWallet';
 import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
-
 const MyWallet = ({ navigation }) => {
   const { width, height } = useWindowDimensions();
   const spacing = Math.max(12, Math.min(20, width * 0.045));
@@ -28,7 +28,23 @@ const MyWallet = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [balance, setBalance] = useState(0);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [balanceError, setBalanceError] = useState(null);
 
+  const fetchBalance = useCallback(async () => {
+    try {
+      setBalanceLoading(true);
+      const res = await checkUserWallet();
+      const amt = Number(res?.data?.walletBalance ?? 0);
+      setBalance(Number.isNaN(amt) ? 0 : amt);
+      setBalanceError(null);
+    } catch (e) {
+      setBalanceError('Failed to fetch wallet balance');
+    } finally {
+      setBalanceLoading(false);
+    }
+  }, []);
   const fetchPage = useCallback(
     async (pg = 1, replace = true) => {
       try {
@@ -51,16 +67,15 @@ const MyWallet = ({ navigation }) => {
     },
     [perPage, refreshing],
   );
-
   useEffect(() => {
+    fetchBalance();
     fetchPage(1, true);
-  }, [fetchPage]);
-
+  }, [fetchBalance, fetchPage]);
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    fetchBalance();
     fetchPage(1, true);
-  }, [fetchPage]);
-
+  }, [fetchBalance, fetchPage]);
   const onEndReached = useCallback(() => {
     const canLoadMore = items.length < total && !loading;
     if (canLoadMore) fetchPage(page + 1, false);
@@ -116,23 +131,27 @@ const MyWallet = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={[styles.header, { fontSize: headerFont }]}>My Wallet</Text>
       </View>
+
       <View style={[styles.topRow, { paddingHorizontal: spacing }]}>
-        <Text style={styles.topLabel}>Balance</Text>
+        <Text style={styles.topLabel}>
+          {balanceError ? 'Balance unavailable' : ''}
+        </Text>
         <TouchableOpacity
           onPress={onRefresh}
-          disabled={refreshing || loading}
+          disabled={refreshing || loading || balanceLoading}
           accessibilityRole="button"
-          accessibilityLabel="Refresh wallet transactions"
+          accessibilityLabel="Refresh wallet"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={[
             styles.refreshBtn,
-            { opacity: refreshing || loading ? 0.5 : 1 },
+            { opacity: refreshing || loading || balanceLoading ? 0.5 : 1 },
           ]}
           activeOpacity={0.6}
         >
           <RefreshCw size={22} color="#111" />
         </TouchableOpacity>
       </View>
+
       <View
         style={[
           styles.balanceCard,
@@ -146,24 +165,23 @@ const MyWallet = ({ navigation }) => {
         <Text style={styles.balanceLabel}>Available Balance</Text>
         <View style={styles.amountRow}>
           <Text style={[styles.currency, { fontSize: amountFont }]}>₹</Text>
-          <Text style={[styles.amount, { fontSize: amountFont }]}>0.00</Text>
+          <Text style={[styles.amount, { fontSize: amountFont }]}>
+            {balanceLoading ? '...' : Number(balance).toFixed(2)}
+          </Text>
         </View>
       </View>
+
       <View
         style={[
           styles.divider,
           { marginTop: spacing * 0.7, marginBottom: spacing * 0.5 },
         ]}
       />
+
       <View
         style={{ paddingHorizontal: spacing, paddingVertical: spacing * 0.5 }}
       >
-        <Text
-          style={[
-            styles.sectionTitle,
-            { fontSize: Math.max(16, Math.min(18, width * 0.045)) },
-          ]}
-        >
+        <Text style={[styles.sectionTitle, { fontSize: sectionFont }]}>
           Transaction History
         </Text>
       </View>
@@ -181,13 +199,12 @@ const MyWallet = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       ) : null}
+
       <FlatList
         data={items}
         keyExtractor={(item, idx) => String(item?.id ?? idx)}
         renderItem={renderItem}
-        contentContainerStyle={{
-          paddingBottom: 24,
-        }}
+        contentContainerStyle={{ paddingBottom: 24 }}
         ListEmptyComponent={!loading && !error ? ListEmpty : null}
         onEndReachedThreshold={0.2}
         onEndReached={onEndReached}
