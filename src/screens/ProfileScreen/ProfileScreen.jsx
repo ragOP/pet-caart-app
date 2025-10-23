@@ -21,6 +21,8 @@ import {
   ChevronRight,
   LogOut,
   ArrowLeft,
+  CreditCard,
+  Wallet,
 } from 'lucide-react-native';
 import { logout } from '../../redux/authSlice';
 import { resetCart } from '../../redux/cartSlice';
@@ -108,6 +110,11 @@ const ProfileScreen = ({ navigation }) => {
       label: 'Invite Friends',
       icon: <UserRoundPlus size={iconSize} color={iconColor} />,
       navigateTo: 'InviteScreen',
+    },
+    {
+      label: 'My Wallet',
+      icon: <Wallet size={iconSize} color={iconColor} />,
+      navigateTo: 'MyWallet',
     },
     {
       label: 'Contact Us',

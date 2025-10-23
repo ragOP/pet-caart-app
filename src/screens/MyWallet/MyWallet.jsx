@@ -1,9 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, RefreshCw } from 'lucide-react-native';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  Image,
-  Platform,
   StatusBar,
   StyleSheet,
   Text,
@@ -12,8 +11,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, RefreshCw } from 'lucide-react-native';
 import { getWalletTransactions } from '../../apis/getWalletTransactions';
+import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
 
 const MyWallet = ({ navigation }) => {
   const { width, height } = useWindowDimensions();
@@ -22,7 +21,6 @@ const MyWallet = ({ navigation }) => {
   const amountFont = Math.max(24, Math.min(30, width * 0.09));
   const headerFont = Math.max(20, Math.min(24, width * 0.06));
   const sectionFont = Math.max(16, Math.min(18, width * 0.045));
-  const ghostSize = Math.max(56, width * 0.16);
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -45,7 +43,7 @@ const MyWallet = ({ navigation }) => {
         setPage(Number(inner?.page ?? pg));
         setError(null);
       } catch (e) {
-        setError('Failed to load transactions');
+        setError('Something went wrong');
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -68,45 +66,41 @@ const MyWallet = ({ navigation }) => {
     if (canLoadMore) fetchPage(page + 1, false);
   }, [items.length, total, loading, page, fetchPage]);
 
-  const renderItem = ({ item }) => {
-    return (
-      <View style={styles.row}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.rowTitle}>{item?.title ?? 'Transaction'}</Text>
-          <Text style={styles.rowSub}>{item?.date ?? '-'}</Text>
-        </View>
-        <Text
-          style={[
-            styles.rowAmount,
-            { color: (item?.amount ?? 0) >= 0 ? '#16a34a' : '#dc2626' },
-          ]}
-        >
-          ₹{Math.abs(item?.amount ?? 0).toFixed(2)}
-        </Text>
+  const renderItem = ({ item }) => (
+    <View style={styles.row}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.rowTitle}>{item?.title ?? 'Transaction'}</Text>
+        <Text style={styles.rowSub}>{item?.date ?? '-'}</Text>
       </View>
-    );
-  };
+      <Text
+        style={[
+          styles.rowAmount,
+          { color: (item?.amount ?? 0) >= 0 ? '#16a34a' : '#dc2626' },
+        ]}
+      >
+        ₹{Math.abs(item?.amount ?? 0).toFixed(2)}
+      </Text>
+    </View>
+  );
 
   const ListEmpty = useMemo(
     () => (
       <View
         style={[
           styles.emptyWrap,
-          {
-            minHeight: height * 0.45,
-            paddingHorizontal: spacing,
-          },
+          { minHeight: height * 0.45, paddingHorizontal: spacing },
         ]}
       >
         <Text style={styles.emptyText}>No transactions yet</Text>
       </View>
     ),
-    [ghostSize, height, spacing],
+    [height, spacing],
   );
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
       <View
         style={[
           styles.headerRow,
@@ -122,30 +116,23 @@ const MyWallet = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={[styles.header, { fontSize: headerFont }]}>My Wallet</Text>
       </View>
-
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: spacing,
-          marginBottom: 8,
-          marginTop: 4,
-        }}
-      >
-        <Text style={{ color: '#111', fontSize: 14, opacity: 0.7 }}></Text>
-
+      <View style={[styles.topRow, { paddingHorizontal: spacing }]}>
+        <Text style={styles.topLabel}>Balance</Text>
         <TouchableOpacity
           onPress={onRefresh}
           disabled={refreshing || loading}
-          style={{ padding: 6, opacity: refreshing || loading ? 0.5 : 1 }}
+          accessibilityRole="button"
+          accessibilityLabel="Refresh wallet transactions"
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          style={[
+            styles.refreshBtn,
+            { opacity: refreshing || loading ? 0.5 : 1 },
+          ]}
           activeOpacity={0.6}
         >
           <RefreshCw size={22} color="#111" />
         </TouchableOpacity>
       </View>
-
-      {/* Balance Card */}
       <View
         style={[
           styles.balanceCard,
@@ -162,30 +149,28 @@ const MyWallet = ({ navigation }) => {
           <Text style={[styles.amount, { fontSize: amountFont }]}>0.00</Text>
         </View>
       </View>
-
-      {/* Divider */}
       <View
         style={[
           styles.divider,
           { marginTop: spacing * 0.7, marginBottom: spacing * 0.5 },
         ]}
       />
-
-      {/* Section Title */}
       <View
         style={{ paddingHorizontal: spacing, paddingVertical: spacing * 0.5 }}
       >
-        <Text style={[styles.sectionTitle, { fontSize: sectionFont }]}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { fontSize: Math.max(16, Math.min(18, width * 0.045)) },
+          ]}
+        >
           Transaction History
         </Text>
       </View>
 
-      {loading && items.length === 0 && (
-        <View style={styles.initialLoader}>
-          <ActivityIndicator size="small" color="#666" />
-        </View>
-      )}
-      {error && items.length === 0 && !loading && (
+      {loading && items.length === 0 ? <AddressShimmer /> : null}
+
+      {error && items.length === 0 && !loading ? (
         <View style={styles.errorBox}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
@@ -195,7 +180,27 @@ const MyWallet = ({ navigation }) => {
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
-      )}
+      ) : null}
+      <FlatList
+        data={items}
+        keyExtractor={(item, idx) => String(item?.id ?? idx)}
+        renderItem={renderItem}
+        contentContainerStyle={{
+          paddingBottom: 24,
+        }}
+        ListEmptyComponent={!loading && !error ? ListEmpty : null}
+        onEndReachedThreshold={0.2}
+        onEndReached={onEndReached}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        ListFooterComponent={
+          loading && items.length > 0 ? (
+            <View style={{ paddingVertical: 14 }}>
+              <ActivityIndicator size="small" color="#666" />
+            </View>
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 };
@@ -207,6 +212,15 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', alignItems: 'center' },
   backButton: { paddingRight: 12, paddingVertical: 6 },
   header: { fontWeight: 'bold', paddingLeft: 10, color: '#000' },
+  topRow: {
+    marginTop: 4,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  topLabel: { color: '#111', fontSize: 14, opacity: 0.7 },
+  refreshBtn: { padding: 6 },
   balanceCard: {
     backgroundColor: '#F59A11',
     paddingVertical: 18,
@@ -222,6 +236,7 @@ const styles = StyleSheet.create({
   amount: { color: '#fff', fontWeight: '800', letterSpacing: 0.2 },
   divider: { height: 1, backgroundColor: '#F3E3CF' },
   sectionTitle: { fontWeight: '700', color: '#222' },
+
   row: {
     paddingVertical: 12,
     paddingHorizontal: 16,

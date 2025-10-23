@@ -3,7 +3,9 @@ export const endpoints = {
   login: 'api/auth/user/login',
   register: 'api/auth/user/register',
   update_profile: 'api/auth/user/update-profile',
-
+  generateReferralCode: 'api/auth/user/generate-referral-code',
+  walletTransactions: 'api/auth/user/get-all-wallet-transactions',
+  checkUserWallet: 'api/auth/user/check-user-wallet',
   // products
   products: 'api/product',
 

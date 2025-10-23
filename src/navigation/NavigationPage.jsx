@@ -25,6 +25,7 @@ import { navigationRef } from '../constants/navigationRef';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BreedDetailScreen from '../screens/BreedDetailScreen/BreedDetailScreen';
+import MyWallet from '../screens/MyWallet/MyWallet';
 
 const Stack = createStackNavigator();
 
@@ -131,6 +132,11 @@ export default function NavigationPage() {
             <Stack.Screen
               name="BreedDetailScreen"
               component={BreedDetailScreen}
+              screenOptions={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="MyWallet"
+              component={MyWallet}
               screenOptions={{ headerShown: false }}
             />
           </Stack.Navigator>
