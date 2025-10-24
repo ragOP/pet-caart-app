@@ -162,15 +162,12 @@ const CartScreen = () => {
 
         // Wallet fields driven by API
         setWalletDiscount(Number(cartResponse.data?.walletDiscount || 0));
-        setWalletBalance(Number(cartResponse.data?.walletBalance || 0));
         setServerGrandTotal(
           typeof cartResponse.data?.total_price_with_shipping_and_discount ===
             'number'
             ? cartResponse.data.total_price_with_shipping_and_discount
             : null,
         );
-
-        // Sync the switch to whatever server applied: treat walletDiscount > 0 as ON
         setWalletSwitch((cartResponse.data?.walletDiscount || 0) > 0);
       } else {
         dispatch(setCart([]));
