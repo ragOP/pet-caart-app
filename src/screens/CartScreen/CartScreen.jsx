@@ -1220,7 +1220,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       borderWidth: 1,
       borderColor: '#F59A11',
       padding: 16,
-      marginBottom: '5%',
+      marginBottom: '18%',
     },
     priceDetailsTitle: {
       fontSize: vsmall ? 16 : small ? 18 : 18,
