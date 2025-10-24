@@ -1,4 +1,9 @@
-import { ArrowLeft, RefreshCw } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  RefreshCw,
+  ArrowDownLeft,
+  ArrowUpRight,
+} from 'lucide-react-native';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   ActivityIndicator,
@@ -14,6 +19,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getWalletTransactions } from '../../apis/getWalletTransactions';
 import { checkUserWallet } from '../../apis/checkUserWallet';
 import AddressShimmer from '../../ui/Shimmer/AddressShimmer';
+
+const fmtDate = iso => {
+  if (!iso) return '-';
+  try {
+    const d = new Date(iso);
+    const date = new Intl.DateTimeFormat(undefined, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(d);
+    const time = new Intl.DateTimeFormat(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    }).format(d);
+    return `${date}, ${time}`;
+  } catch {
+    return '-';
+  }
+};
+
 const MyWallet = ({ navigation }) => {
   const { width, height } = useWindowDimensions();
   const spacing = Math.max(12, Math.min(20, width * 0.045));
@@ -21,6 +47,7 @@ const MyWallet = ({ navigation }) => {
   const amountFont = Math.max(24, Math.min(30, width * 0.09));
   const headerFont = Math.max(20, Math.min(24, width * 0.06));
   const sectionFont = Math.max(16, Math.min(18, width * 0.045));
+
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -28,6 +55,7 @@ const MyWallet = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+
   const [balance, setBalance] = useState(0);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceError, setBalanceError] = useState(null);
@@ -39,26 +67,39 @@ const MyWallet = ({ navigation }) => {
       const amt = Number(res?.data?.walletBalance ?? 0);
       setBalance(Number.isNaN(amt) ? 0 : amt);
       setBalanceError(null);
-    } catch (e) {
+    } catch {
       setBalanceError('Failed to fetch wallet balance');
     } finally {
       setBalanceLoading(false);
     }
   }, []);
+
   const fetchPage = useCallback(
     async (pg = 1, replace = true) => {
       try {
         if (!refreshing) setLoading(true);
         const res = await getWalletTransactions({ page: pg, perPage });
         const inner = res?.data;
-        const list = Array.isArray(inner?.data) ? inner.data : [];
+        const apiList = Array.isArray(inner?.data) ? inner.data : [];
+        const uiList = apiList.map(t => ({
+          id: t?._id,
+          title:
+            t?.description ||
+            (t?.type === 'credit' ? 'Amount credited' : 'Amount debited'),
+          date: fmtDate(t?.createdAt),
+          amount:
+            t?.type === 'credit'
+              ? Math.abs(Number(t?.amount ?? 0))
+              : -Math.abs(Number(t?.amount ?? 0)),
+          type: t?.type,
+        }));
         const totalCount = Number(inner?.total ?? 0);
 
         setTotal(totalCount);
-        setItems(prev => (replace ? list : [...prev, ...list]));
+        setItems(prev => (replace ? uiList : [...prev, ...uiList]));
         setPage(Number(inner?.page ?? pg));
         setError(null);
-      } catch (e) {
+      } catch {
         setError('Something went wrong');
       } finally {
         setLoading(false);
@@ -67,36 +108,58 @@ const MyWallet = ({ navigation }) => {
     },
     [perPage, refreshing],
   );
+
   useEffect(() => {
     fetchBalance();
     fetchPage(1, true);
   }, [fetchBalance, fetchPage]);
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchBalance();
     fetchPage(1, true);
   }, [fetchBalance, fetchPage]);
+
   const onEndReached = useCallback(() => {
     const canLoadMore = items.length < total && !loading;
     if (canLoadMore) fetchPage(page + 1, false);
-  }, [items.length, total, loading, page, fetchPage]);
+  }, [items.length, total, loading, page, fetchPage]); // Infinite scroll per docs. [web:10]
 
-  const renderItem = ({ item }) => (
-    <View style={styles.row}>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.rowTitle}>{item?.title ?? 'Transaction'}</Text>
-        <Text style={styles.rowSub}>{item?.date ?? '-'}</Text>
+  const renderItem = ({ item }) => {
+    const isCredit = item?.type === 'credit';
+    const clr = isCredit ? '#16a34a' : '#dc2626';
+    const amtAbs = Math.abs(Number(item?.amount ?? 0)).toFixed(2);
+    return (
+      <View style={styles.row}>
+        <View style={styles.leftWrap}>
+          <View
+            style={[
+              styles.badge,
+              { backgroundColor: isCredit ? '#E6F6EC' : '#FDECEC' },
+            ]}
+          >
+            {isCredit ? (
+              <ArrowDownLeft size={18} color={clr} />
+            ) : (
+              <ArrowUpRight size={18} color={clr} />
+            )}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.rowTitle} numberOfLines={2}>
+              {item?.title ?? 'Transaction'}
+            </Text>
+            <Text style={styles.rowSub} numberOfLines={1}>
+              {item?.date ?? '-'}
+            </Text>
+          </View>
+        </View>
+        <Text style={[styles.rowAmount, { color: clr }]}>
+          {isCredit ? '+ ₹ ' : '- ₹ '}
+          {amtAbs}
+        </Text>
       </View>
-      <Text
-        style={[
-          styles.rowAmount,
-          { color: (item?.amount ?? 0) >= 0 ? '#16a34a' : '#dc2626' },
-        ]}
-      >
-        ₹{Math.abs(item?.amount ?? 0).toFixed(2)}
-      </Text>
-    </View>
-  );
+    );
+  };
 
   const ListEmpty = useMemo(
     () => (
@@ -115,7 +178,6 @@ const MyWallet = ({ navigation }) => {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
       <View
         style={[
           styles.headerRow,
@@ -131,7 +193,7 @@ const MyWallet = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={[styles.header, { fontSize: headerFont }]}>My Wallet</Text>
       </View>
-
+      {/* 
       <View style={[styles.topRow, { paddingHorizontal: spacing }]}>
         <Text style={styles.topLabel}>
           {balanceError ? 'Balance unavailable' : ''}
@@ -150,7 +212,7 @@ const MyWallet = ({ navigation }) => {
         >
           <RefreshCw size={22} color="#111" />
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <View
         style={[
@@ -247,12 +309,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
-  balanceLabel: { color: '#fff', opacity: 0.9, fontSize: 14, marginBottom: 6 },
+  balanceLabel: {
+    color: '#fff',
+    opacity: 0.9,
+    fontSize: 15,
+    marginBottom: 6,
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
   amountRow: { flexDirection: 'row', alignItems: 'flex-end' },
-  currency: { color: '#fff', fontWeight: '700', marginRight: 4 },
-  amount: { color: '#fff', fontWeight: '800', letterSpacing: 0.2 },
+  currency: {
+    color: '#fff',
+    fontFamily: 'Gotham-Rounded-Bold',
+    marginRight: 4,
+  },
+  amount: {
+    color: '#fff',
+    fontFamily: 'Gotham-Rounded-Bold',
+    letterSpacing: 0.2,
+  },
   divider: { height: 1, backgroundColor: '#F3E3CF' },
-  sectionTitle: { fontWeight: '700', color: '#222' },
+  sectionTitle: { fontFamily: 'Gotham-Rounded-Bold', color: '#222' },
 
   row: {
     paddingVertical: 12,
@@ -264,17 +340,41 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F1F1F1',
     backgroundColor: '#fff',
   },
-  rowTitle: { color: '#222', fontWeight: '700' },
-  rowSub: { color: '#6b7280', marginTop: 2 },
-  rowAmount: { fontWeight: '800' },
+  leftWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  badge: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  rowTitle: {
+    color: '#222',
+    maxWidth: '92%',
+    lineHeight: 18,
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
+  rowSub: {
+    color: '#6b7280',
+    marginTop: 2,
+    fontFamily: 'Gotham-Rounded-Medium',
+    fontSize: 10,
+  },
+  rowAmount: {
+    fontFamily: 'Gotham-Rounded-Medium',
+    minWidth: 100,
+    textAlign: 'right',
+  },
+
   emptyWrap: { alignItems: 'center', justifyContent: 'center' },
   emptyText: { fontSize: 16, color: '#8c9197', fontWeight: '600' },
-  initialLoader: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
+
   errorBox: {
     position: 'absolute',
     bottom: 24,
