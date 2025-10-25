@@ -809,7 +809,6 @@ const CartScreen = () => {
               </View>
             </View>
 
-            {/* Price Details */}
             <View style={s.priceDetailsWrapper}>
               <Text style={s.priceDetailsTitle}>📦 Price Details</Text>
               <View style={s.priceRow}>
@@ -831,7 +830,6 @@ const CartScreen = () => {
                 </View>
                 <Text style={s.freeText}>₹{shippingCost.toFixed(2)}</Text>
               </View>
-              {/* Wallet row */}
               {showWallet && (
                 <View style={s.walletRow}>
                   <View style={{ flex: 1 }}>
@@ -862,7 +860,7 @@ const CartScreen = () => {
                     activeOpacity={0.7}
                   >
                     {useWallet && (
-                      <Check size={18} color="#fff" strokeWidth={4} />
+                      <Check size={16} color="#fff" strokeWidth={3} />
                     )}
                   </TouchableOpacity>
                   {showTooltip && (
@@ -882,6 +880,7 @@ const CartScreen = () => {
                   )}
                 </View>
               )}
+
               {useWallet && walletDeduction > 0 && (
                 <View style={s.priceRow}>
                   <Text style={s.freeText}>Wallet Discount</Text>
@@ -890,6 +889,14 @@ const CartScreen = () => {
                   </Text>
                 </View>
               )}
+              <View style={s.cashbackBanner}>
+                <Text style={s.cashbackText}>
+                  💰 You'll get 5% cashback in wallet for this order{' '}
+                  <Text style={s.cashbackAmount}>
+                    (+₹{(totalPayable * 0.05).toFixed(2)})
+                  </Text>
+                </Text>
+              </View>
               <View style={s.dashedLine} />
               <View style={s.priceRow}>
                 <Text style={s.totalPay}>To Pay</Text>
@@ -1232,7 +1239,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: vsmall ? 10 : small ? 12 : 12,
+      marginBottom: vsmall ? 8 : small ? 8 : 10,
     },
     label: {
       fontSize: vsmall ? 14 : small ? 15 : 15,
@@ -1313,8 +1320,6 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       fontWeight: '700',
       fontStyle: 'italic',
     },
-
-    // Tooltip styles
     tooltipOverlay: {
       position: 'absolute',
       top: -60,
@@ -1351,12 +1356,13 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     },
     tooltipText: {
       color: '#fff',
-      fontSize: vsmall ? 11 : 12,
+      fontSize: vsmall ? 10 : 11,
       lineHeight: 16,
+      fontFamily: 'Gotham-Rounded-Medium',
     },
     checkbox: {
-      width: 22,
-      height: 22,
+      width: 20,
+      height: 20,
       borderRadius: 4,
       borderWidth: 2,
       borderColor: '#6a6a6a',
@@ -1367,6 +1373,25 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     checkboxActive: {
       backgroundColor: '#F59A11',
       borderColor: '#F59A11',
+    },
+    cashbackBanner: {
+      backgroundColor: '#f8fafc',
+      borderRadius: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      marginTop: 12,
+      borderLeftWidth: 3,
+      borderLeftColor: '#4CAF50',
+    },
+    cashbackText: {
+      fontSize: vsmall ? 10 : small ? 11 : 11,
+      color: '#2E7D32',
+      fontFamily: 'Gotham-Rounded-Medium',
+      lineHeight: 20,
+    },
+    cashbackAmount: {
+      fontFamily: 'Gotham-Rounded-Medium',
+      color: '#1B5E20',
     },
     payNowButton: {
       position: 'absolute',

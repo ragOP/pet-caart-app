@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Platform,
   ScrollView,
+  RefreshControl,
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
@@ -131,10 +132,13 @@ const ProductImage = ({ item, title }) => {
 
 const MyOrderScreen = ({ navigation }) => {
   const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['orders', { page: 1, limit: 20 }],
-    queryFn: () => getOrders({ params: { page: 1, limit: 20 } }),
+    queryFn: () => {
+      return getOrders({ params: { page: 1, limit: 20 } });
+    },
     select: res => res?.data?.orders ?? [],
     staleTime: 30_000,
   });
@@ -145,24 +149,27 @@ const MyOrderScreen = ({ navigation }) => {
     variables: reorderVars,
   } = useMutation({
     mutationFn: ({ orderId }) => reorder({ orderId }),
-    onMutate: vars => {
-      console.log('[REORDER] onMutate vars:', vars);
-    },
+    onMutate: vars => {},
     onSuccess: (res, vars) => {
-      console.log('[REORDER] success response:', res);
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       navigation.navigate('BottomTabs', { screen: 'Cart' });
     },
-    onError: (err, vars) => {
-      console.log('[REORDER] error vars:', vars);
-      console.log('[REORDER] error:', err);
-    },
+    onError: (err, vars) => {},
     onSettled: (res, err, vars) => {
       console.log('[REORDER] settled. err?', !!err, 'vars:', vars);
     },
   });
 
-  // Newest first for "Recent Orders"
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } catch (error) {
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const orders = Array.isArray(data)
     ? [...data].sort(
         (a, b) => new Date(b?.createdAt || 0) - new Date(a?.createdAt || 0),
@@ -212,7 +219,7 @@ const MyOrderScreen = ({ navigation }) => {
           </View>
           <Text style={styles.emptyTitle}>No orders yet</Text>
           <Text style={styles.emptySubtitle}>
-            You haven’t placed any orders yet. Start shopping to see your orders
+            You haven't placed any orders yet. Start shopping to see your orders
             here.
           </Text>
           <TouchableOpacity
@@ -227,6 +234,14 @@ const MyOrderScreen = ({ navigation }) => {
         <ScrollView
           contentContainerStyle={styles.orderList}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#F59A11']}
+              tintColor="#F59A11"
+            />
+          }
         >
           {orders.map((order, index) => {
             const item = primaryItem(order);
@@ -242,11 +257,10 @@ const MyOrderScreen = ({ navigation }) => {
                 activeOpacity={0.9}
                 onPress={() =>
                   navigation.navigate('OrderDetailsScreen', {
-                    order, // pass full order object
+                    order,
                   })
                 }
               >
-                {/* Left column: Image + Reorder below image */}
                 <View style={styles.leftCol}>
                   <ProductImage item={item} title={title} />
                   <TouchableOpacity
@@ -270,7 +284,6 @@ const MyOrderScreen = ({ navigation }) => {
                   </TouchableOpacity>
                 </View>
 
-                {/* Right column: Content */}
                 <View style={styles.orderContent}>
                   <Text style={styles.orderId}>
                     <Text style={styles.orderIdBold}>{order?.orderId}</Text>
@@ -292,7 +305,6 @@ const MyOrderScreen = ({ navigation }) => {
                     </View>
                   </View>
 
-                  {/* Footer: status + chevron */}
                   <View style={styles.footerRow}>
                     <View
                       style={[
@@ -358,8 +370,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-
-  // Left column with image and button
   leftCol: {
     alignItems: 'center',
     marginRight: 12,
@@ -391,7 +401,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     letterSpacing: 0.2,
   },
-
   previewBox: {
     width: CARD_IMAGE_W,
     height: CARD_IMAGE_H,
@@ -418,7 +427,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     letterSpacing: 0.5,
   },
-
   orderContent: { flex: 1, minWidth: 0, marginLeft: 4 },
   orderId: {
     fontSize: 13,
@@ -465,7 +473,6 @@ const styles = StyleSheet.create({
     color: '#004E6A',
     fontFamily: 'Gotham-Rounded-Medium',
   },
-
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,272 +1,189 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Platform,
-  StatusBar,
-  StyleSheet,
+  View,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
-  View,
+  StyleSheet,
+  StatusBar,
+  SafeAreaView,
+  Platform,
+  Linking,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, RefreshCw } from 'lucide-react-native';
-import { getWalletTransactions } from '../../apis/getWalletTransactions';
+import {
+  ArrowLeft,
+  Truck,
+  Undo2,
+  PhoneCall,
+  Mail,
+  ChevronRight,
+} from 'lucide-react-native';
 
-const MyWallet = ({ navigation }) => {
-  const { width, height } = useWindowDimensions();
-  const spacing = Math.max(12, Math.min(20, width * 0.045));
-  const cardRadius = Math.max(12, Math.min(16, width * 0.035));
-  const amountFont = Math.max(24, Math.min(30, width * 0.09));
-  const headerFont = Math.max(20, Math.min(24, width * 0.06));
-  const sectionFont = Math.max(16, Math.min(18, width * 0.045));
-  const ghostSize = Math.max(56, width * 0.16);
-  const [items, setItems] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [perPage] = useState(50);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-
-  const fetchPage = useCallback(
-    async (pg = 1, replace = true) => {
-      try {
-        if (!refreshing) setLoading(true);
-        const res = await getWalletTransactions({ page: pg, perPage });
-        const inner = res?.data;
-        const list = Array.isArray(inner?.data) ? inner.data : [];
-        const totalCount = Number(inner?.total ?? 0);
-
-        setTotal(totalCount);
-        setItems(prev => (replace ? list : [...prev, ...list]));
-        setPage(Number(inner?.page ?? pg));
-        setError(null);
-      } catch (e) {
-        setError('Failed to load transactions');
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [perPage, refreshing],
-  );
-
-  useEffect(() => {
-    fetchPage(1, true);
-  }, [fetchPage]);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchPage(1, true);
-  }, [fetchPage]);
-
-  const onEndReached = useCallback(() => {
-    const canLoadMore = items.length < total && !loading;
-    if (canLoadMore) fetchPage(page + 1, false);
-  }, [items.length, total, loading, page, fetchPage]);
-
-  const renderItem = ({ item }) => {
-    return (
-      <View style={styles.row}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.rowTitle}>{item?.title ?? 'Transaction'}</Text>
-          <Text style={styles.rowSub}>{item?.date ?? '-'}</Text>
-        </View>
-        <Text
-          style={[
-            styles.rowAmount,
-            { color: (item?.amount ?? 0) >= 0 ? '#16a34a' : '#dc2626' },
-          ]}
-        >
-          ₹{Math.abs(item?.amount ?? 0).toFixed(2)}
-        </Text>
-      </View>
-    );
+const ContactUsScreen = ({ navigation }) => {
+  const handleCall = () => {
+    Linking.openURL('tel:18005723575');
   };
 
-  const ListEmpty = useMemo(
-    () => (
-      <View
-        style={[
-          styles.emptyWrap,
-          {
-            minHeight: height * 0.45,
-            paddingHorizontal: spacing,
-          },
-        ]}
-      >
-        <Text style={styles.emptyText}>No transactions yet</Text>
-      </View>
-    ),
-    [ghostSize, height, spacing],
-  );
+  const handleEmail = () => {
+    Linking.openURL('mailto:support@petcaart.com');
+  };
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <View
-        style={[
-          styles.headerRow,
-          { paddingHorizontal: spacing, paddingVertical: spacing * 0.8 },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <ArrowLeft size={28} color="#000" />
-        </TouchableOpacity>
-        <Text style={[styles.header, { fontSize: headerFont }]}>My Wallet</Text>
+
+      {/* Header */}
+      <View style={styles.headerWrapper}>
+        <SafeAreaView>
+          <View style={styles.headerRow}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={styles.backButton}
+              activeOpacity={1}
+            >
+              <ArrowLeft size={28} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.header}>Contact Us</Text>
+          </View>
+        </SafeAreaView>
       </View>
+      <View style={styles.contentWrapper}>
+        <View>
+          <TouchableOpacity activeOpacity={1} style={styles.card}>
+            <View style={styles.cardLeft}>
+              <Truck size={28} color="#FF9F00" />
+              <View style={{ marginLeft: 12 }}>
+                <Text style={styles.cardTitle}>Track Order</Text>
+                <Text style={styles.cardDesc}>View status of the order</Text>
+              </View>
+            </View>
+            <ChevronRight size={24} color="#FFA500" />
+          </TouchableOpacity>
 
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: spacing,
-          marginBottom: 8,
-          marginTop: 4,
-        }}
-      >
-        <Text style={{ color: '#111', fontSize: 14, opacity: 0.7 }}></Text>
-
-        <TouchableOpacity
-          onPress={onRefresh}
-          disabled={refreshing || loading}
-          style={{ padding: 6, opacity: refreshing || loading ? 0.5 : 1 }}
-          activeOpacity={0.6}
-        >
-          <RefreshCw size={22} color="#111" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Balance Card */}
-      <View
-        style={[
-          styles.balanceCard,
-          {
-            marginHorizontal: spacing,
-            paddingHorizontal: spacing,
-            borderRadius: cardRadius,
-          },
-        ]}
-      >
-        <Text style={styles.balanceLabel}>Available Balance</Text>
-        <View style={styles.amountRow}>
-          <Text style={[styles.currency, { fontSize: amountFont }]}>₹</Text>
-          <Text style={[styles.amount, { fontSize: amountFont }]}>0.00</Text>
-        </View>
-      </View>
-
-      {/* Divider */}
-      <View
-        style={[
-          styles.divider,
-          { marginTop: spacing * 0.7, marginBottom: spacing * 0.5 },
-        ]}
-      />
-
-      {/* Section Title */}
-      <View
-        style={{ paddingHorizontal: spacing, paddingVertical: spacing * 0.5 }}
-      >
-        <Text style={[styles.sectionTitle, { fontSize: sectionFont }]}>
-          Transaction History
-        </Text>
-      </View>
-
-      {loading && items.length === 0 && (
-        <View style={styles.initialLoader}>
-          <ActivityIndicator size="small" color="#666" />
-        </View>
-      )}
-      {error && items.length === 0 && !loading && (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity
-            onPress={() => fetchPage(1, true)}
-            style={styles.retryBtn}
-          >
-            <Text style={styles.retryText}>Retry</Text>
+          <TouchableOpacity activeOpacity={1} style={styles.card}>
+            <View style={styles.cardLeft}>
+              <Undo2 size={28} color="#FF9F00" />
+              <View style={{ marginLeft: 12 }}>
+                <Text style={styles.cardTitle}>Return Order</Text>
+                <Text style={styles.cardDesc}>
+                  Return and view the items in order
+                </Text>
+              </View>
+            </View>
+            <ChevronRight size={24} color="#FFA500" />
           </TouchableOpacity>
         </View>
-      )}
-    </SafeAreaView>
+
+        {/* Bottom Contact Section */}
+        <View style={styles.contactSection}>
+          <Text style={styles.getInTouch}>GET IN TOUCH</Text>
+          <Text style={styles.getInTouchDesc}>
+            If you have any inquiries, feel free to
+          </Text>
+
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.row}
+            onPress={handleCall}
+          >
+            <PhoneCall size={24} color="#005B64" style={styles.contactIcon} />
+            <Text style={styles.contactText}>
+              Call us at <Text style={styles.bold}>1800-5723-575</Text>
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.row}
+            onPress={handleEmail}
+          >
+            <Mail size={24} color="#005B64" style={styles.contactIcon} />
+            <Text style={styles.contactText}>
+              Email us at <Text style={styles.bold}>support@petcaart.com</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
   );
 };
 
-export default MyWallet;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  headerRow: { flexDirection: 'row', alignItems: 'center' },
-  backButton: { paddingRight: 12, paddingVertical: 6 },
-  header: { fontWeight: 'bold', paddingLeft: 10, color: '#000' },
-  balanceCard: {
-    backgroundColor: '#F59A11',
-    paddingVertical: 18,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  balanceLabel: { color: '#fff', opacity: 0.9, fontSize: 14, marginBottom: 6 },
-  amountRow: { flexDirection: 'row', alignItems: 'flex-end' },
-  currency: { color: '#fff', fontWeight: '700', marginRight: 4 },
-  amount: { color: '#fff', fontWeight: '800', letterSpacing: 0.2 },
-  divider: { height: 1, backgroundColor: '#F3E3CF' },
-  sectionTitle: { fontWeight: '700', color: '#222' },
-  row: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+  headerWrapper: {
+    backgroundColor: '#FFFFFF',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 15,
+  },
+  backButton: {
+    paddingRight: 15,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    paddingLeft: 10,
+  },
+  contentWrapper: {
+    flex: 1,
     justifyContent: 'space-between',
+  },
+  card: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F1F1',
-    backgroundColor: '#fff',
-  },
-  rowTitle: { color: '#222', fontWeight: '700' },
-  rowSub: { color: '#6b7280', marginTop: 2 },
-  rowAmount: { fontWeight: '800' },
-  emptyWrap: { alignItems: 'center', justifyContent: 'center' },
-  emptyText: { fontSize: 16, color: '#8c9197', fontWeight: '600' },
-  initialLoader: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
+    borderColor: '#eee',
     alignItems: 'center',
-    backgroundColor: 'transparent',
   },
-  errorBox: {
-    position: 'absolute',
-    bottom: 24,
-    left: 16,
-    right: 16,
-    backgroundColor: '#fee2e2',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#fecaca',
+  cardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  errorText: {
-    color: '#991b1b',
+  cardTitle: {
+    fontSize: 16,
     fontWeight: '600',
+  },
+  cardDesc: {
+    fontSize: 13,
+    color: '#444',
+    marginTop: 3,
+  },
+  contactSection: {
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+  },
+  getInTouch: {
+    fontWeight: 'bold',
+    fontSize: 15,
     marginBottom: 8,
-    textAlign: 'center',
   },
-  retryBtn: {
-    alignSelf: 'center',
-    backgroundColor: '#ef4444',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
+  getInTouchDesc: {
+    color: '#444',
+    fontSize: 14,
+    marginBottom: 20,
   },
-  retryText: { color: '#fff', fontWeight: '700' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  contactIcon: {
+    marginRight: 12,
+  },
+  contactText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  bold: {
+    fontWeight: 'bold',
+    color: '#000',
+  },
 });
+
+export default ContactUsScreen;
