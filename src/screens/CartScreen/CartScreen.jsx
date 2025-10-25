@@ -760,8 +760,9 @@ const CartScreen = () => {
                   placeholder="Enter Coupon Code"
                   placeholderTextColor="#999"
                   value={couponCode}
-                  onChangeText={setCouponCode}
+                  onChangeText={text => setCouponCode(text.toUpperCase())}
                   editable
+                  autoCapitalize="characters"
                 />
                 <TouchableOpacity
                   activeOpacity={1}
