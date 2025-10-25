@@ -81,8 +81,8 @@ export default function ProductListScreen({ route, navigation }) {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params = { categorySlug, collectionSlug };
 
+      const params = { categorySlug, collectionSlug };
       if (selectedBrand?.length) params.brandSlug = selectedBrand.join(',');
       if (selectedBreed?.length) params.breedSlug = selectedBreed.join(',');
       if (selectedLifeStage?.length)
@@ -94,60 +94,19 @@ export default function ProductListScreen({ route, navigation }) {
       if (categoryId) params.categoryId = categoryId;
       if (subcategoryId) params.subcategoryId = subcategoryId;
       if (subCategorySlug) params.subCategorySlug = subCategorySlug;
-
+      if (searchQuery && String(searchQuery).trim() !== '') {
+        params.search = String(searchQuery).trim();
+      }
+      if (isVeg) {
+        params.isVeg = true;
+      }
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
-
       let filtered = fetchedProducts;
-
       if (isVeg) {
         filtered = filtered.filter(product => product.isVeg === true);
       }
-
-      if (searchQuery && String(searchQuery).trim() !== '') {
-        const searchTerm = norm(searchQuery);
-        filtered = filtered.filter(product => {
-          const matchesTitle = norm(product.title).includes(searchTerm);
-          const matchesDesc = norm(product.description).includes(searchTerm);
-          const matchesBrand = norm(product.brandId?.name).includes(searchTerm);
-          const matchesCategory = norm(product.categoryId?.name).includes(
-            searchTerm,
-          );
-          const matchesSubCategory = norm(product.subCategoryId?.name).includes(
-            searchTerm,
-          );
-          const matchesBreed = (product.breedId || []).some(b =>
-            norm(b.name).includes(searchTerm),
-          );
-          const productLifeStages = Array.isArray(product.lifeStage)
-            ? product.lifeStage
-            : product.lifeStage
-            ? [product.lifeStage]
-            : [];
-          const matchesLifeStageField = productLifeStages
-            .map(ls => norm(ls))
-            .some(ls => ls.includes(searchTerm));
-          const matchesLifeStageLabel = Object.values(LIFE_STAGE_LABELS).some(
-            ls => norm(ls).includes(searchTerm),
-          );
-          const matchesType = norm(product.productType).includes(searchTerm);
-          const matchesSize = norm(product.breedSize).includes(searchTerm);
-          return (
-            matchesTitle ||
-            matchesDesc ||
-            matchesBrand ||
-            matchesCategory ||
-            matchesSubCategory ||
-            matchesBreed ||
-            matchesLifeStageField ||
-            matchesLifeStageLabel ||
-            matchesType ||
-            matchesSize
-          );
-        });
-      }
-
       filtered = filtered.filter(product => {
         const brandMatches =
           !selectedBrand?.length ||
@@ -197,7 +156,6 @@ export default function ProductListScreen({ route, navigation }) {
           sizeMatches
         );
       });
-
       const getPriceNum = p => {
         const v = p?.salePrice ?? p?.price ?? 0;
         const n = typeof v === 'string' ? parseFloat(v) : Number(v);

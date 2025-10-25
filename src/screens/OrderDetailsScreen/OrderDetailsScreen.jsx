@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   ScrollView,
   Platform,
+  Alert,
 } from 'react-native';
 import {
   ArrowLeft,
@@ -17,8 +18,10 @@ import {
   CreditCard,
   Package,
   Wallet,
+  Copy,
 } from 'lucide-react-native';
 import { useRoute } from '@react-navigation/native';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 const formatBillDate = iso => {
   try {
@@ -70,7 +73,6 @@ const statusPalette = status => {
 
 const pickTitle = it => {
   const p = it?.productId;
-  // if (it?.variantId?.variantName) return it.variantId.variantName;
   if (p?.title) return p.title;
   if (p?.name) return p.name;
   if (it?.variantId?.sku) return it.variantId.sku;
@@ -120,6 +122,14 @@ const OrderDetailsScreen = ({ navigation }) => {
       .filter(Boolean);
     return parts.join(', ');
   })();
+
+  const handleCopyAwb = () => {
+    const awb = order?.awbNumber;
+    if (awb && awb !== 0) {
+      Clipboard.setString(awb.toString());
+      // Alert.alert('Copied', 'AWB Number copied to clipboard');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -256,6 +266,12 @@ const OrderDetailsScreen = ({ navigation }) => {
             value={formatBillDate(order?.createdAt)}
           />
           <InfoRow label="Order Weight" value={`${order?.weight || 0} kg`} />
+          <InfoRow
+            label="Awb Number"
+            value={order?.awbNumber || 0}
+            showCopy
+            onCopy={handleCopyAwb}
+          />
         </View>
 
         {/* Cashback Banner */}
@@ -297,20 +313,27 @@ const OrderDetailsScreen = ({ navigation }) => {
   );
 };
 
-const InfoRow = ({ label, value, isStatus, statusColor }) => (
+const InfoRow = ({ label, value, isStatus, statusColor, showCopy, onCopy }) => (
   <View style={styles.infoRow}>
     <Text style={styles.infoLabel}>{label}</Text>
-    <Text
-      style={[
-        styles.infoValue,
-        isStatus && {
-          color: statusColor || '#1AA75D',
-          fontFamily: 'Gotham-Rounded-Bold',
-        },
-      ]}
-    >
-      {value}
-    </Text>
+    <View style={styles.infoValueContainer}>
+      <Text
+        style={[
+          styles.infoValue,
+          isStatus && {
+            color: statusColor || '#1AA75D',
+            fontFamily: 'Gotham-Rounded-Bold',
+          },
+        ]}
+      >
+        {value}
+      </Text>
+      {showCopy && value && value !== 0 && (
+        <TouchableOpacity onPress={onCopy} style={styles.copyButton}>
+          <Copy size={16} color="#666" />
+        </TouchableOpacity>
+      )}
+    </View>
   </View>
 );
 
@@ -402,7 +425,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 10,
     fontFamily: 'Gotham-Rounded-Bold',
-    color: '#888',
+    color: '#000',
     paddingLeft: 12,
   },
 
@@ -516,12 +539,21 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     flex: 1,
   },
+  infoValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
   infoValue: {
     fontSize: 13,
     color: '#000',
     fontFamily: 'Gotham-Rounded-Medium',
-    flex: 1,
     textAlign: 'right',
+  },
+  copyButton: {
+    padding: 4,
   },
 
   cashbackBanner: {

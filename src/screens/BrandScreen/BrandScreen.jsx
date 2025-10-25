@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   gradientTitle: {
     marginHorizontal: 0,
     marginBottom: 15,
-    paddingVertical: 14,
+    paddingVertical: 8,
     alignItems: 'center',
     ...Platform.select({
       ios: {
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     }),
   },
   title: {
-    fontSize: 27,
+    fontSize: 24,
     fontFamily: 'Gotham-Rounded-Bold',
     letterSpacing: 1.5,
     color: '#fff',
@@ -149,8 +149,8 @@ const styles = StyleSheet.create({
     minWidth: 105,
     maxWidth: 130,
   },
-  brandImg: { width: '100%', height: 50, marginBottom: 13 },
-  brandName: { fontSize: 16, fontFamily: 'Gotham-Rounded-Bold', color: '#222' },
+  brandImg: { width: '100%', height: '100%', marginBottom: 13 },
+  brandName: { fontSize: 14, fontFamily: 'Gotham-Rounded-Bold', color: '#222' },
   loader: {
     flex: 1,
     justifyContent: 'center',

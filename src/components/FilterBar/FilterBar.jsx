@@ -103,7 +103,6 @@ const FilterBar = ({
   sortOrder,
   onChangeSort,
 }) => {
-  // data
   const [brands, setBrands] = useState([]);
   const [breeds, setBreeds] = useState([]);
   useEffect(() => {

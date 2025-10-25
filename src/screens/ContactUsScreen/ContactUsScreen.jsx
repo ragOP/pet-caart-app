@@ -48,7 +48,15 @@ const ContactUsScreen = ({ navigation }) => {
       </View>
       <View style={styles.contentWrapper}>
         <View>
-          <TouchableOpacity activeOpacity={1} style={styles.card}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.card}
+            onPress={() => {
+              Linking.openURL('https://shreenandancourier.com/').catch(err =>
+                console.error('Failed to open URL:', err),
+              );
+            }}
+          >
             <View style={styles.cardLeft}>
               <Truck size={28} color="#FF9F00" />
               <View style={{ marginLeft: 12 }}>
@@ -59,7 +67,7 @@ const ContactUsScreen = ({ navigation }) => {
             <ChevronRight size={24} color="#FFA500" />
           </TouchableOpacity>
 
-          <TouchableOpacity activeOpacity={1} style={styles.card}>
+          {/* <TouchableOpacity activeOpacity={1} style={styles.card}>
             <View style={styles.cardLeft}>
               <Undo2 size={28} color="#FF9F00" />
               <View style={{ marginLeft: 12 }}>
@@ -70,10 +78,8 @@ const ContactUsScreen = ({ navigation }) => {
               </View>
             </View>
             <ChevronRight size={24} color="#FFA500" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
-
-        {/* Bottom Contact Section */}
         <View style={styles.contactSection}>
           <Text style={styles.getInTouch}>GET IN TOUCH</Text>
           <Text style={styles.getInTouchDesc}>
