@@ -410,6 +410,9 @@ const CartScreen = () => {
       const createPaymentResp = await apiService({
         endpoint: 'api/razorpay/create-payment',
         method: 'POST',
+        params: {
+          isUsingWalletAmount: !!useWallet,
+        },
         data: {
           addressId,
           cartId: effectiveCartId,
@@ -417,7 +420,6 @@ const CartScreen = () => {
           note,
           useWallet,
           walletDeduction,
-          isUsingWalletAmount: !!useWallet,
         },
       });
 
@@ -457,6 +459,9 @@ const CartScreen = () => {
       await apiService({
         endpoint: 'api/orders',
         method: 'POST',
+        params: {
+          isUsingWalletAmount: !!useWallet,
+        },
         data: {
           addressId,
           cartId: effectiveCartId,
@@ -467,7 +472,6 @@ const CartScreen = () => {
           razorpaySignature: razorpay_signature,
           useWallet,
           walletDeduction,
-          isUsingWalletAmount: !!useWallet,
         },
       });
 

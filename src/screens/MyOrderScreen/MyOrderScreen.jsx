@@ -52,7 +52,7 @@ const formatUiDate = iso => {
 const primaryItem = order => (order?.items?.length ? order.items[0] : null);
 
 const pickTitle = item => {
-  if (item?.variantId?.variantName) return item.variantId.variantName;
+  // if (item?.variantId?.variantName) return item.variantId.variantName;
   if (item?.productId?.title) return item.productId.title;
   if (item?.productId?.name) return item.productId.name;
   if (item?.variantId?.sku) return item.variantId.sku;

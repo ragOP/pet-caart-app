@@ -10,16 +10,28 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { ArrowLeft, CheckCircle } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  CheckCircle,
+  MapPin,
+  CreditCard,
+  Package,
+  Wallet,
+} from 'lucide-react-native';
 import { useRoute } from '@react-navigation/native';
 
 const formatBillDate = iso => {
   try {
     const d = new Date(iso);
-    const dd = d.getDate().toString().padStart(2, '0');
-    const mm = (d.getMonth() + 1).toString().padStart(2, '0');
-    const yyyy = d.getFullYear();
-    return `${dd}-${mm}-${yyyy}`;
+    const options = {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    };
+    return d.toLocaleString('en-IN', options).replace(',', '');
   } catch {
     return '';
   }
@@ -30,14 +42,14 @@ const formatINR = new Intl.NumberFormat('en-IN', {
   currency: 'INR',
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
-}); // [web:6][web:12][web:15]
+});
 
 const currency = v => {
   if (typeof v === 'number') return formatINR.format(v);
   if (!v && v !== 0) return '—';
   const n = Number(v);
   return Number.isFinite(n) ? formatINR.format(n) : '—';
-}; // [web:6][web:12][web:15]
+};
 
 const statusPalette = status => {
   switch ((status || '').toLowerCase()) {
@@ -58,7 +70,7 @@ const statusPalette = status => {
 
 const pickTitle = it => {
   const p = it?.productId;
-  if (it?.variantId?.variantName) return it.variantId.variantName;
+  // if (it?.variantId?.variantName) return it.variantId.variantName;
   if (p?.title) return p.title;
   if (p?.name) return p.name;
   if (it?.variantId?.sku) return it.variantId.sku;
@@ -80,27 +92,21 @@ const pickImageUrl = it => {
 const OrderDetailsScreen = ({ navigation }) => {
   const { params } = useRoute();
   const order = params?.order || {};
-  const bill = useMemo(() => {
-    const items = Array.isArray(order?.items) ? order.items : [];
-    const subtotal = items.reduce((sum, it) => {
-      const price = Number(it?.price ?? it?.variantId?.price ?? 0);
-      const qty = Number(it?.quantity ?? 1);
-      return sum + price * qty;
-    }, 0);
-    const couponDiscount = Number(
-      order?.discountedAmount ?? order?.couponDiscount ?? 0,
-    );
-    const providedShipping = Number(order?.shipping ?? 0);
-    const grand = Number.isFinite(Number(order?.totalAmount))
-      ? Number(order.totalAmount)
-      : Math.max(0, subtotal - couponDiscount + providedShipping);
+  const transaction = order?.transcation || {};
 
-    const computedShipping = Math.max(0, grand - subtotal);
+  const bill = useMemo(() => {
+    const totalMRP = Number(order?.totalMRP ?? 0);
+    const rawPrice = Number(order?.rawPrice ?? 0);
+    const discountOnMRP = totalMRP > 0 ? totalMRP - rawPrice : 0;
+    const walletDiscount = Number(order?.walletDiscount ?? 0);
+    const shippingCharge = Number(order?.shippingCharge ?? 0);
+    const grand = Number(order?.totalAmount ?? 0);
 
     return {
-      subtotal,
-      couponDiscount,
-      shippingForDisplay: computedShipping,
+      totalMRP,
+      discountOnMRP,
+      walletDiscount,
+      shippingCharge,
       grand,
     };
   }, [order]);
@@ -114,8 +120,6 @@ const OrderDetailsScreen = ({ navigation }) => {
       .filter(Boolean);
     return parts.join(', ');
   })();
-
-  const isShippingFree = Math.abs(bill.grand - bill.subtotal) < 0.005;
 
   return (
     <View style={styles.container}>
@@ -137,6 +141,7 @@ const OrderDetailsScreen = ({ navigation }) => {
       <Text style={styles.subHeader}>Recent Orders</Text>
 
       <ScrollView contentContainerStyle={{ padding: 15 }}>
+        {/* Order Info Card */}
         <View style={styles.orderInfoCard}>
           <View style={styles.orderInfoRow}>
             <Text style={styles.orderIdText}>
@@ -152,17 +157,13 @@ const OrderDetailsScreen = ({ navigation }) => {
             <View style={styles.statusIconWrap}>
               <CheckCircle size={14} color={palette.icon} />
             </View>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              <Text style={[styles.statusText, { color: palette.text }]}>
-                {(order?.status || '').toUpperCase()}
-              </Text>
-            </View>
+            <Text style={[styles.statusText, { color: palette.text }]}>
+              {(order?.status || '').toUpperCase()}
+            </Text>
           </View>
-          {/* <Text style={[styles.statusText, { color: palette.text }]}>
-            {formatBillDate(order?.createdAt)}
-          </Text> */}
         </View>
 
+        {/* Item Details Section */}
         <Text style={styles.sectionTitle}>ITEM DETAILS</Text>
         {(order?.items || []).map((it, idx) => {
           const title = pickTitle(it);
@@ -200,46 +201,126 @@ const OrderDetailsScreen = ({ navigation }) => {
           );
         })}
 
+        {/* Delivery Address Section */}
+        <View style={styles.sectionHeaderRow}>
+          <MapPin size={20} color="#D4AF37" />
+          <Text style={styles.sectionTitleWithIcon}>DELIVERY ADDRESS</Text>
+        </View>
+        <View style={styles.addressCard}>
+          <Text style={styles.addressName}>{order?.address?.name || '—'}</Text>
+          <Text style={styles.addressLine}>
+            {order?.address?.mobile || '—'} • {order?.address?.email || '—'}
+          </Text>
+          <Text style={styles.addressLine}>{addressLine || '—'}</Text>
+        </View>
+
+        {/* Payment Information Section */}
+        <View style={styles.sectionHeaderRow}>
+          <CreditCard size={20} color="#D4AF37" />
+          <Text style={styles.sectionTitleWithIcon}>PAYMENT INFORMATION</Text>
+        </View>
+        <View style={styles.paymentCard}>
+          <InfoRow
+            label="Payment Method ID"
+            value={transaction?.paymentMethod || 'razorpay'}
+          />
+          <InfoRow
+            label="Transaction ID"
+            value={transaction?.razorpayPaymentId || '—'}
+          />
+          <InfoRow
+            label="Razorpay Order ID"
+            value={transaction?.razorpayOrderId || '—'}
+          />
+          <InfoRow
+            label="Payment Status"
+            value={
+              (transaction?.status || order?.status || 'pending')
+                .charAt(0)
+                .toUpperCase() +
+              (transaction?.status || order?.status || 'pending').slice(1)
+            }
+            isStatus
+            statusColor="#1AA75D"
+          />
+        </View>
+
+        {/* Order Information Section */}
+        <View style={styles.sectionHeaderRow}>
+          <Package size={20} color="#D4AF37" />
+          <Text style={styles.sectionTitleWithIcon}>ORDER INFORMATION</Text>
+        </View>
+        <View style={styles.orderInfoDetailCard}>
+          <InfoRow
+            label="Order Date"
+            value={formatBillDate(order?.createdAt)}
+          />
+          <InfoRow label="Order Weight" value={`${order?.weight || 0} kg`} />
+        </View>
+
+        {/* Cashback Banner */}
+        {order?.cashBackOnOrder > 0 && (
+          <View style={styles.cashbackBanner}>
+            <Wallet size={18} color="#1AA75D" />
+            <Text style={styles.cashbackText}>
+              Cashback Earned On this order (+{currency(order.cashBackOnOrder)})
+            </Text>
+          </View>
+        )}
+
+        {/* Total Order Bill Details */}
         <Text style={styles.sectionTitle}>TOTAL ORDER BILL DETAILS</Text>
         <View style={styles.billCard}>
-          <BillRow label="Total MRP Price" value={currency(bill.subtotal)} />
+          <BillRow label="Total MRP Price" value={currency(bill.totalMRP)} />
           <BillRow
-            label="Coupon Discount"
-            value={
-              bill.couponDiscount
-                ? `- ${currency(bill.couponDiscount)}`
-                : currency(0)
-            }
+            label="Discount on MRP Price"
+            value={currency(bill.discountOnMRP)}
           />
           <BillRow
-            label="Shipping Charges"
-            value={isShippingFree ? 'FREE' : currency(bill.shippingForDisplay)}
-            isFree={isShippingFree}
+            label="Wallet Discount"
+            value={
+              bill.walletDiscount > 0
+                ? `- ${currency(bill.walletDiscount)}`
+                : currency(0)
+            }
+            isDiscount={bill.walletDiscount > 0}
+          />
+          <BillRow
+            label="Delivery Charges"
+            value={currency(bill.shippingCharge)}
           />
           <View style={styles.separator} />
           <BillRow label="Grand Total" value={currency(bill.grand)} isBold />
-        </View>
-
-        {/* Address under Grand Total */}
-        <View style={styles.addressCard}>
-          <Text style={styles.addressTitle}>DELIVERY ADDRESS</Text>
-          <Text style={styles.addressLine}>
-            {order?.address?.name || '—'} • {order?.address?.mobile || '—'}
-          </Text>
-          <Text style={styles.addressLine}>{addressLine || '—'}</Text>
         </View>
       </ScrollView>
     </View>
   );
 };
 
-const BillRow = ({ label, value, isFree, isBold }) => (
+const InfoRow = ({ label, value, isStatus, statusColor }) => (
+  <View style={styles.infoRow}>
+    <Text style={styles.infoLabel}>{label}</Text>
+    <Text
+      style={[
+        styles.infoValue,
+        isStatus && {
+          color: statusColor || '#1AA75D',
+          fontFamily: 'Gotham-Rounded-Bold',
+        },
+      ]}
+    >
+      {value}
+    </Text>
+  </View>
+);
+
+const BillRow = ({ label, value, isBold, isDiscount }) => (
   <View style={styles.billRow}>
     <Text style={[styles.billLabel, isBold && styles.boldText]}>{label}</Text>
     <Text
       style={[
         styles.billValue,
-        isFree && styles.freeText,
+        isDiscount && styles.discountText,
         isBold && styles.boldText,
       ]}
     >
@@ -319,9 +400,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     marginBottom: 8,
+    marginTop: 10,
     fontFamily: 'Gotham-Rounded-Bold',
     color: '#888',
     paddingLeft: 12,
+  },
+
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 20,
+    marginBottom: 8,
+    paddingLeft: 12,
+  },
+  sectionTitleWithIcon: {
+    fontSize: 14,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#000',
   },
 
   itemCard: {
@@ -331,6 +427,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     padding: 12,
     marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   productImage: {
     width: 80,
@@ -366,11 +464,89 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
   },
 
+  addressCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  addressName: {
+    fontSize: 15,
+    color: '#000',
+    fontFamily: 'Gotham-Rounded-Bold',
+    marginBottom: 4,
+  },
+  addressLine: {
+    fontSize: 13,
+    color: '#555',
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
+
+  paymentCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+
+  orderInfoDetailCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: '#555',
+    fontFamily: 'Gotham-Rounded-Medium',
+    flex: 1,
+  },
+  infoValue: {
+    fontSize: 13,
+    color: '#000',
+    fontFamily: 'Gotham-Rounded-Medium',
+    flex: 1,
+    textAlign: 'right',
+  },
+
+  cashbackBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1AA75D15',
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 10,
+    gap: 8,
+  },
+  cashbackText: {
+    fontSize: 13,
+    color: '#1AA75D',
+    fontFamily: 'Gotham-Rounded-Bold',
+    flex: 1,
+  },
+
   billCard: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 15,
     marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   billRow: {
     flexDirection: 'row',
@@ -387,33 +563,14 @@ const styles = StyleSheet.create({
     color: '#000',
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  freeText: {
-    color: '#1AA75D',
-    fontFamily: 'Gotham-Rounded-Bold',
+  discountText: {
+    color: '#E53935',
+    fontFamily: 'Gotham-Rounded-Medium',
   },
   separator: {
     borderBottomWidth: 0.8,
     borderBottomColor: '#EEE',
     marginVertical: 10,
-  },
-
-  addressCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 15,
-    marginTop: 12,
-    gap: 6,
-  },
-  addressTitle: {
-    fontSize: 13,
-    color: '#666',
-    fontFamily: 'Gotham-Rounded-Bold',
-    marginBottom: 4,
-  },
-  addressLine: {
-    fontSize: 13,
-    color: '#111',
-    fontFamily: 'Gotham-Rounded-Medium',
   },
 });
 
