@@ -16,6 +16,9 @@ export const endpoints = {
 
   // sliders
   sliders: 'api/sliders/slider',
+  // reviews
+  createReview: 'api/reviews/create',
+  getReviewsByProductId: 'api/reviews/get-all-reviews',
 
   // categories
   category: 'api/category',

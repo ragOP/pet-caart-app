@@ -562,6 +562,11 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
     borderRadius: 10,
     marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        paddingVertical: 14,
+      },
+    }),
   },
   countryCode: {
     fontSize: 16,
