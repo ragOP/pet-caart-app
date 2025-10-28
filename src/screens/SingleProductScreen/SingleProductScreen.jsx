@@ -25,6 +25,7 @@ import {
   FileText,
   Info,
   MessageSquare,
+  Star,
 } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import SearchBar from '../../components/SearchBar/SearchBar';
@@ -35,6 +36,9 @@ import { addItemToCart } from '../../redux/cartSlice';
 import { getProducts } from '../../apis/getProducts';
 import { getProductById } from '../../apis/getProductById';
 import { addProductToCart } from '../../apis/addProductToCart';
+import { getReviewsByProductId } from '../../apis/getReviewsByProductId';
+import { checkIfUserBoughtProduct } from '../../apis/checkIfUserBoughtProduct';
+import { apiService } from '../../apis/apiService';
 import Banner from '../../components/Banner/Banner';
 import SingleProductShimmer from '../../ui/Shimmer/SingleProductShimmer';
 import Lottie from 'lottie-react-native';
@@ -44,9 +48,8 @@ import RenderHtml from 'react-native-render-html';
 import ImageView from 'react-native-image-viewing';
 import HandPicked from '../../components/HandPicked/HandPicked';
 import RecommendedForYou from '../../components/RecommendedForYou/RecommendedForYou';
-import { useQuery } from '@tanstack/react-query';
-import { Star } from 'lucide-react-native';
-import { getReviewsByProductId } from '../../apis/getReviewsByProductId';
+import WriteReviewBottomSheet from '../../components/WriteReviewBottomSheet/WriteReviewBottomSheet';
+
 const { width: screenWidthFull } = Dimensions.get('window');
 const screenWidth = screenWidthFull * 0.94;
 
@@ -151,9 +154,188 @@ const PriceCardsRow = ({ variants = [], selectedId, onSelect }) => {
   );
 };
 
+const ReviewsSection = ({
+  reviews,
+  totalReviews,
+  starCounts,
+  userBoughtProduct,
+  onWriteReview,
+}) => {
+  const [visibleReviews, setVisibleReviews] = useState(3);
+  const [expandedReviews, setExpandedReviews] = useState({});
+
+  const averageRating =
+    totalReviews > 0
+      ? (
+          (starCounts.five * 5 +
+            starCounts.four * 4 +
+            starCounts.three * 3 +
+            starCounts.two * 2 +
+            starCounts.one * 1) /
+          totalReviews
+        ).toFixed(1)
+      : '0.0';
+
+  const getBarWidth = count => {
+    if (totalReviews === 0) return '0%';
+    return `${(count / totalReviews) * 100}%`;
+  };
+
+  const StarBar = ({ stars, count }) => (
+    <View style={styles.starBarRow}>
+      <Text style={styles.starNumber}>{stars}</Text>
+      <Star size={16} color="#FBB040" fill="#FBB040" />
+      <View style={styles.barBackground}>
+        <View style={[styles.barFill, { width: getBarWidth(count) }]} />
+      </View>
+      <Text style={styles.starCount}>{count}</Text>
+    </View>
+  );
+
+  const formatDate = dateString => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-IN', { month: 'numeric' });
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const getInitial = name => {
+    return name ? name.charAt(0).toUpperCase() : 'U';
+  };
+
+  const toggleExpand = reviewId => {
+    setExpandedReviews(prev => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
+  };
+
+  const loadMoreReviews = () => {
+    setVisibleReviews(prev => prev + 3);
+  };
+
+  const displayedReviews = reviews.slice(0, visibleReviews);
+  const hasMoreReviews = visibleReviews < reviews.length;
+
+  return (
+    <View>
+      <View style={styles.reviewsSummary}>
+        <View style={styles.ratingBox}>
+          <Text style={styles.bigRating}>{averageRating}</Text>
+          <Star size={32} color="#FBB040" fill="#FBB040" />
+          <Text style={styles.ratingsCount}>{totalReviews} Ratings</Text>
+        </View>
+
+        <View style={styles.barsContainer}>
+          <StarBar stars={5} count={starCounts.five} />
+          <StarBar stars={4} count={starCounts.four} />
+          <StarBar stars={3} count={starCounts.three} />
+          <StarBar stars={2} count={starCounts.two} />
+          <StarBar stars={1} count={starCounts.one} />
+        </View>
+      </View>
+
+      {userBoughtProduct && (
+        <TouchableOpacity
+          style={styles.writeReviewButton}
+          onPress={onWriteReview}
+          activeOpacity={0.8}
+        >
+          <MessageSquare size={18} color="#FFFFFF" />
+          <Text style={styles.writeReviewButtonText}>Write a Review</Text>
+        </TouchableOpacity>
+      )}
+
+      {reviews && reviews.length > 0 ? (
+        <View style={styles.reviewsList}>
+          {displayedReviews.map(review => {
+            const isExpanded = expandedReviews[review._id];
+            const reviewText = review.review || '';
+            const shouldShowReadMore = reviewText.length > 100;
+            const displayText =
+              isExpanded || !shouldShowReadMore
+                ? reviewText
+                : reviewText.substring(0, 100) + '...';
+
+            return (
+              <View key={review._id} style={styles.reviewCard}>
+                <View style={styles.reviewHeaderRow}>
+                  <View style={styles.avatarCircle}>
+                    <Text style={styles.avatarText}>
+                      {getInitial(review.userId?.name)}
+                    </Text>
+                  </View>
+                  <View style={styles.reviewMainContent}>
+                    <View style={styles.nameLocationRow}>
+                      <Text style={styles.reviewerName}>
+                        {review.userId?.name || 'Anonymous'}
+                      </Text>
+                      {review.orderId?.address && (
+                        <Text style={styles.reviewLocation}>
+                          ({review.orderId.address.city},{' '}
+                          {review.orderId.address.state})
+                        </Text>
+                      )}
+                    </View>
+                    <View style={styles.starsDateRow}>
+                      <View style={styles.reviewRatingRow}>
+                        {[...Array(5)].map((_, index) => (
+                          <Star
+                            key={index}
+                            size={16}
+                            color="#FBB040"
+                            fill={index < review.rating ? '#FBB040' : 'none'}
+                          />
+                        ))}
+                      </View>
+                      <Text style={styles.reviewDate}>
+                        {formatDate(review.createdAt)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <Text style={styles.reviewText}>{displayText}</Text>
+                {shouldShowReadMore && (
+                  <TouchableOpacity
+                    onPress={() => toggleExpand(review._id)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.readMoreText}>
+                      {isExpanded ? 'Read Less' : 'Read More'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          })}
+
+          {hasMoreReviews && (
+            <TouchableOpacity
+              style={styles.loadMoreButton}
+              onPress={loadMoreReviews}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.loadMoreText}>Load More Reviews</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <View style={styles.noReviewsContainer}>
+          <Text style={styles.noReviewsText}>No reviews yet.</Text>
+          <Text style={styles.noReviewsSubtext}>
+            Be the first to review this product!
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
 const SingleProductScreen = ({ navigation }) => {
   const route = useRoute();
   const { productId } = route.params;
+
   const dispatch = useDispatch();
   const cartItems = useSelector(state => state.cart.items);
   const isLoggedIn = useSelector(state => !!state.auth.user);
@@ -163,6 +345,19 @@ const SingleProductScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsData, setReviewsData] = useState({
+    totalReviews: 0,
+    totalFiveStar: 0,
+    totalFourStar: 0,
+    totalThreeStar: 0,
+    totalTwoStar: 0,
+    totalOneStar: 0,
+  });
+
+  const [userBoughtProduct, setUserBoughtProduct] = useState(false);
+  const reviewBottomSheetRef = useRef(null);
+
   const [cartLoading, setCartLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -173,35 +368,7 @@ const SingleProductScreen = ({ navigation }) => {
   const toggleSection = section => {
     setExpandedSection(prev => (prev === section ? null : section));
   };
-  const { data: reviewsData, isLoading: reviewLoading } = useQuery({
-    queryKey: ['reviews', productId],
-    queryFn: async () => {
-      const res = await getReviewsByProductId({ id: productId });
-      return res?.data || {};
-    },
-    enabled: !!productId,
-  });
 
-  const reviews = reviewsData?.reviews || [];
-  const reviewStats = {
-    total: reviewsData?.totalReviews || 0,
-    fiveStar: reviewsData?.totalFiveStar || 0,
-    fourStar: reviewsData?.totalFourStar || 0,
-    threeStar: reviewsData?.totalThreeStar || 0,
-    twoStar: reviewsData?.totalTwoStar || 0,
-    oneStar: reviewsData?.totalOneStar || 0,
-    average:
-      reviewsData?.totalReviews > 0
-        ? (
-            (5 * reviewsData.totalFiveStar +
-              4 * reviewsData.totalFourStar +
-              3 * reviewsData.totalThreeStar +
-              2 * reviewsData.totalTwoStar +
-              1 * reviewsData.totalOneStar) /
-            reviewsData.totalReviews
-          ).toFixed(1)
-        : '0',
-  };
   useEffect(() => {
     const fetchProductDetails = async () => {
       setLoading(true);
@@ -232,6 +399,82 @@ const SingleProductScreen = ({ navigation }) => {
     };
     if (productId) fetchProductDetails();
   }, [productId]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await getReviewsByProductId({ id: productId });
+        const reviewData =
+          response?.response?.data || response?.data || response;
+
+        if (reviewData) {
+          setReviews(reviewData.reviews || []);
+          setReviewsData({
+            totalReviews: reviewData.totalReviews || 0,
+            totalFiveStar: reviewData.totalFiveStar || 0,
+            totalFourStar: reviewData.totalFourStar || 0,
+            totalThreeStar: reviewData.totalThreeStar || 0,
+            totalTwoStar: reviewData.totalTwoStar || 0,
+            totalOneStar: reviewData.totalOneStar || 0,
+          });
+        }
+      } catch (e) {
+        console.log('Failed to fetch reviews', e);
+      }
+    };
+    if (productId) fetchReviews();
+  }, [productId]);
+
+  useEffect(() => {
+    const checkUserPurchase = async () => {
+      if (!isLoggedIn || !productId) return;
+      try {
+        const response = await checkIfUserBoughtProduct(productId);
+        if (response?.success && response?.data) {
+          setUserBoughtProduct(true);
+        }
+      } catch (error) {
+        console.log('Error checking purchase:', error);
+        setUserBoughtProduct(false);
+      }
+    };
+    checkUserPurchase();
+  }, [productId, isLoggedIn]);
+
+  const handleSubmitReview = async reviewData => {
+    try {
+      const response = await apiService({
+        endpoint: 'api/reviews',
+        method: 'POST',
+        data: reviewData,
+      });
+
+      const responseData = response?.response || response;
+
+      if (responseData?.success) {
+        const updatedReviews = await getReviewsByProductId({ id: productId });
+        const newReviewData =
+          updatedReviews?.response?.data || updatedReviews?.data;
+        if (newReviewData) {
+          setReviews(newReviewData.reviews || []);
+          setReviewsData({
+            totalReviews: newReviewData.totalReviews || 0,
+            totalFiveStar: newReviewData.totalFiveStar || 0,
+            totalFourStar: newReviewData.totalFourStar || 0,
+            totalThreeStar: newReviewData.totalThreeStar || 0,
+            totalTwoStar: newReviewData.totalTwoStar || 0,
+            totalOneStar: newReviewData.totalOneStar || 0,
+          });
+        }
+
+        alert('Review submitted successfully!');
+      }
+    } catch (error) {
+      console.log('Error submitting review:', error);
+      alert('Failed to submit review. Please try again.');
+      throw error;
+    }
+  };
 
   const goToCart = () => {
     const parent = navigation.getParent();
@@ -505,7 +748,18 @@ const SingleProductScreen = ({ navigation }) => {
               </TouchableOpacity>
               <View style={styles.ratingRow}>
                 <Text style={styles.star}>★</Text>
-                <Text style={styles.rating}>3.0</Text>
+                <Text style={styles.rating}>
+                  {reviewsData.totalReviews > 0
+                    ? (
+                        (reviewsData.totalFiveStar * 5 +
+                          reviewsData.totalFourStar * 4 +
+                          reviewsData.totalThreeStar * 3 +
+                          reviewsData.totalTwoStar * 2 +
+                          reviewsData.totalOneStar * 1) /
+                        reviewsData.totalReviews
+                      ).toFixed(1)
+                    : '0.0'}
+                </Text>
               </View>
             </View>
 
@@ -632,176 +886,26 @@ const SingleProductScreen = ({ navigation }) => {
               </TouchableOpacity>
               {expandedSection === 'reviews' && (
                 <View style={styles.accordionBody}>
-                  {reviewLoading ? (
-                    <View style={styles.reviewLoadingContainer}>
-                      <Text style={styles.accordionInlineText}>
-                        Loading reviews...
-                      </Text>
-                    </View>
-                  ) : (
-                    <>
-                      {/* ========== RATING SUMMARY SECTION ========== */}
-                      <View style={styles.reviewsSummaryRow}>
-                        {/* Left Box - Average Rating */}
-                        <View style={styles.reviewsAverageBox}>
-                          <View style={styles.reviewsAverageRow}>
-                            <Text style={styles.reviewsAverageText}>
-                              {reviewStats.average}
-                            </Text>
-                            <Star
-                              size={20}
-                              color="#f2b01e"
-                              fill="#f2b01e"
-                              style={styles.reviewsStarIcon}
-                            />
-                          </View>
-                          <Text style={styles.reviewsTotalText}>
-                            {reviewStats.total}{' '}
-                            {reviewStats.total === 1 ? 'Rating' : 'Ratings'}
-                          </Text>
-                        </View>
-
-                        {/* Right Side - Rating Histogram Bars */}
-                        <View style={styles.reviewsBarsContainer}>
-                          {[
-                            { label: '5', count: reviewStats.fiveStar },
-                            { label: '4', count: reviewStats.fourStar },
-                            { label: '3', count: reviewStats.threeStar },
-                            { label: '2', count: reviewStats.twoStar },
-                            { label: '1', count: reviewStats.oneStar },
-                          ].map(item => {
-                            const maxCount = Math.max(
-                              reviewStats.fiveStar,
-                              reviewStats.fourStar,
-                              reviewStats.threeStar,
-                              reviewStats.twoStar,
-                              reviewStats.oneStar,
-                              1,
-                            );
-                            const widthPercent = (item.count / maxCount) * 100;
-
-                            return (
-                              <View key={item.label} style={styles.barRow}>
-                                <View style={styles.barLabelContainer}>
-                                  <Text style={styles.barLabel}>
-                                    {item.label}
-                                  </Text>
-                                  <Star
-                                    size={12}
-                                    color="#f2b01e"
-                                    fill="#f2b01e"
-                                    style={{ marginLeft: 2 }}
-                                  />
-                                </View>
-                                <View style={styles.barTrack}>
-                                  <View
-                                    style={[
-                                      styles.barFill,
-                                      {
-                                        width: `${Math.max(8, widthPercent)}%`,
-                                      },
-                                    ]}
-                                  />
-                                </View>
-                                <Text style={styles.barCount}>
-                                  {item.count}
-                                </Text>
-                              </View>
-                            );
-                          })}
-                        </View>
-                      </View>
-
-                      {/* Divider Line */}
-                      <View style={styles.reviewsDivider} />
-
-                      {/* ========== REVIEWS LIST SECTION ========== */}
-                      {reviews.length === 0 ? (
-                        <View style={styles.emptyReviewContainer}>
-                          <Text style={styles.emptyReviewText}>
-                            No reviews yet.
-                          </Text>
-                          <Text style={styles.emptyReviewSubText}>
-                            Be the first to review this product!
-                          </Text>
-                        </View>
-                      ) : (
-                        <>
-                          <Text style={styles.reviewsListTitle}>
-                            Customer Reviews
-                          </Text>
-                          {reviews.map((item, idx) => (
-                            <View key={idx} style={styles.reviewCard}>
-                              {/* Review Header - Stars & Date */}
-                              <View style={styles.reviewHeader}>
-                                <View style={styles.reviewStarsRow}>
-                                  {[1, 2, 3, 4, 5].map(star => (
-                                    <Star
-                                      key={star}
-                                      size={16}
-                                      color={
-                                        star <= (item.rating || 0)
-                                          ? '#f2b01e'
-                                          : '#d9d9d9'
-                                      }
-                                      fill={
-                                        star <= (item.rating || 0)
-                                          ? '#f2b01e'
-                                          : 'none'
-                                      }
-                                    />
-                                  ))}
-                                </View>
-                                <Text style={styles.reviewDateText}>
-                                  {item.createdAt
-                                    ? new Date(
-                                        item.createdAt,
-                                      ).toLocaleDateString('en-US', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        year: 'numeric',
-                                      })
-                                    : ''}
-                                </Text>
-                              </View>
-
-                              {/* Reviewer Name */}
-                              <Text style={styles.reviewAuthorText}>
-                                {item.userName || 'Anonymous User'}
-                              </Text>
-
-                              {/* Review Title (if exists) */}
-                              {!!item.title && (
-                                <Text style={styles.reviewTitleText}>
-                                  {item.title}
-                                </Text>
-                              )}
-
-                              {/* Review Comment (if exists) */}
-                              {!!item.comment && (
-                                <Text style={styles.reviewCommentText}>
-                                  {item.comment}
-                                </Text>
-                              )}
-
-                              {/* Verified Purchase Badge (optional) */}
-                              {item.isVerified && (
-                                <View style={styles.verifiedBadge}>
-                                  <Text style={styles.verifiedText}>
-                                    ✓ Verified Purchase
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                          ))}
-                        </>
-                      )}
-                    </>
-                  )}
+                  <ReviewsSection
+                    reviews={reviews}
+                    totalReviews={reviewsData.totalReviews}
+                    starCounts={{
+                      five: reviewsData.totalFiveStar,
+                      four: reviewsData.totalFourStar,
+                      three: reviewsData.totalThreeStar,
+                      two: reviewsData.totalTwoStar,
+                      one: reviewsData.totalOneStar,
+                    }}
+                    userBoughtProduct={userBoughtProduct}
+                    onWriteReview={() => {
+                      reviewBottomSheetRef.current?.present();
+                    }}
+                  />
                 </View>
               )}
             </View>
           </View>
+
           <View style={{ paddingHorizontal: 10 }}>
             <RecommendedForYou
               headingIcon={require('../../assets/icons/paw2.png')}
@@ -887,7 +991,14 @@ const SingleProductScreen = ({ navigation }) => {
         onImageIndexChange={setViewerIndex}
         backgroundColor="#FFFFFF"
       />
+
       <OffersBottomSheet innerRef={offersSheetRef} />
+
+      <WriteReviewBottomSheet
+        innerRef={reviewBottomSheetRef}
+        onSubmit={handleSubmitReview}
+        productId={productId}
+      />
     </>
   );
 };
@@ -1046,7 +1157,7 @@ const styles = StyleSheet.create({
   },
   mrpText: {
     fontSize: 10,
-    color: '#8E8EE',
+    color: '#8E8E8E',
     textDecorationLine: 'line-through',
     fontFamily: 'Gotham-Rounded-Medium',
   },
@@ -1112,26 +1223,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     textAlign: 'center',
   },
-  quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#F59A11',
-    borderRadius: 8,
-    justifyContent: 'space-around',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    minWidth: 110,
-  },
-  qtyButton: { paddingHorizontal: 40, paddingVertical: 2 },
-  qtyButtonText: { fontSize: 30, fontWeight: '800', color: '#F59A11' },
-  qtyText: {
-    fontSize: 20,
-    fontFamily: 'Gotham-Rounded-Bold',
-    color: '#000',
-    minWidth: 15,
-    textAlign: 'center',
-  },
   dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -1189,163 +1280,189 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     color: '#222',
   },
-
-  reviewLoadingContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  reviewsSummaryRow: {
+  reviewsSummary: {
     flexDirection: 'row',
     gap: 16,
-    marginBottom: 16,
-    paddingBottom: 16,
+    marginBottom: 20,
   },
-  reviewsAverageBox: {
-    width: 100,
-    borderWidth: 1.5,
-    borderColor: '#E5E5E5',
+  ratingBox: {
+    width: 130,
+    backgroundColor: '#F6F6F6',
     borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FAFAFA',
+    borderWidth: 2,
+    borderColor: '#FBB040',
   },
-  reviewsAverageRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  reviewsAverageText: {
-    fontSize: 28,
+  bigRating: {
+    fontSize: 48,
     fontFamily: 'Gotham-Rounded-Bold',
-    color: '#101010',
-    lineHeight: 32,
+    color: '#000',
   },
-  reviewsStarIcon: {
-    marginLeft: 6,
-  },
-  reviewsTotalText: {
-    fontSize: 12,
-    fontFamily: 'Gotham-Rounded-Medium',
+  ratingsCount: {
+    fontSize: 13,
     color: '#666',
-    textAlign: 'center',
+    marginTop: 4,
+    fontFamily: 'Gotham-Rounded-Medium',
   },
-  reviewsBarsContainer: {
+  barsContainer: {
     flex: 1,
     justifyContent: 'center',
   },
-  barRow: {
+  starBarRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
-    gap: 10,
+    gap: 6,
   },
-  barLabelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: 28,
-  },
-  barLabel: {
-    fontSize: 13,
+  starNumber: {
+    fontSize: 14,
     fontFamily: 'Gotham-Rounded-Bold',
-    color: '#333',
+    color: '#000',
+    width: 12,
   },
-  barTrack: {
+  barBackground: {
     flex: 1,
-    height: 10,
-    borderRadius: 6,
-    backgroundColor: '#E8E8E8',
+    height: 8,
+    backgroundColor: '#E5E5E5',
+    borderRadius: 4,
     overflow: 'hidden',
   },
   barFill: {
-    height: 10,
-    backgroundColor: '#F59A11',
-    borderRadius: 6,
+    height: '100%',
+    backgroundColor: '#FBB040',
+    borderRadius: 4,
   },
-  barCount: {
-    width: 32,
-    textAlign: 'right',
-    fontSize: 13,
-    fontFamily: 'Gotham-Rounded-Medium',
-    color: '#555',
-  },
-  reviewsDivider: {
-    height: 1,
-    backgroundColor: '#E5E5E5',
-    marginVertical: 16,
-  },
-  emptyReviewContainer: {
-    paddingVertical: 32,
-    alignItems: 'center',
-  },
-  emptyReviewText: {
-    fontSize: 16,
-    color: '#333',
-    fontFamily: 'Gotham-Rounded-Bold',
-    marginBottom: 6,
-  },
-  emptyReviewSubText: {
+  starCount: {
     fontSize: 14,
-    color: '#777',
     fontFamily: 'Gotham-Rounded-Medium',
+    color: '#666',
+    width: 20,
+    textAlign: 'right',
   },
-  reviewsListTitle: {
-    fontSize: 17,
+  writeReviewButton: {
+    backgroundColor: '#F59A11',
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  writeReviewButtonText: {
+    fontSize: 16,
     fontFamily: 'Gotham-Rounded-Bold',
-    color: '#101010',
-    marginBottom: 14,
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  reviewsList: {
+    marginTop: 10,
   },
   reviewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
     borderWidth: 1.5,
     borderColor: '#E5E5E5',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    backgroundColor: '#FFFFFF',
   },
-  reviewHeader: {
+  reviewHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    gap: 12,
   },
-  reviewStarsRow: {
+  avatarCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#E5E5E5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 22,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#000',
+  },
+  reviewMainContent: {
+    flex: 1,
+  },
+  nameLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    flexWrap: 'wrap',
+  },
+  reviewerName: {
+    fontSize: 16,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#000',
+    marginRight: 6,
+  },
+  reviewLocation: {
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Gotham-Rounded-Medium',
+  },
+  starsDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  reviewRatingRow: {
     flexDirection: 'row',
     gap: 3,
   },
-  reviewDateText: {
-    fontSize: 12,
-    color: '#888',
+  reviewDate: {
+    fontSize: 13,
+    color: '#999',
     fontFamily: 'Gotham-Rounded-Medium',
   },
-  reviewAuthorText: {
-    fontSize: 14,
-    color: '#222',
-    fontFamily: 'Gotham-Rounded-Bold',
-    marginBottom: 6,
-  },
-  reviewTitleText: {
+  reviewText: {
     fontSize: 15,
-    color: '#101010',
-    fontFamily: 'Gotham-Rounded-Bold',
-    marginBottom: 6,
-    lineHeight: 21,
-  },
-  reviewCommentText: {
-    fontSize: 14,
-    color: '#444',
+    color: '#333',
     lineHeight: 22,
     fontFamily: 'Gotham-Rounded-Medium',
+    marginBottom: 8,
   },
-  verifiedBadge: {
+  readMoreText: {
+    fontSize: 14,
+    color: '#F48C20',
+    fontFamily: 'Gotham-Rounded-Bold',
+    marginTop: 4,
+  },
+  loadMoreButton: {
+    backgroundColor: '#F59A11',
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    alignItems: 'center',
     marginTop: 10,
-    alignSelf: 'flex-start',
+    marginBottom: 10,
   },
-  verifiedText: {
-    fontSize: 12,
-    color: '#00A86B',
+  loadMoreText: {
+    fontSize: 16,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  noReviewsContainer: {
+    alignItems: 'center',
+    paddingVertical: 30,
+  },
+  noReviewsText: {
+    fontSize: 16,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#666',
+    marginBottom: 8,
+  },
+  noReviewsSubtext: {
+    fontSize: 14,
     fontFamily: 'Gotham-Rounded-Medium',
+    color: '#999',
   },
 });
 

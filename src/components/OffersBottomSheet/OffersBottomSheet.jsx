@@ -72,7 +72,7 @@ const OffersBottomSheet = ({ innerRef }) => {
     <BottomSheetModalProvider>
       <BottomSheetModal
         ref={modalRef}
-        index={0} // presented hone par first snap se start
+        index={0}
         snapPoints={snapPoints}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
