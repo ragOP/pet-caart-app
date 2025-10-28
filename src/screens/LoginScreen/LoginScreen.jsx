@@ -226,7 +226,6 @@ const LoginScreen = ({ navigation }) => {
         data: {
           phoneNumber,
           email: cleanEmail,
-          // send only if non-empty to keep it optional
           referralCode: cleanReferral ? cleanReferral : undefined,
         },
       });
