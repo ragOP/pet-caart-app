@@ -11,6 +11,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import {
   BottomSheetModal,
@@ -19,6 +20,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { Star, X } from 'lucide-react-native';
 import Lottie from 'lottie-react-native';
+import { createReview } from '../../apis/createReview';
 
 const WriteReviewBottomSheet = ({ innerRef, onSubmit, productId }) => {
   const modalRef = useRef(null);
@@ -79,27 +81,43 @@ const WriteReviewBottomSheet = ({ innerRef, onSubmit, productId }) => {
 
   const handleSubmit = async () => {
     if (reviewRating === 0) {
-      alert('Please select a rating');
+      Alert.alert('Rating Required', 'Please select a rating');
       return;
     }
     if (reviewText.trim().length < 4) {
-      alert('Please write at least 4 characters');
+      Alert.alert('Review Required', 'Please write at least 4 characters');
       return;
     }
-
+    const reviewData = {
+      productId,
+      review: reviewText.trim(),
+      rating: reviewRating,
+    };
     setSubmitting(true);
     try {
-      await onSubmit({
-        productId,
-        rating: reviewRating,
-        review: reviewText.trim(),
-      });
-
-      setReviewRating(0);
-      setReviewText('');
-      modalRef.current?.dismiss();
+      const response = await createReview(reviewData);
+      Alert.alert('Success', 'Your review has been submitted successfully!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            setReviewRating(0);
+            setReviewText('');
+            modalRef.current?.dismiss();
+            if (onSubmit) {
+              onSubmit(response);
+            }
+          },
+        },
+      ]);
     } catch (error) {
       console.log('Error submitting review:', error);
+
+      // Show error message
+      Alert.alert(
+        'Error',
+        error?.message || 'Failed to submit review. Please try again.',
+        [{ text: 'OK' }],
+      );
     } finally {
       setSubmitting(false);
     }
@@ -142,6 +160,7 @@ const WriteReviewBottomSheet = ({ innerRef, onSubmit, productId }) => {
                 key={star}
                 onPress={() => handleStarPress(star)}
                 activeOpacity={0.7}
+                disabled={submitting}
               >
                 <Star
                   size={40}
@@ -168,6 +187,7 @@ const WriteReviewBottomSheet = ({ innerRef, onSubmit, productId }) => {
             value={reviewText}
             onChangeText={setReviewText}
             textAlignVertical="top"
+            editable={!submitting}
           />
         </View>
 
@@ -204,6 +224,7 @@ const WriteReviewBottomSheet = ({ innerRef, onSubmit, productId }) => {
           style={styles.cancelButton}
           onPress={handleCancel}
           activeOpacity={0.8}
+          disabled={submitting}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>

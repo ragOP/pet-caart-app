@@ -224,7 +224,7 @@ const ReviewsSection = ({
         <View style={styles.ratingBox}>
           <Text style={styles.bigRating}>{averageRating}</Text>
           <Star size={32} color="#FBB040" fill="#FBB040" />
-          <Text style={styles.ratingsCount}>{totalReviews} Ratings</Text>
+          <Text style={styles.ratingsCount}>{totalReviews} Reviews</Text>
         </View>
 
         <View style={styles.barsContainer}>
@@ -1296,12 +1296,12 @@ const styles = StyleSheet.create({
     borderColor: '#FBB040',
   },
   bigRating: {
-    fontSize: 48,
+    fontSize: 40,
     fontFamily: 'Gotham-Rounded-Bold',
     color: '#000',
   },
   ratingsCount: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#666',
     marginTop: 4,
     fontFamily: 'Gotham-Rounded-Medium',
