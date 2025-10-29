@@ -18,13 +18,6 @@ import ProductListShimmer from '../../ui/Shimmer/ProductListShimmer';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const LIFE_STAGE_LABELS = {
-  puppy: 'puppy',
-  adult: 'adult',
-  starter: 'starter',
-  kitten: 'kitten',
-};
-
 export default function ProductListScreen({ route, navigation }) {
   const {
     categorySlug,
@@ -82,15 +75,10 @@ export default function ProductListScreen({ route, navigation }) {
     try {
       setLoading(true);
 
+      // API params - only send what API supports
       const params = { categorySlug, collectionSlug };
       if (selectedBrand?.length) params.brandSlug = selectedBrand.join(',');
       if (selectedBreed?.length) params.breedSlug = selectedBreed.join(',');
-      if (selectedLifeStage?.length)
-        params.lifeStage = selectedLifeStage.join(',');
-      if (selectedProductType?.length)
-        params.productType = selectedProductType.join(',');
-      if (selectedBreedSize?.length)
-        params.breedSize = selectedBreedSize.join(',');
       if (categoryId) params.categoryId = categoryId;
       if (subcategoryId) params.subcategoryId = subcategoryId;
       if (subCategorySlug) params.subCategorySlug = subCategorySlug;
@@ -100,23 +88,31 @@ export default function ProductListScreen({ route, navigation }) {
       if (isVeg) {
         params.isVeg = true;
       }
+
       const res = await getProducts(params);
       const fetchedProducts = res?.data?.data || [];
       setAllCollectionProducts(fetchedProducts);
+
+      // Client-side filtering
       let filtered = fetchedProducts;
+
       if (isVeg) {
         filtered = filtered.filter(product => product.isVeg === true);
       }
+
       filtered = filtered.filter(product => {
+        // Brand filter (already handled by API but keeping for consistency)
         const brandMatches =
           !selectedBrand?.length ||
           (product.brandId?.slug &&
             selectedBrand.includes(product.brandId.slug));
 
+        // Breed filter (already handled by API but keeping for consistency)
         const breedMatches =
           !selectedBreed?.length ||
           (product.breedId || []).some(b => selectedBreed.includes(b.slug));
 
+        // Life Stage filter (client-side only)
         const productLifeStages = Array.isArray(product.lifeStage)
           ? product.lifeStage
           : product.lifeStage
@@ -132,21 +128,23 @@ export default function ProductListScreen({ route, navigation }) {
             normalizedSelectedStages.includes(ls),
           );
 
-        const typeVal = norm(product.productType);
+        // Product Type filter (client-side only)
+        const normalizedProductType = norm(product.productType || '');
         const normalizedSelectedTypes = (selectedProductType || []).map(v =>
           norm(v),
         );
         const typeMatches =
           !normalizedSelectedTypes.length ||
-          normalizedSelectedTypes.includes(typeVal);
+          normalizedSelectedTypes.includes(normalizedProductType);
 
-        const sizeVal = norm(product.breedSize);
+        // Breed Size filter (client-side only)
+        const normalizedBreedSize = norm(product.breedSize || '');
         const normalizedSelectedSizes = (selectedBreedSize || []).map(v =>
           norm(v),
         );
         const sizeMatches =
           !normalizedSelectedSizes.length ||
-          normalizedSelectedSizes.includes(sizeVal);
+          normalizedSelectedSizes.includes(normalizedBreedSize);
 
         return (
           brandMatches &&
@@ -156,6 +154,8 @@ export default function ProductListScreen({ route, navigation }) {
           sizeMatches
         );
       });
+
+      // Price sorting
       const getPriceNum = p => {
         const v = p?.salePrice ?? p?.price ?? 0;
         const n = typeof v === 'string' ? parseFloat(v) : Number(v);
@@ -226,7 +226,6 @@ export default function ProductListScreen({ route, navigation }) {
           />
         </View>
       </View>
-
       <View style={styles.filterBarWrapper}>
         <FilterBar
           selectedBrand={selectedBrand}
@@ -325,34 +324,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 15,
     overflow: 'visible',
-  },
-  circle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#F6F6F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    marginBottom: 5,
-  },
-  circleSelected: { borderColor: '#F17521' },
-  image: { width: 52, height: 52, borderRadius: 8 },
-  label: { fontSize: 13, color: '#888', textAlign: 'center' },
-  labelSelected: { color: '#F17521', fontFamily: 'Gotham-Rounded-Bold' },
-  underline: {
-    position: 'absolute',
-    bottom: -8,
-    width: 100,
-    height: 3,
-    backgroundColor: '#F17521',
-    borderRadius: 4,
-  },
-  subcategoryNameText: {
-    color: '#F59A11',
-    fontSize: 16,
-    fontFamily: 'Gotham-Rounded-Bold',
-    marginHorizontal: 15,
-    marginVertical: 8,
   },
 });

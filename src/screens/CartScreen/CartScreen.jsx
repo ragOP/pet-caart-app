@@ -537,7 +537,7 @@ const CartScreen = () => {
   const progress = Math.min(totalPayable / PROGRESS_TARGET, 1);
   const showProgress = totalPayable > 0;
   const showDog = totalPayable > 0 && totalPayable < PROGRESS_TARGET;
-
+  const showCompleteDog = totalPayable >= PROGRESS_TARGET;
   const onToggleWallet = nextVal => {
     setUseWallet(() => {
       setTimeout(() => fetchAndSetCurrentCart(), 0);
@@ -646,6 +646,19 @@ const CartScreen = () => {
                       },
                     ]}
                     source={require('../../lottie/Dogwalking.json')}
+                    autoPlay
+                    loop
+                  />
+                )}
+                {showCompleteDog && (
+                  <Lottie
+                    style={[
+                      s.celebrationDogImage,
+                      {
+                        right: 0,
+                      },
+                    ]}
+                    source={require('../../lottie/dogsitting.json')}
                     autoPlay
                     loop
                   />
@@ -817,7 +830,28 @@ const CartScreen = () => {
             <View style={s.priceDetailsWrapper}>
               <Text style={s.priceDetailsTitle}>📦 Price Details</Text>
               <View style={s.priceRow}>
-                <Text style={s.label}>Total MRP Price</Text>
+                <Text style={s.label}>Total MRP</Text>
+                <Text
+                  style={[
+                    s.value,
+                    { textDecorationLine: 'line-through', color: '#999' },
+                  ]}
+                >
+                  ₹
+                  {cartItems
+                    .reduce((sum, item) => {
+                      const itemMRP =
+                        item.variantId?.price ||
+                        item.productId?.price ||
+                        item.price ||
+                        0;
+                      return sum + itemMRP * item.quantity;
+                    }, 0)
+                    .toFixed(2)}
+                </Text>
+              </View>
+              <View style={s.priceRow}>
+                <Text style={s.label}>Discount On MRP</Text>
                 <Text style={s.value}>₹{totalMRP.toFixed(2)}</Text>
               </View>
               <View style={s.priceRow}>
@@ -1049,6 +1083,12 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       height: vsmall ? 66 : small ? 78 : 90,
       position: 'absolute',
       top: vsmall ? -30 : small ? -36 : -42,
+    },
+    celebrationDogImage: {
+      width: vsmall ? 30 : small ? 35 : 40,
+      height: vsmall ? 75 : small ? 90 : 105,
+      position: 'absolute',
+      top: vsmall ? -35 : small ? -42 : -50,
     },
 
     card: {

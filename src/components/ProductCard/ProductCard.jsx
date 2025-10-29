@@ -18,6 +18,7 @@ import { addProductToCart } from '../../apis/addProductToCart';
 import { getCart } from '../../apis/getCart';
 import { addItemToCart, removeItemFromCart } from '../../redux/cartSlice';
 import Lottie from 'lottie-react-native';
+
 const useScreenSize = () => {
   const [dims, setDims] = useState(Dimensions.get('window'));
   useEffect(() => {
@@ -28,6 +29,7 @@ const useScreenSize = () => {
   }, []);
   return dims;
 };
+
 const getBP = (w, h) => {
   const short = Math.min(w, h);
   return {
@@ -37,6 +39,7 @@ const getBP = (w, h) => {
     lg: short >= 480,
   };
 };
+
 const getCardHeight = (w, h) => {
   const { xs, sm, md, lg } = getBP(w, h);
   if (xs) return Math.round(h * 0.58);
@@ -47,10 +50,12 @@ const getCardHeight = (w, h) => {
 };
 
 const pct = (n, base) => Math.round(base * n);
+
 const getVariantDiscount = (price, salePrice) => {
   if (!price || !salePrice || price <= salePrice) return 0;
   return Math.round(((price - salePrice) / price) * 100);
 };
+
 const formatWeight = w => {
   const n = Number(w) || 0;
   if (n >= 1000) {
@@ -59,6 +64,7 @@ const formatWeight = w => {
   }
   return `${n}g`;
 };
+
 const ProductCard = ({
   images,
   title,
@@ -80,22 +86,27 @@ const ProductCard = ({
   const { width: W, height: H } = useScreenSize();
   const BP = useMemo(() => getBP(W, H), [W, H]);
   const CARD_HEIGHT = useMemo(() => getCardHeight(W, H), [W, H]);
+
   const computedCardWidth = useMemo(() => {
     if (BP.lg && W >= 820) return Math.round(W * 0.28);
     if (BP.md && W >= 700) return Math.round(W * 0.32);
     return Math.round(W * 0.46);
   }, [BP, W]);
+
   const widthToUse = cardWidth ?? computedCardWidth;
+
   const imageH = useMemo(() => {
     if (BP.xs) return pct(0.4, CARD_HEIGHT);
     if (BP.sm) return pct(0.45, CARD_HEIGHT);
     return pct(0.5, CARD_HEIGHT);
   }, [BP, CARD_HEIGHT]);
+
   const stepperH = BP.xs ? 30 : BP.sm ? 32 : 36;
   const reserveBottom = stepperH + (BP.xs ? 10 : 14);
-  const VAR_CARD_W = Math.round(Math.min(widthToUse, 240) * 0.45);
+
   const VAR_CARD_H = BP.xs ? 32 : BP.sm ? 40 : 44;
   const VAR_GAP = BP.xs ? 4 : 6;
+
   const fs = {
     title: BP.xs ? 12.5 : BP.sm ? 13 : 14,
     titleLH: BP.xs ? 15.5 : BP.sm ? 16.5 : 18,
@@ -202,6 +213,9 @@ const ProductCard = ({
     [variants],
   );
 
+  // Check if variants array is empty or not
+  const hasVariants = normalizedVariants && normalizedVariants.length > 0;
+
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -252,12 +266,9 @@ const ProductCard = ({
               <Text>No images available</Text>
             )}
           </Swiper>
-          {/* <View style={styles.ratingBadge}>
-            <Text style={styles.ratingText}>{`⭐ ${rating}`}</Text>
-          </View> */}
         </View>
 
-        {!!normalizedVariants?.length && (
+        {hasVariants && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -267,17 +278,16 @@ const ProductCard = ({
             ]}
             snapToAlignment="start"
             decelerationRate="fast"
-            snapToInterval={VAR_CARD_W + VAR_GAP}
           >
-            {normalizedVariants.map(v => (
+            {normalizedVariants.map((v, index) => (
               <Pressable
                 key={v._id}
                 style={[
                   styles.vCard,
                   {
-                    width: VAR_CARD_W,
                     height: VAR_CARD_H,
-                    marginRight: VAR_GAP,
+                    marginRight:
+                      index < normalizedVariants.length - 1 ? VAR_GAP : 0,
                   },
                 ]}
               >
@@ -333,7 +343,7 @@ const ProductCard = ({
               styles.titleText,
               { fontSize: fs.title, lineHeight: fs.titleLH },
             ]}
-            numberOfLines={2}
+            numberOfLines={hasVariants ? 2 : 5}
           >
             {title}
           </Text>
@@ -470,7 +480,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-
   ratingText: {
     fontSize: 10,
     color: '#fff',
@@ -560,22 +569,36 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     backgroundColor: '#008000',
   },
-  vRow: {},
+  vRow: {
+    flexDirection: 'row',
+  },
   vCard: {
     borderRadius: 10,
     backgroundColor: '#ffffff',
     borderWidth: 1,
     overflow: 'hidden',
     borderColor: '#014e6a',
+    alignSelf: 'flex-start',
   },
   vHead: {
     backgroundColor: '#0A4B5F',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 8,
   },
-  vHeadTxt: { color: '#FFFFFF', fontFamily: 'Gotham-Rounded-Bold' },
-  vBody: { paddingHorizontal: 4, paddingTop: 1, flex: 1 },
-  vSale: { color: '#014e6a', fontFamily: 'Gotham-Rounded-Bold' },
+  vHeadTxt: {
+    color: '#FFFFFF',
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+  vBody: {
+    paddingHorizontal: 4,
+    paddingTop: 1,
+    flex: 1,
+  },
+  vSale: {
+    color: '#014e6a',
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
   vMrp: {
     marginLeft: 6,
     color: '#6a6a6a',
@@ -586,5 +609,17 @@ const styles = StyleSheet.create({
     color: '#007d17',
     fontFamily: 'Gotham-Rounded-Bold',
     textAlign: 'center',
+  },
+  outOfStockButton: {
+    backgroundColor: '#CCCCCC',
+    borderRadius: 6,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  outOfStockButtonText: {
+    color: '#666666',
+    fontSize: 13,
+    textAlign: 'center',
+    fontFamily: 'Gotham-Rounded-Bold',
   },
 });

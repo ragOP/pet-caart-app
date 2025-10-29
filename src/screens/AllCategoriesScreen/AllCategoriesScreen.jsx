@@ -18,7 +18,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { useQuery } from '@tanstack/react-query';
 import SearchBar from '../../components/SearchBar/SearchBar';
-
 import CollectionShimmer from '../../ui/Shimmer/CollectionShimmer';
 import { getCategories } from '../../apis/getCategories';
 import { getSubCategories } from '../../apis/getSubCategories';
@@ -41,12 +40,6 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
 
   return (
     <View style={styles.accordionRoot}>
-      {/* <LinearGradient
-        colors={['#F59A11', '#8B9259', '#0888B1']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.accordionBorder}
-      > */}
       <View style={styles.accordionBorder}>
         <TouchableOpacity onPress={handleToggle} activeOpacity={1}>
           <ImageBackground
@@ -77,7 +70,6 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
           </ImageBackground>
         </TouchableOpacity>
       </View>
-      {/* </LinearGradient> */}
       {isOpen && <View style={styles.accordionBody}>{children}</View>}
     </View>
   );
@@ -116,6 +108,7 @@ export default function AllCategoriesScreen({ navigation }) {
       },
       enabled: !!apiCategories,
     });
+
   const { data: collections, isLoading: isLoadingCollections } = useQuery({
     queryKey: ['collections'],
     queryFn: async () => {
@@ -133,10 +126,9 @@ export default function AllCategoriesScreen({ navigation }) {
       }
       return colls;
     },
-    enabled: !!apiSubcategories?.length, // Only fetch if subcategories exist
+    enabled: !!apiSubcategories?.length,
   });
 
-  // Filter subcategories by active category
   const filteredSubcategories = useMemo(() => {
     if (!apiCategories || !apiSubcategories) return [];
     return apiSubcategories.filter(
@@ -144,11 +136,11 @@ export default function AllCategoriesScreen({ navigation }) {
     );
   }, [apiCategories, apiSubcategories, activeTab]);
 
-  // Tab labels and width
   const TAB_LABELS = useMemo(
     () => (apiCategories ? apiCategories.map(c => c.name) : []),
     [apiCategories],
   );
+
   const TAB_COUNT = TAB_LABELS.length;
   const underlineWidth = SCREEN_WIDTH / Math.max(TAB_COUNT, 1);
   const underlineTranslate = underlineAnim.interpolate({
@@ -156,7 +148,6 @@ export default function AllCategoriesScreen({ navigation }) {
     outputRange: [0, underlineWidth],
   });
 
-  // Tab press handler
   const handleTabPress = index => {
     if (index < TAB_COUNT) {
       setActiveTab(index);
@@ -166,6 +157,14 @@ export default function AllCategoriesScreen({ navigation }) {
         duration: 220,
         useNativeDriver: true,
       }).start();
+    }
+  };
+
+  const handleAccordionToggle = categoryId => {
+    if (activeAccordionId === categoryId) {
+      setActiveAccordionId(null);
+    } else {
+      setActiveAccordionId(categoryId);
     }
   };
 
@@ -259,7 +258,7 @@ export default function AllCategoriesScreen({ navigation }) {
                 key={category._id}
                 category={category}
                 isOpen={activeAccordionId === category._id}
-                onToggle={setActiveAccordionId}
+                onToggle={handleAccordionToggle}
               >
                 {collections?.[category._id]?.length > 0 ? (
                   <ScrollView
@@ -339,7 +338,6 @@ const styles = StyleSheet.create({
     color: '#181818',
     marginRight: 10,
     marginTop: 10,
-    // fontWeight: 'bold',
   },
   chevronIcon: { marginTop: 10 },
   accordionSubtitle: {

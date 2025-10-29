@@ -155,6 +155,7 @@ const styles = StyleSheet.create({
   headerWrapper: {
     backgroundColor: '#FFFFFF',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 60,
+    paddingBottom: 10,
   },
   headerRow: {
     flexDirection: 'row',

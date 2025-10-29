@@ -18,6 +18,7 @@ import { getBrands } from '../../apis/getBrands';
 const BrandScreen = ({ navigation }) => {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchBrands = async () => {
       console.log('Fetching brands...');
@@ -25,7 +26,6 @@ const BrandScreen = ({ navigation }) => {
         const response = await getBrands();
         console.log('API response:', response);
         if (response && response.data && Array.isArray(response.data.data)) {
-          // console.log('Brands data:', response.data.data);
           setBrands(response.data.data);
         } else {
           console.warn('No valid brand data found.');
@@ -41,15 +41,32 @@ const BrandScreen = ({ navigation }) => {
     fetchBrands();
   }, []);
 
+  const handleBrandPress = item => {
+    // console.log('Brand clicked:', item);
+    // console.log('Brand ID:', item._id);
+    // console.log('Brand Name:', item.name);
+    // console.log('Brand Slug:', item.slug);
+    navigation.navigate('ProductListScreen', {
+      brandId: item._id,
+      brandName: item.name,
+      brandSlug: item.slug,
+      initialBrandSlugs: [item.slug],
+    });
+  };
+
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.7}
+      onPress={() => handleBrandPress(item)}
+    >
       <Image
         source={{ uri: item.logo }}
         style={styles.brandImg}
-        resizeMode="cover"
+        resizeMode="contain"
       />
       <Text style={styles.brandName}>{item.name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -143,14 +160,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     alignItems: 'center',
-    paddingVertical: 15,
+    paddingVertical: 8,
     borderColor: '#ffe3ae',
     borderWidth: 2,
     minWidth: 105,
     maxWidth: 130,
   },
-  brandImg: { width: '100%', height: '100%', marginBottom: 13 },
-  brandName: { fontSize: 14, fontFamily: 'Gotham-Rounded-Bold', color: '#222' },
+  brandImg: { width: 100, height: 100, marginBottom: 10 },
+  brandName: {
+    fontSize: 14,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#222',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
   loader: {
     flex: 1,
     justifyContent: 'center',
