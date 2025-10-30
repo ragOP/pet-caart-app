@@ -151,7 +151,6 @@ const OrderDetailsScreen = ({ navigation }) => {
       <Text style={styles.subHeader}>Recent Orders</Text>
 
       <ScrollView contentContainerStyle={{ padding: 15 }}>
-        {/* Order Info Card */}
         <View style={styles.orderInfoCard}>
           <View style={styles.orderInfoRow}>
             <Text style={styles.orderIdText}>

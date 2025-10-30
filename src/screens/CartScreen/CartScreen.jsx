@@ -1440,7 +1440,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     },
     payNowButton: {
       position: 'absolute',
-      bottom: vsmall ? '13.5%' : small ? '15%' : '10%',
+      bottom: vsmall ? '11%' : small ? '16%' : '12%',
       left: 0,
       right: 0,
       backgroundColor: '#0888B1',

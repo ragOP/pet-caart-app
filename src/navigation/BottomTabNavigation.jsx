@@ -17,7 +17,7 @@ import {
   Logs,
   Dog,
 } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import CategoryScreen from '../screens/CategoryScreen/CategoryScreen';
 import CartScreen from '../screens/CartScreen/CartScreen';
@@ -37,9 +37,10 @@ const TABS = [
 
 const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { paddingBottom: insets.bottom }]}>
       <ImageBackground
         source={require('../assets/images/baar.png')}
         style={styles.backgroundImage}
@@ -116,15 +117,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width,
-    height: 80,
     zIndex: 10,
     backgroundColor: '#fff',
   },
   backgroundImage: {
-    position: 'absolute',
-    bottom: 0,
-    width,
-    height: 95,
+    width: '100%',
+    height: 60,
     justifyContent: 'center',
   },
   tabBar: {
@@ -133,7 +131,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 80,
     zIndex: 2,
-    paddingHorizontal: 5,
     paddingTop: 5,
     paddingBottom: 8,
   },
@@ -152,12 +149,12 @@ const styles = StyleSheet.create({
   centerButton: {
     position: 'absolute',
     bottom: 30,
-    left: width / 2 - 30,
+    left: width / 2 - 28,
     zIndex: 99,
   },
   centerCircle: {
-    width: 60,
-    height: 60,
+    width: 55,
+    height: 55,
     borderRadius: 30,
     backgroundColor: '#0888B1',
     alignItems: 'center',
