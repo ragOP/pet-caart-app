@@ -851,7 +851,7 @@ const CartScreen = () => {
                 </Text>
               </View>
               <View style={s.priceRow}>
-                <Text style={s.label}>Discount On MRP</Text>
+                <Text style={s.label}>Discounted MRP</Text>
                 <Text style={s.value}>₹{totalMRP.toFixed(2)}</Text>
               </View>
               <View style={s.priceRow}>

@@ -143,7 +143,7 @@ const OrderDetailsScreen = ({ navigation }) => {
             >
               <ArrowLeft size={28} color="#000" />
             </TouchableOpacity>
-            <Text style={styles.header}>My Orders</Text>
+            <Text style={styles.header}>Order Details</Text>
           </View>
         </SafeAreaView>
       </View>

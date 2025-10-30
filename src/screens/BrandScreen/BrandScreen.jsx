@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        height: 85,
+        height: 62,
       },
     }),
   },
