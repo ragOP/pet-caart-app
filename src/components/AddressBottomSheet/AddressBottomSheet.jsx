@@ -1,5 +1,4 @@
-// components/AddressBottomSheet/AddressBottomSheet.jsx
-import React, { useState, useImperativeHandle, useRef } from 'react';
+import React, { useState, useImperativeHandle, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,6 +19,7 @@ export const AddressBottomSheet = React.forwardRef(
   ) => {
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [hasAutoSelected, setHasAutoSelected] = useState(false);
     const internalRef = useRef(null);
 
     const fetchAddresses = async () => {
@@ -27,21 +27,30 @@ export const AddressBottomSheet = React.forwardRef(
         setLoading(true);
         const response = await getAddresses({ params: {} });
         if (response?.success) {
-          setAddresses(
-            response.data.map(item => ({
-              id: item._id,
-              name:
-                item.firstName && item.lastName
-                  ? `${item.firstName} ${item.lastName}`
-                  : item.firstName || item.lastName || 'No Name',
-              address: item.address,
-              city: item.city,
-              state: item.state,
-              zip: item.zip,
-              phone: item.phone,
-              isDefault: item.isDefault,
-            })),
-          );
+          const formattedAddresses = response.data.map(item => ({
+            id: item._id,
+            name:
+              item.firstName && item.lastName
+                ? `${item.firstName} ${item.lastName}`
+                : item.firstName || item.lastName || 'No Name',
+            address: item.address,
+            city: item.city,
+            state: item.state,
+            zip: item.zip,
+            phone: item.phone,
+            isDefault: item.isDefault,
+          }));
+          setAddresses(formattedAddresses);
+
+          if (!hasAutoSelected && !selectedAddressId) {
+            const defaultAddress = formattedAddresses.find(
+              addr => addr.isDefault,
+            );
+            if (defaultAddress) {
+              onSelectAddress?.(defaultAddress);
+              setHasAutoSelected(true);
+            }
+          }
         } else {
           setAddresses([]);
         }
@@ -53,7 +62,10 @@ export const AddressBottomSheet = React.forwardRef(
     };
 
     useImperativeHandle(ref, () => ({
-      open: () => internalRef.current?.open?.(),
+      open: () => {
+        setHasAutoSelected(false);
+        internalRef.current?.open?.();
+      },
       close: () => internalRef.current?.close?.(),
       refresh: fetchAddresses,
     }));
@@ -128,7 +140,7 @@ export const AddressBottomSheet = React.forwardRef(
             />
             <View style={{ marginBottom: 16 }}>
               <Text style={styles.noAddressText}>
-                Looks like you haven’t added a delivery address. Add one now to
+                Looks like you haven't added a delivery address. Add one now to
                 get your goodies delivered to the right doorstep!
               </Text>
               <Text style={styles.noAddressText}></Text>

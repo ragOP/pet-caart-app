@@ -99,7 +99,7 @@ const CouponBottomSheet = ({
             <View style={styles.leftTicket}>
               <View style={styles.leftInner}>
                 <Text style={styles.discountBig}>
-                  DISCOUNT{'\n'}{' '}
+                  DISCOUNT{'\n'}
                   {item.discountType === 'percentage'
                     ? `${item.discountValue}%`
                     : `₹${item.discountValue}`}{' '}
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   discountBig: {
-    fontSize: 25,
+    fontSize: 22,
     color: '#4E3B02',
     fontFamily: 'HoltwoodOneSC',
     textAlign: 'center',
