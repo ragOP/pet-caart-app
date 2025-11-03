@@ -18,6 +18,7 @@ import {
   loginFailure,
   loginRequest,
   loginSuccess,
+  clearReturnRoute,
 } from '../../redux/authSlice';
 import { loginUser } from '../../apis/loginUser';
 import { sendOtp } from '../../apis/sendOtp';
@@ -39,6 +40,7 @@ const setItem = async (key, val) => {
     await AsyncStorage.setItem(key, String(val ?? ''));
   } catch (e) {}
 };
+
 const getItem = async key => {
   try {
     return await AsyncStorage.getItem(key);
@@ -49,12 +51,11 @@ const getItem = async key => {
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// short retry for APNs right before login (optional)
 const getApnsTokenWithRetry = async (attempts = 3, gapMs = 800) => {
   if (Platform.OS !== 'ios') return null;
   for (let i = 0; i < attempts; i++) {
     try {
-      const t = await messaging().getAPNSToken(); // may be null if APNs not registered yet [web:9]
+      const t = await messaging().getAPNSToken();
       if (t) return t;
     } catch {}
     await sleep(gapMs);
@@ -64,21 +65,22 @@ const getApnsTokenWithRetry = async (attempts = 3, gapMs = 800) => {
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { loading } = useSelector(state => state.auth);
+  const { loading, returnRoute, returnParams } = useSelector(
+    state => state.auth,
+  );
 
   const [phoneNumber, setPhoneNumber] = useState('');
   const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState('');
-  const [referralCode, setReferralCode] = useState(''); // NEW
+  const [referralCode, setReferralCode] = useState('');
   const [resendDisabled, setResendDisabled] = useState(false);
   const [timer, setTimer] = useState(60);
   const [otpSending, setOtpSending] = useState(false);
 
   const currentStep = showEmailInput ? 3 : showOtpInput ? 2 : 1;
 
-  // refs for better "Next" navigation on the keyboard
   const phoneRef = useRef(null);
   const otpRef = useRef(null);
   const emailRef = useRef(null);
@@ -95,7 +97,7 @@ const LoginScreen = ({ navigation }) => {
           Platform.OS,
         );
         if (Platform.OS === 'ios' && !apns) {
-          console.warn('APNs not yet available on iOS (LoginScreen mount).'); // can be null initially [web:9]
+          console.warn('APNs not yet available on iOS (LoginScreen mount).');
         }
       } catch (e) {
         console.warn('Error reading APNs from storage:', e);
@@ -152,13 +154,23 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+  // NEW: Helper function to navigate after login
+  const navigateAfterLogin = () => {
+    if (returnRoute && returnParams) {
+      // Navigate to the return route with params
+      navigation.replace(returnRoute, returnParams);
+      dispatch(clearReturnRoute());
+    } else {
+      // Default navigation
+      navigation.replace('BottomTabs');
+    }
+  };
+
   const handleLogin = async () => {
     if (phoneNumber.length === 10 && otp.length === 6) {
-      // sequential, simpler reads (no Promise.all)
       let fcmToken = await AsyncStorage.getItem(AS_KEYS.FCM);
       let apnsToken = await AsyncStorage.getItem(AS_KEYS.APNS);
 
-      // optional: last-chance APNs retry before payload on iOS
       if (Platform.OS === 'ios' && !apnsToken) {
         const fetched = await getApnsTokenWithRetry(3, 800);
         if (fetched) {
@@ -173,15 +185,12 @@ const LoginScreen = ({ navigation }) => {
         'Platform:',
         Platform.OS,
       );
-      if (Platform.OS === 'ios' && !apnsToken) {
-        console.warn('APNs token is not available yet on iOS (handleLogin).'); // normal if APNs is still registering [web:9]
-      }
 
       const payload = {
         phoneNumber,
         otp,
-        fcmToken: fcmToken || null, // used for FCM sends
-        apnToken: Platform.OS === 'ios' ? apnsToken || null : null, // iOS-only include
+        fcmToken: fcmToken || null,
+        apnToken: Platform.OS === 'ios' ? apnsToken || null : null,
         devicePlatform: Platform.OS,
       };
 
@@ -197,7 +206,8 @@ const LoginScreen = ({ navigation }) => {
             dispatch(
               loginSuccess({ token: response.token, user: response.user }),
             );
-            navigation.navigate('BottomTabs');
+            // UPDATED: Navigate based on return route
+            navigateAfterLogin();
           }
         } else {
           dispatch(loginFailure('Login failed: incomplete response'));
@@ -248,7 +258,8 @@ const LoginScreen = ({ navigation }) => {
           dispatch(loginSuccess({ token: null, user }));
         }
 
-        navigation.navigate('BottomTabs', { isNew: true });
+        // UPDATED: Navigate based on return route
+        navigateAfterLogin();
       } else {
         Alert.alert('Failed', response?.message || 'Registration failed');
       }

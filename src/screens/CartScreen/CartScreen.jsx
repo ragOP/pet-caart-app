@@ -502,7 +502,7 @@ const CartScreen = () => {
     }
   };
 
-  const handleCouponApply = (coupon, isSelected) => {
+  const handleCouponApply = coupon => {
     if (coupon && totalMRP >= coupon.minPurchase) {
       setAppliedCoupon(coupon);
       setCouponCode(coupon.code);

@@ -49,6 +49,7 @@ import ImageView from 'react-native-image-viewing';
 import HandPicked from '../../components/HandPicked/HandPicked';
 import RecommendedForYou from '../../components/RecommendedForYou/RecommendedForYou';
 import WriteReviewBottomSheet from '../../components/WriteReviewBottomSheet/WriteReviewBottomSheet';
+import { setReturnRoute } from '../../redux/authSlice';
 
 const { width: screenWidthFull } = Dimensions.get('window');
 const screenWidth = screenWidthFull * 0.94;
@@ -543,13 +544,18 @@ const SingleProductScreen = ({ navigation }) => {
 
   const handleAddToCart = async () => {
     if (!isLoggedIn) {
-      navigation.navigate('LoginScreen', {
-        returnScreen: 'SingleProductScreen',
-        productId,
-      });
+      dispatch(
+        setReturnRoute({
+          routeName: 'SingleProductScreen',
+          params: { productId },
+        }),
+      );
+      navigation.replace('LoginScreen');
       return;
     }
+
     if (!effectiveInStock || cartLoading || !product) return;
+
     setCartLoading(true);
     try {
       const productData = {
@@ -563,16 +569,18 @@ const SingleProductScreen = ({ navigation }) => {
         quantity: 1,
         brandName: product.brandId?.name,
       };
+
       dispatch(addItemToCart(productData));
       await addProductToCart({
         productId: product._id,
         variantId: currentVariantId,
         quantity: 1,
       });
+
       setQuantity(1);
       goToCart();
     } catch (error) {
-      // silent/log
+      // handle error
     } finally {
       setCartLoading(false);
     }
@@ -905,20 +913,9 @@ const SingleProductScreen = ({ navigation }) => {
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>discount:</Text>
-                    <Text style={styles.infoValue}>
-                      {getDiscountPercent(
-                        currentVariant?.price,
-                        currentVariant?.salePrice,
-                      )}
-                      %
-                    </Text>
-                  </View>
-
-                  <View style={styles.infoRow}>
                     <Text style={styles.infoLabel}>platform:</Text>
                     <Text style={styles.infoValue}>
-                      {product.platform || 'Pet Caart'}
+                      {product.platform || 'PetCaart'}
                     </Text>
                   </View>
 
@@ -934,13 +931,6 @@ const SingleProductScreen = ({ navigation }) => {
                     <Text style={styles.infoLabel}>category:</Text>
                     <Text style={styles.infoValue}>
                       {product.categoryId?.name || 'N/A'}
-                    </Text>
-                  </View>
-
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>life Stage:</Text>
-                    <Text style={styles.infoValue}>
-                      {product.lifeStage || 'N/A'}
                     </Text>
                   </View>
 
@@ -1205,10 +1195,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   disclaimerBox: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    marginTop: 10,
+    paddingTop: 10,
   },
   disclaimerText: {
     fontSize: 13,

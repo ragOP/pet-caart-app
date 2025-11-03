@@ -7,6 +7,8 @@ const initialState = {
   isLoggedIn: false,
   loading: false,
   error: null,
+  returnRoute: null,
+  returnParams: null,
 };
 
 const authSlice = createSlice({
@@ -21,6 +23,8 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.user = action.payload.user;
       state.isLoggedIn = true;
+      state.returnRoute = null;
+      state.returnParams = null;
     },
     loginFailure: (state, action) => {
       state.loading = false;
@@ -31,15 +35,30 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
       state.isLoggedIn = false;
+      state.returnRoute = null;
+      state.returnParams = null;
     },
-    // NEW
     setUser: (state, action) => {
-      // prefer merge to keep other fields like createdAt, avatar, etc.
       state.user = { ...(state.user || {}), ...action.payload };
+    },
+    setReturnRoute: (state, action) => {
+      state.returnRoute = action.payload.routeName;
+      state.returnParams = action.payload.params;
+    },
+    clearReturnRoute: state => {
+      state.returnRoute = null;
+      state.returnParams = null;
     },
   },
 });
 
-export const { loginRequest, loginSuccess, loginFailure, logout, setUser } =
-  authSlice.actions;
+export const {
+  loginRequest,
+  loginSuccess,
+  loginFailure,
+  logout,
+  setUser,
+  setReturnRoute,
+  clearReturnRoute,
+} = authSlice.actions;
 export default authSlice.reducer;
