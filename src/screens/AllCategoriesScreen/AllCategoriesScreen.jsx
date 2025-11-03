@@ -356,31 +356,37 @@ const styles = StyleSheet.create({
   foodCardsHorizontal: {
     flexDirection: 'row',
     paddingVertical: 8,
+    gap: 10, // spacing between cards
   },
   foodCardContainer: {
-    width: 120,
-    marginRight: 10,
+    width: 130,
+    height: 160,
+    marginRight: 0,
   },
   foodCardOuter: {
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'space-between', // image और text को spread करता है
     backgroundColor: '#FFF',
     borderRadius: 8,
-    padding: 8,
+    padding: 10,
     borderColor: '#F59A11',
     borderWidth: 1,
   },
   foodImg: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
     resizeMode: 'contain',
-    marginBottom: 8,
   },
   cardLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Gotham-Rounded-Bold',
     color: '#181818',
     textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 15,
   },
+
   tabRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

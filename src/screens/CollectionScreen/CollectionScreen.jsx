@@ -12,6 +12,8 @@ import {
 import React, { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
+import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
+import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH <= 360 || SCREEN_HEIGHT <= 640;
 const banners = [
@@ -30,11 +32,11 @@ const banners = [
     nav: 'Breed',
     image: require('../../assets/images/Breed.png'),
   },
-  {
-    label: 'NEW LAUNCHES',
-    nav: 'LaunchesScreen',
-    image: require('../../assets/images/Newlaunch.png'),
-  },
+  // {
+  //   label: 'NEW LAUNCHES',
+  //   nav: 'LaunchesScreen',
+  //   image: require('../../assets/images/Newlaunch.png'),
+  // },
 ];
 
 const CollectionScreen = ({ navigation }) => {
