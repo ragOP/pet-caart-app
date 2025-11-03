@@ -13,6 +13,7 @@ import {
   Dimensions,
   Switch,
   Pressable,
+  Platform,
 } from 'react-native';
 
 import { Trash2, MapPinHouse, Wallet, Check, Info } from 'lucide-react-native';
@@ -76,6 +77,13 @@ const CartScreen = () => {
   const [showWallet, setShowWallet] = useState(false);
   const [useWallet, setUseWallet] = useState(false);
   const [cartWalletDiscount, setCartWalletDiscount] = useState(0);
+
+  // Error Overlay State
+  const [errorOverlay, setErrorOverlay] = useState({
+    visible: false,
+    message: '',
+  });
+
   const latestRef = useRef({
     useWallet: false,
     walletBalance: 0,
@@ -92,6 +100,7 @@ const CartScreen = () => {
   }, [appliedCoupon]);
   const requestSeq = useRef(0);
   const successAnimRef = useRef(null);
+  const errorAnimRef = useRef(null);
   const couponSheetRef = useRef();
   const addressSheetRef = useRef();
   const s = useMemo(
@@ -241,7 +250,6 @@ const CartScreen = () => {
         const addressId =
           selectedAddress?.id ??
           (await AsyncStorage.getItem(SELECTED_ADDRESS_KEY));
-
         await fetchAndSetCurrentCart(addressId);
       } catch (error) {
         console.error('Error in initial fetch:', error);
@@ -251,6 +259,7 @@ const CartScreen = () => {
     };
     fetchAllData();
   }, [isLoggedIn, dispatch]);
+
   useEffect(() => {
     const fetchWallet = async () => {
       try {
@@ -484,7 +493,10 @@ const CartScreen = () => {
       await playSuccessAndNavigate();
     } catch (err) {
       console.log('Payment error', err);
-      Alert.alert(err?.message || 'Something went wrong');
+      setErrorOverlay({
+        visible: true,
+        message: err?.message || 'Something went wrong',
+      });
     } finally {
       setIsPaying(false);
     }
@@ -620,7 +632,7 @@ const CartScreen = () => {
             style={s.banner}
           >
             <Text style={s.bannerText}>
-              🎉 You’re saving{' '}
+              🎉 You're saving{' '}
               <Text style={{ fontWeight: 'bold' }}>
                 ₹{couponDiscount.toFixed(2)}
               </Text>{' '}
@@ -771,34 +783,47 @@ const CartScreen = () => {
                 <Text style={s.couponTitle}>Coupons & Offers</Text>
               </View>
 
-              <View style={s.couponInputWrapper}>
-                <TextInput
-                  style={s.couponInput}
-                  placeholder="Enter Coupon Code"
-                  placeholderTextColor="#999"
-                  value={couponCode}
-                  onChangeText={text => setCouponCode(text.toUpperCase())}
-                  editable
-                  autoCapitalize="characters"
-                />
+              {appliedCoupon ? (
                 <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={handleManualCouponApply}
+                  activeOpacity={0.8}
+                  onPress={() => handleCouponApply(null, false)}
+                  style={s.couponInputWrapper}
                 >
-                  <Text style={s.applyBtn}>APPLY</Text>
+                  <Text style={s.couponCode}>{appliedCoupon.code}</Text>
+                  <Text style={s.removeBtn}>REMOVE</Text>
                 </TouchableOpacity>
-              </View>
-              {couponError ? (
-                <Text style={s.couponError}>{couponError}</Text>
-              ) : null}
+              ) : (
+                <>
+                  <View style={s.couponInputWrapper}>
+                    <TextInput
+                      style={s.couponInput}
+                      placeholder="Enter Coupon Code"
+                      placeholderTextColor="#999"
+                      value={couponCode}
+                      onChangeText={text => setCouponCode(text.toUpperCase())}
+                      editable
+                      autoCapitalize="characters"
+                    />
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={handleManualCouponApply}
+                    >
+                      <Text style={s.applyBtn}>APPLY</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {couponError ? (
+                    <Text style={s.couponError}>{couponError}</Text>
+                  ) : null}
 
-              <TouchableOpacity
-                activeOpacity={1}
-                style={s.allCouponsRow}
-                onPress={() => couponSheetRef.current?.open()}
-              >
-                <Text style={s.checkAllCoupons}>Check All Coupons</Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={s.allCouponsRow}
+                    onPress={() => couponSheetRef.current?.open()}
+                  >
+                    <Text style={s.checkAllCoupons}>Check All Coupons</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
 
             <View style={s.gstContainer}>
@@ -831,12 +856,7 @@ const CartScreen = () => {
               <Text style={s.priceDetailsTitle}>📦 Price Details</Text>
               <View style={s.priceRow}>
                 <Text style={s.label}>Total MRP</Text>
-                <Text
-                  style={[
-                    s.value,
-                    { textDecorationLine: 'line-through', color: '#999' },
-                  ]}
-                >
+                <Text style={[s.value]}>
                   ₹
                   {cartItems
                     .reduce((sum, item) => {
@@ -850,14 +870,33 @@ const CartScreen = () => {
                     .toFixed(2)}
                 </Text>
               </View>
-              <View style={s.priceRow}>
-                <Text style={s.label}>Discounted MRP</Text>
-                <Text style={s.value}>₹{totalMRP.toFixed(2)}</Text>
-              </View>
-              <View style={s.priceRow}>
-                <Text style={s.freeText}>Coupon Discount</Text>
-                <Text style={s.freeText}>- ₹{couponDiscount.toFixed(2)}</Text>
-              </View>
+
+              {(() => {
+                const totalOriginalMRP = cartItems.reduce((sum, item) => {
+                  const itemMRP =
+                    item.variantId?.price ||
+                    item.productId?.price ||
+                    item.price ||
+                    0;
+                  return sum + itemMRP * item.quantity;
+                }, 0);
+                const totalDiscount = totalOriginalMRP - totalMRP;
+
+                return (
+                  <View style={s.priceRow}>
+                    <Text style={s.label}>Discount on MRP</Text>
+                    <Text style={s.freeText}>
+                      - ₹{totalDiscount.toFixed(2)}
+                    </Text>
+                  </View>
+                );
+              })()}
+              {appliedCoupon ? (
+                <View style={s.priceRow}>
+                  <Text style={s.freeText}>Coupon Discount</Text>
+                  <Text style={s.freeText}>- {couponDiscount.toFixed(2)}</Text>
+                </View>
+              ) : null}
               <View style={s.priceRow}>
                 <View>
                   <Text style={s.label}>Shipping Charges</Text>
@@ -867,7 +906,7 @@ const CartScreen = () => {
                       : `Expected Delivery By : ${shippingDate}`}
                   </Text>
                 </View>
-                <Text style={s.freeText}>₹{shippingCost.toFixed(2)}</Text>
+                <Text style={s.value}>₹{shippingCost.toFixed(2)}</Text>
               </View>
               {showWallet && (
                 <View style={s.walletRow}>
@@ -911,7 +950,8 @@ const CartScreen = () => {
                         <View style={s.tooltipArrow} />
                         <View style={s.tooltipContent}>
                           <Text style={s.tooltipText}>
-                            You can use up to 15% of your wallet balance
+                            You can redeem up to 15% of the payable cart value
+                            from wallet balance.
                           </Text>
                         </View>
                       </View>
@@ -985,6 +1025,33 @@ const CartScreen = () => {
             loop={false}
             style={s.successLottie}
           />
+        </View>
+      )}
+
+      {/* ERROR OVERLAY - MINIMAL WITH LOTTIE */}
+      {errorOverlay.visible && (
+        <View style={s.errorOverlayContainer}>
+          <Pressable
+            style={s.errorOverlayBackdrop}
+            onPress={() => setErrorOverlay({ visible: false, message: '' })}
+          />
+          <View style={s.errorOverlayBox}>
+            <Lottie
+              ref={errorAnimRef}
+              source={require('../../lottie/Failed.json')}
+              autoPlay
+              loop={true}
+              style={s.errorLottie}
+            />
+            <Text style={s.errorTitle}>Order Not Placed</Text>
+            <Text style={s.errorMessage}>{errorOverlay.message}</Text>
+            <TouchableOpacity
+              style={s.errorButton}
+              onPress={() => setErrorOverlay({ visible: false, message: '' })}
+            >
+              <Text style={s.errorButtonText}>Try Again</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>
@@ -1082,7 +1149,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       width: vsmall ? 44 : small ? 52 : 60,
       height: vsmall ? 66 : small ? 78 : 90,
       position: 'absolute',
-      top: vsmall ? -30 : small ? -36 : -42,
+      top: vsmall ? -30 : small ? -36 : -44,
     },
     celebrationDogImage: {
       width: vsmall ? 30 : small ? 35 : 40,
@@ -1224,7 +1291,24 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       fontFamily: 'Gotham-Rounded-Bold',
       marginLeft: vsmall ? 10 : small ? 12 : 12,
     },
-    couponError: { color: 'red', marginTop: vsmall ? 4 : small ? 6 : 6 },
+    couponError: {
+      color: 'red',
+      marginTop: vsmall ? 4 : small ? 6 : 6,
+      fontSize: vsmall ? 12 : small ? 13 : 14,
+      fontFamily: 'Gotham-Rounded-Medium',
+    },
+    couponCode: {
+      fontSize: vsmall ? 14 : small ? 15 : 16,
+      fontFamily: 'Gotham-Rounded-Bold',
+      color: '#4CAF50',
+      flex: 1,
+    },
+    removeBtn: {
+      color: '#FF6B6B',
+      fontSize: vsmall ? 14 : small ? 15 : 16,
+      fontFamily: 'Gotham-Rounded-Bold',
+      marginLeft: vsmall ? 10 : small ? 12 : 12,
+    },
 
     gstContainer: {
       backgroundColor: '#FFFFFF',
@@ -1440,7 +1524,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     },
     payNowButton: {
       position: 'absolute',
-      bottom: vsmall ? '11%' : small ? '16%' : '12%',
+      bottom: vsmall ? '15%' : small ? '12%' : '8.8%',
       left: 0,
       right: 0,
       backgroundColor: '#0888B1',
@@ -1502,6 +1586,73 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
       fontFamily: 'Gotham-Rounded-Bold',
       textAlign: 'center',
       marginTop: vsmall ? 6 : small ? 8 : 10,
+    },
+    errorOverlayContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+    },
+    errorOverlayBackdrop: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    errorOverlayBox: {
+      position: 'absolute',
+      backgroundColor: '#fff',
+      borderRadius: 16,
+      padding: 20,
+      alignItems: 'center',
+      width: '80%',
+      maxWidth: 300,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      elevation: 3,
+    },
+    errorLottie: {
+      width: 100,
+      height: 100,
+      marginBottom: 12,
+    },
+    errorTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: '#FF6B6B',
+      marginBottom: 6,
+      textAlign: 'center',
+      fontFamily: 'Gotham-Rounded-Bold',
+    },
+    errorMessage: {
+      fontSize: 13,
+      color: '#555',
+      textAlign: 'center',
+      marginBottom: 18,
+      lineHeight: 18,
+      fontFamily: 'Gotham-Rounded-Medium',
+    },
+    errorButton: {
+      backgroundColor: '#FF6B6B',
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 10,
+      width: '100%',
+      alignItems: 'center',
+    },
+    errorButtonText: {
+      color: '#fff',
+      fontSize: 13,
+      fontWeight: '600',
+      fontFamily: 'Gotham-Rounded-Bold',
     },
 
     successOverlay: {

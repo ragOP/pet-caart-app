@@ -42,8 +42,8 @@ const getBP = (w, h) => {
 
 const getCardHeight = (w, h) => {
   const { xs, sm, md, lg } = getBP(w, h);
-  if (xs) return Math.round(h * 0.58);
-  if (sm) return Math.round(h * 0.4);
+  if (xs) return Math.round(h * 0.37);
+  if (sm) return Math.round(h * 0.38);
   if (md) return Math.round(h * 0.44);
   if (lg) return Math.round(h * 0.41);
   return Math.round(h * 0.46);
@@ -213,7 +213,6 @@ const ProductCard = ({
     [variants],
   );
 
-  // Check if variants array is empty or not
   const hasVariants = normalizedVariants && normalizedVariants.length > 0;
 
   return (
@@ -228,8 +227,8 @@ const ProductCard = ({
             styles.imageSection,
             {
               height: imageH,
-              paddingVertical: BP.xs ? 8 : 10,
-              paddingHorizontal: BP.xs ? 0 : 0,
+              paddingVertical: 3,
+              paddingHorizontal: 0,
             },
           ]}
         >
@@ -259,7 +258,7 @@ const ProductCard = ({
                   key={i}
                   source={{ uri: src }}
                   style={styles.productImage}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
               ))
             ) : (
@@ -295,7 +294,7 @@ const ProductCard = ({
                   <Text
                     style={[styles.vHeadTxt, { fontSize: BP.xs ? 7.5 : 8 }]}
                   >
-                    {v.weightLabel}
+                    {v.variantName}
                   </Text>
                 </View>
                 <View style={[styles.vBody, { paddingBottom: BP.xs ? 4 : 6 }]}>
@@ -426,6 +425,7 @@ export default ProductCard;
 const styles = StyleSheet.create({
   card: {
     alignSelf: 'center',
+    paddingTop: 6,
     paddingHorizontal: 8,
     backgroundColor: '#fff',
     borderWidth: 0.1,
@@ -453,6 +453,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderColor: '#F59A11',
     borderWidth: 1,
+    overflow: 'hidden',
+    paddingHorizontal: 0,
   },
   bestsellerContainer: {
     borderRadius: 5,
@@ -509,7 +511,7 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   priceValue: { color: '#218032', fontFamily: 'Gotham-Rounded-Bold' },
-  cartButtonRow: { position: 'absolute', bottom: 8, left: 0, right: 0 },
+  cartButtonRow: { position: 'absolute', bottom: 5, left: 0, right: 0 },
   cartButton: {
     backgroundColor: '#F59A11',
     borderRadius: 6,

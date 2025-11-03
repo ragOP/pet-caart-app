@@ -1,4 +1,3 @@
-// src/navigation/NavigationPage.js
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import BottomTabNavigation from './BottomTabNavigation';
@@ -26,6 +25,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BreedDetailScreen from '../screens/BreedDetailScreen/BreedDetailScreen';
 import MyWallet from '../screens/MyWallet/MyWallet';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createStackNavigator();
 
@@ -34,112 +34,115 @@ export default function NavigationPage() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <NavigationContainer ref={navigationRef}>
-          <Stack.Navigator
-            initialRouteName="SplashScreen"
-            screenOptions={{ headerShown: false }}
-          >
-            <Stack.Screen name="SplashScreen" component={SplashScreen} />
-            <Stack.Screen
-              name="BottomTabs"
-              component={BottomTabNavigation}
+          {/* Wrapping with SafeAreaView */}
+          <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+            <Stack.Navigator
+              initialRouteName="SplashScreen"
               screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Profile"
-              component={ProfileScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="ProfileDetailScreen"
-              component={ProfileDetailScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="AddressInfoScreen"
-              component={AddressInfoScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="AddAddressScreen"
-              component={AddAddressScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="MyOrderScreen"
-              component={MyOrderScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="OrderDetailsScreen"
-              component={OrderDetailsScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="LoginScreen"
-              component={LoginScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="SignupScreen"
-              component={SignUpScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="InviteScreen"
-              component={InviteScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="Terms"
-              component={Terms}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="AllCategoriesScreen"
-              component={AllCategoriesScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="BrandScreen"
-              component={BrandScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="ProductListScreen"
-              component={ProductListScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="SingleProductScreen"
-              component={SingleProductScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="ProductCollectionScreeen"
-              component={ProductCollectionScreeen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="ContactUsScreen"
-              component={ContactUsScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="BreedDetailScreen"
-              component={BreedDetailScreen}
-              screenOptions={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="MyWallet"
-              component={MyWallet}
-              screenOptions={{ headerShown: false }}
-            />
-          </Stack.Navigator>
+            >
+              <Stack.Screen name="SplashScreen" component={SplashScreen} />
+              <Stack.Screen
+                name="BottomTabs"
+                component={BottomTabNavigation}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Profile"
+                component={ProfileScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ProfileDetailScreen"
+                component={ProfileDetailScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="AddressInfoScreen"
+                component={AddressInfoScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="AddAddressScreen"
+                component={AddAddressScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="MyOrderScreen"
+                component={MyOrderScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="OrderDetailsScreen"
+                component={OrderDetailsScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="LoginScreen"
+                component={LoginScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="SignupScreen"
+                component={SignUpScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="InviteScreen"
+                component={InviteScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="Terms"
+                component={Terms}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="AllCategoriesScreen"
+                component={AllCategoriesScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="BrandScreen"
+                component={BrandScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ProductListScreen"
+                component={ProductListScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="SingleProductScreen"
+                component={SingleProductScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ProductCollectionScreeen"
+                component={ProductCollectionScreeen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ContactUsScreen"
+                component={ContactUsScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="BreedDetailScreen"
+                component={BreedDetailScreen}
+                screenOptions={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="MyWallet"
+                component={MyWallet}
+                screenOptions={{ headerShown: false }}
+              />
+            </Stack.Navigator>
+          </SafeAreaView>
         </NavigationContainer>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

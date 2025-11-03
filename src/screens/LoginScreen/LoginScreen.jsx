@@ -399,7 +399,7 @@ const LoginScreen = ({ navigation }) => {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  marginBottom: 12,
+                  marginBottom: 6,
                   justifyContent: 'space-between',
                 }}
               >
@@ -411,7 +411,7 @@ const LoginScreen = ({ navigation }) => {
                     style={{
                       color: '#004E6A',
                       fontFamily: 'Gotham-Rounded-Bold',
-                      paddingBottom: 10,
+                      paddingBottom: 2,
                     }}
                   >
                     Edit Number
@@ -538,10 +538,9 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   label: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#333',
     fontFamily: 'Gotham-Rounded-Bold',
-    marginBottom: 10,
   },
   input: {
     borderWidth: 1,

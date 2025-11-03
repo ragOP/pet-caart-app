@@ -853,17 +853,105 @@ const SingleProductScreen = ({ navigation }) => {
               </TouchableOpacity>
               {expandedSection === 'additionalInfo' && (
                 <View style={styles.accordionBody}>
-                  {selectedVariant && !selectedVariant.isMain && (
-                    <Text style={styles.accordionInlineText}>
-                      Weight: {formatWeight(currentVariant?.weight)}
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Product name:</Text>
+                    <Text style={styles.infoValue}>{product.title}</Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>product Type:</Text>
+                    <Text style={styles.infoValue}>
+                      {product.productType || 'N/A'}
                     </Text>
-                  )}
-                  <Text style={styles.accordionInlineText}>
-                    Imported By : {product.importedBy}.
-                  </Text>
-                  <Text style={styles.accordionInlineText}>
-                    Country Of Origin : {product.countryOfOrigin}.
-                  </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>brand:</Text>
+                    <Text style={styles.infoValue}>
+                      {product.brandId?.name || 'N/A'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>net Weight:</Text>
+                    <Text style={styles.infoValue}>
+                      {selectedVariant && !selectedVariant.isMain
+                        ? formatWeight(currentVariant?.weight)
+                        : formatWeight(product?.weight)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>
+                      imported And Marketed By:
+                    </Text>
+                    <Text style={styles.infoValue}>
+                      {product.importedBy || 'N/A'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>origin:</Text>
+                    <Text style={styles.infoValue}>
+                      {product.countryOfOrigin || 'N/A'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>price:</Text>
+                    <Text style={styles.infoValue}>
+                      ₹{currentVariant?.salePrice}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>discount:</Text>
+                    <Text style={styles.infoValue}>
+                      {getDiscountPercent(
+                        currentVariant?.price,
+                        currentVariant?.salePrice,
+                      )}
+                      %
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>platform:</Text>
+                    <Text style={styles.infoValue}>
+                      {product.platform || 'Pet Caart'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>sub Category:</Text>
+
+                    <Text style={styles.infoValue}>
+                      {product.subCategoryId?.name || 'N/A'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>category:</Text>
+                    <Text style={styles.infoValue}>
+                      {product.categoryId?.name || 'N/A'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>life Stage:</Text>
+                    <Text style={styles.infoValue}>
+                      {product.lifeStage || 'N/A'}
+                    </Text>
+                  </View>
+
+                  <View style={styles.disclaimerBox}>
+                    <Text style={styles.disclaimerText}>
+                      All Images are for representation purpose only, You are
+                      advised to read the batch details, manufacturer details
+                      and other information mentioned on the packet or website
+                      at the time of receiving the products
+                    </Text>
+                  </View>
                 </View>
               )}
 
@@ -1092,6 +1180,42 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderColor: '#FBB040',
     borderWidth: 0.6,
+    backgroundColor: '#FAFAFA',
+  },
+
+  // Naye styles add karo:
+  infoRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  infoLabel: {
+    fontSize: 14,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#0B0B0B',
+    flex: 0.4,
+    textTransform: 'capitalize',
+  },
+  infoValue: {
+    fontSize: 14,
+    fontFamily: 'Gotham-Rounded-Medium',
+    color: '#555555',
+    flex: 0.6,
+    lineHeight: 20,
+  },
+  disclaimerBox: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
+  },
+  disclaimerText: {
+    fontSize: 13,
+    fontFamily: 'Gotham-Rounded-Medium',
+    color: '#666666',
+    lineHeight: 20,
+    fontStyle: 'italic',
   },
   accordionInlineText: {
     fontSize: 15,
@@ -1127,7 +1251,6 @@ const styles = StyleSheet.create({
   },
   listContent: { paddingVertical: 0 },
   cardShadow: { marginRight: 10, borderRadius: 10 },
-  cardShadowSelected: { elevation: 5, shadowOpacity: 0.18, shadowRadius: 8 },
   card: {
     borderRadius: 10,
     borderWidth: 1,

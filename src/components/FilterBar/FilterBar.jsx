@@ -9,7 +9,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
+  ScrollView as RNScrollView,
   StyleSheet,
   Dimensions,
   Platform,
@@ -25,10 +25,12 @@ import {
   BottomSheetView,
   BottomSheetBackdrop,
   BottomSheetFooter,
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
+  SafeAreaView,
 } from 'react-native-safe-area-context';
 import { getBrands } from '../../apis/getBrands';
 import { getBreeds } from '../../apis/getBreeds';
@@ -59,30 +61,35 @@ const BREED_SIZE_OPTIONS = [
 const FilterFooter = ({ onClear, onApply }) => {
   const insets = useSafeAreaInsets();
   return (
-    <View
-      style={[
-        styles.stickyActions,
-        {
-          position: 'relative',
-          paddingBottom: (Platform.OS === 'ios' ? insets.bottom : 16) + 6,
-        },
-      ]}
-    >
-      <TouchableOpacity
-        activeOpacity={1}
-        style={styles.clearButton}
-        onPress={onClear}
+    <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#fff' }}>
+      <View
+        style={[
+          styles.stickyActions,
+          {
+            position: 'relative',
+            paddingBottom: Math.max(
+              16,
+              16 + (Platform.OS === 'ios' ? insets.bottom : 0),
+            ),
+          },
+        ]}
       >
-        <Text style={styles.clearText}>CLEAR ALL</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        activeOpacity={1}
-        style={styles.applyButton}
-        onPress={onApply}
-      >
-        <Text style={styles.applyText}>APPLY</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.clearButton}
+          onPress={onClear}
+        >
+          <Text style={styles.clearText}>CLEAR ALL</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.applyButton}
+          onPress={onApply}
+        >
+          <Text style={styles.applyText}>APPLY</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -249,7 +256,7 @@ const FilterBar = ({
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <RNScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
@@ -328,7 +335,7 @@ const FilterBar = ({
               : 'Sort'}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
+      </RNScrollView>
 
       {/* Filter sheet with footerComponent */}
       <BottomSheetModal
@@ -349,179 +356,179 @@ const FilterBar = ({
           </BottomSheetFooter>
         )}
       >
-        <BottomSheetView style={{ flex: 1 }}>
-          <View style={styles.filterSheetRoot}>
-            <View style={styles.filterHeader}>
-              <SlidersHorizontal size={20} color="#333" />
-              <Text style={styles.filterTitle}>FILTERS</Text>
-            </View>
-
-            {/* Scroll content - remove big bottom padding; footer handles space */}
-            <ScrollView
-              style={styles.filterScrollView}
-              contentContainerStyle={{
-                paddingHorizontal: 20,
-                paddingBottom: 20,
-              }}
-            >
-              <View style={styles.filterSection}>
-                <Text style={styles.sectionTitle}>Brand</Text>
-                <View style={styles.optionRow}>
-                  {brands.length > 0 ? (
-                    brands.map(brand => (
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        key={brand._id}
-                        style={[
-                          styles.optionButton,
-                          tempBrandSlugs.includes(brand.slug) &&
-                            styles.selectedBrand,
-                        ]}
-                        onPress={() => handleBrandSelect(brand.slug)}
-                      >
-                        <Text
-                          style={[
-                            styles.optionText,
-                            tempBrandSlugs.includes(brand.slug) && {
-                              color: 'black',
-                            },
-                          ]}
-                        >
-                          {brand.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))
-                  ) : (
-                    <Text>No brands available</Text>
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.filterSection}>
-                <Text style={styles.sectionTitle}>Breed</Text>
-                <View style={styles.optionRow}>
-                  {breeds.length > 0 ? (
-                    breeds.map(breed => (
-                      <TouchableOpacity
-                        activeOpacity={1}
-                        key={breed._id}
-                        style={[
-                          styles.optionButton,
-                          tempBreedSlugs.includes(breed.slug) &&
-                            styles.selectedBreed,
-                        ]}
-                        onPress={() => handleBreedSelect(breed.slug)}
-                      >
-                        <Text
-                          style={[
-                            styles.optionText,
-                            tempBreedSlugs.includes(breed.slug) && {
-                              color: 'black',
-                            },
-                          ]}
-                        >
-                          {breed.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))
-                  ) : (
-                    <Text>No breeds available</Text>
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.filterSection}>
-                <Text style={styles.sectionTitle}>Life Stage</Text>
-                <View style={styles.optionRow}>
-                  {LIFE_STAGE_OPTIONS.map(opt => (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      key={opt.value}
-                      style={[
-                        styles.optionButton,
-                        tempLifeStages.includes(opt.value) &&
-                          styles.selectedBreed,
-                      ]}
-                      onPress={() => handleLifeStageSelect(opt.value)}
-                    >
-                      <Text
-                        style={[
-                          styles.optionText,
-                          tempLifeStages.includes(opt.value) && {
-                            color: 'black',
-                          },
-                        ]}
-                      >
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.filterSection}>
-                <Text style={styles.sectionTitle}>Product Type</Text>
-                <View style={styles.optionRow}>
-                  {PRODUCT_TYPE_OPTIONS.map(opt => (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      key={opt.value}
-                      style={[
-                        styles.optionButton,
-                        tempProductTypes.includes(opt.value) &&
-                          styles.selectedBreed,
-                      ]}
-                      onPress={() => handleProductTypeSelect(opt.value)}
-                    >
-                      <Text
-                        style={[
-                          styles.optionText,
-                          tempProductTypes.includes(opt.value) && {
-                            color: 'black',
-                          },
-                        ]}
-                      >
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.filterSection}>
-                <Text style={styles.sectionTitle}>Breed Size</Text>
-                <View style={styles.optionRow}>
-                  {BREED_SIZE_OPTIONS.map(opt => (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      key={opt.value}
-                      style={[
-                        styles.optionButton,
-                        tempBreedSizes.includes(opt.value) &&
-                          styles.selectedBreed,
-                      ]}
-                      onPress={() => handleBreedSizeSelect(opt.value)}
-                    >
-                      <Text
-                        style={[
-                          styles.optionText,
-                          tempBreedSizes.includes(opt.value) && {
-                            color: 'black',
-                          },
-                        ]}
-                      >
-                        {opt.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            </ScrollView>
+        {/* IMPORTANT: Use BottomSheetScrollView, avoid flex:1 on contentContainerStyle */}
+        <BottomSheetScrollView
+          style={{ maxHeight: '100%' }}
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: 20, // footer alag se safe area handle karega
+          }}
+        >
+          <View style={styles.filterHeader}>
+            <SlidersHorizontal size={20} color="#333" />
+            <Text style={styles.filterTitle}>FILTERS</Text>
           </View>
-        </BottomSheetView>
+
+          <View style={styles.filterSection}>
+            <Text style={styles.sectionTitle}>Brand</Text>
+            <View style={styles.optionRow}>
+              {brands.length > 0 ? (
+                brands.map(brand => (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    key={brand._id}
+                    style={[
+                      styles.optionButton,
+                      tempBrandSlugs.includes(brand.slug) &&
+                        styles.selectedBrand,
+                    ]}
+                    onPress={() => handleBrandSelect(brand.slug)}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        tempBrandSlugs.includes(brand.slug) && {
+                          color: 'black',
+                        },
+                      ]}
+                    >
+                      {brand.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text>No brands available</Text>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.filterSection}>
+            <Text style={styles.sectionTitle}>Breed</Text>
+            <View style={styles.optionRow}>
+              {breeds.length > 0 ? (
+                breeds.map(breed => (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    key={breed._id}
+                    style={[
+                      styles.optionButton,
+                      tempBreedSlugs.includes(breed.slug) &&
+                        styles.selectedBreed,
+                    ]}
+                    onPress={() => handleBreedSelect(breed.slug)}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        tempBreedSlugs.includes(breed.slug) && {
+                          color: 'black',
+                        },
+                      ]}
+                    >
+                      {breed.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text>No breeds available</Text>
+              )}
+            </View>
+          </View>
+
+          <View style={styles.filterSection}>
+            <Text style={styles.sectionTitle}>Life Stage</Text>
+            <View style={styles.optionRow}>
+              {LIFE_STAGE_OPTIONS.map(opt => (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  key={opt.value}
+                  style={[
+                    styles.optionButton,
+                    tempLifeStages.includes(opt.value) && styles.selectedBreed,
+                  ]}
+                  onPress={() => handleLifeStageSelect(opt.value)}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      tempLifeStages.includes(opt.value) && {
+                        color: 'black',
+                      },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.filterSection}>
+            <Text style={styles.sectionTitle}>Product Type</Text>
+            <View style={styles.optionRow}>
+              {PRODUCT_TYPE_OPTIONS.map(opt => (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  key={opt.value}
+                  style={[
+                    styles.optionButton,
+                    tempProductTypes.includes(opt.value) &&
+                      styles.selectedBreed,
+                  ]}
+                  onPress={() => handleProductTypeSelect(opt.value)}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      tempProductTypes.includes(opt.value) && {
+                        color: 'black',
+                      },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={{ height: 6 }} />
+
+          <View style={styles.filterSection}>
+            <Text style={styles.sectionTitle}>Breed Size</Text>
+            <View style={styles.optionRow}>
+              {BREED_SIZE_OPTIONS.map(opt => (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  key={opt.value}
+                  style={[
+                    styles.optionButton,
+                    tempBreedSizes.includes(opt.value) && styles.selectedBreed,
+                  ]}
+                  onPress={() => handleBreedSizeSelect(opt.value)}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      tempBreedSizes.includes(opt.value) && {
+                        color: 'black',
+                      },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={{ marginTop: 22 }} />
+        </BottomSheetScrollView>
       </BottomSheetModal>
 
-      {/* Sort sheet (unchanged UI) */}
+      {/* Sort sheet */}
       <BottomSheetModal
         ref={sortSheetRef}
         index={0}
@@ -680,21 +687,16 @@ const styles = StyleSheet.create({
         }),
   },
 
-  filterSheetRoot: {
-    flex: 1,
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
   filterHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 0,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
   filterTitle: { fontSize: 22, fontWeight: 'bold', marginLeft: 8 },
-  filterScrollView: { flex: 1 },
+
   filterSection: {
     marginBottom: 12,
     borderBottomWidth: 1,
@@ -728,7 +730,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 
-  // footer (now non-absolute)
+  // footer
   stickyActions: {
     left: 0,
     right: 0,
@@ -797,6 +799,6 @@ const styles = StyleSheet.create({
 
 export default FilterBar;
 
-export const AppRoot = ({ children }) => (
-  <SafeAreaProvider>{children}</SafeAreaProvider>
-);
+// export const AppRoot = ({ children }) => (
+//   <SafeAreaProvider>{children}</SafeAreaProvider>
+// );

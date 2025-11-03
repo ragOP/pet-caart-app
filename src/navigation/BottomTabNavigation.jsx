@@ -37,10 +37,10 @@ const TABS = [
 
 const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;
-  const insets = useSafeAreaInsets();
-
+  // const insets = useSafeAreaInsets();
+  // { paddingBottom: insets.bottom }
   return (
-    <View style={[styles.wrapper, { paddingBottom: insets.bottom }]}>
+    <View style={[styles.wrapper]}>
       <ImageBackground
         source={require('../assets/images/baar.png')}
         style={styles.backgroundImage}
@@ -118,12 +118,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     width,
     zIndex: 10,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   backgroundImage: {
     width: '100%',
     height: 60,
     justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
   },
   tabBar: {
     flexDirection: 'row',

@@ -9,6 +9,7 @@ import {
   TextInput,
   ImageBackground,
   Image,
+  Platform,
 } from 'react-native';
 import BottomSheet from 'react-native-raw-bottom-sheet';
 import { getCoupons } from '../../apis/getCoupons';
@@ -23,13 +24,24 @@ const CouponBottomSheet = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const isCouponExpired = endDate => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const couponEndDate = new Date(endDate);
+    couponEndDate.setHours(0, 0, 0, 0);
+    return couponEndDate < today;
+  };
+
   const loadCoupons = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await getCoupons();
       if (response?.data?.data && Array.isArray(response.data.data)) {
-        setCoupons(response.data.data);
+        const validCoupons = response.data.data.filter(
+          coupon => !isCouponExpired(coupon.endDate),
+        );
+        setCoupons(validCoupons);
       }
     } catch (e) {
       console.error('Coupon load error:', e);
@@ -49,8 +61,29 @@ const CouponBottomSheet = ({
     onSheetClose();
   };
 
+  const formatDate = dateString => {
+    const date = new Date(dateString);
+    const months = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
+    return `${months[date.getMonth()]} ${date.getDate()}`;
+  };
+
   const renderCoupon = ({ item }) => {
     const isApplied = appliedCoupon?.id === item.id;
+    const expiryDate = formatDate(item.endDate);
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -65,17 +98,22 @@ const CouponBottomSheet = ({
           <View style={styles.ticketWrapper}>
             <View style={styles.leftTicket}>
               <View style={styles.leftInner}>
-                <Text style={styles.discountBig}>DISCOUNT{'\n'}COUPON</Text>
+                <Text style={styles.discountBig}>
+                  DISCOUNT{'\n'}{' '}
+                  {item.discountType === 'percentage'
+                    ? `${item.discountValue}%`
+                    : `₹${item.discountValue}`}{' '}
+                  OFF
+                </Text>
                 <Text style={styles.validText}>
-                  VALID UNTIL <Text style={styles.bold}>JULY 12</Text>TH
+                  VALID UNTIL <Text style={styles.bold}>{expiryDate}</Text>
                 </Text>
               </View>
             </View>
 
             <View style={styles.rightTicket}>
-              <Text style={styles.voucherText}>VOUCHER</Text>
-              <Text style={styles.discountPercent}>{item.discountValue}%</Text>
-              <Text style={styles.discountWord}>DISCOUNT</Text>
+              <Text style={styles.voucherText}>USE CODE</Text>
+              <Text style={styles.discountPercent}>{item.code}</Text>
               <TouchableOpacity
                 style={styles.applyButton}
                 onPress={() => handleCouponPress(item)}
@@ -110,7 +148,7 @@ const CouponBottomSheet = ({
         />
         <Text style={styles.header}>Coupons & Offers</Text>
       </View>
-      <View style={styles.couponInputWrapper}>
+      {/* <View style={styles.couponInputWrapper}>
         <TextInput
           style={styles.couponInput}
           placeholder="Enter Coupon Code"
@@ -120,7 +158,7 @@ const CouponBottomSheet = ({
         <TouchableOpacity activeOpacity={1}>
           <Text style={styles.applyBtn}>APPLY</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {loading ? (
         <View style={styles.center}>
@@ -130,16 +168,15 @@ const CouponBottomSheet = ({
         <View style={styles.center}>
           <Text style={styles.error}>{error}</Text>
         </View>
+      ) : coupons.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.emptyMsg}>No coupons available</Text>
+        </View>
       ) : (
         <FlatList
           data={coupons}
           renderItem={renderCoupon}
           keyExtractor={item => String(item.id)}
-          ListEmptyComponent={
-            <View style={styles.center}>
-              <Text style={styles.emptyMsg}>No coupons available</Text>
-            </View>
-          }
         />
       )}
     </BottomSheet>
@@ -188,6 +225,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#222',
     fontFamily: 'Gotham-Rounded-Medium',
+    flex: 1,
   },
   applyBtn: {
     color: '#0B99C6',
@@ -218,7 +256,6 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: 'center',
     height: 120,
-    // justifyContent: 'space-between',
     borderRadius: 16,
   },
   couponImage: {
@@ -249,30 +286,32 @@ const styles = StyleSheet.create({
     color: '#4E3B02',
     textAlign: 'center',
     fontFamily: 'Gotham-Rounded-Medium',
+    fontSize: 12,
   },
-  bold: {},
+  bold: {
+    fontWeight: 'bold',
+  },
   voucherText: {
     color: '#222',
     fontFamily: 'Gotham-Rounded-Medium',
-    marginTop: 20,
+    fontSize: 12,
+    marginTop: 5,
   },
   discountPercent: {
     fontFamily: 'HoltwoodOneSC',
     fontSize: 16,
     color: '#4E3B02',
-    justifyContent: 'center',
-    alignContent: 'center',
+    marginVertical: 4,
   },
   discountWord: {
     color: '#4E3B02',
     fontFamily: 'HoltwoodOneSC',
     fontSize: 12,
-    color: '#4E3B02',
   },
   center: {
-    // marginTop: 24,
-    // justifyContent: 'center',
-    // alignItems: 'center',
+    marginTop: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   error: {
     color: 'red',

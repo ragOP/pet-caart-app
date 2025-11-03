@@ -188,26 +188,29 @@ export default function BreedDetailScreen({ route, navigation }) {
 
           <View style={styles.factsCard}>
             <View style={styles.factsInner}>
-              <Text style={styles.factTitle}>Life expectancy:</Text>
-              <Text style={styles.factValue}>
-                {facts.life || '10-12 years'}
+              <Text style={styles.factTitle}>
+                Life expectancy :
+                <Text style={styles.factValue}>
+                  {''} {facts.life || '10-12 years'}
+                </Text>
               </Text>
-
               <Text style={[styles.factTitle, styles.factTitleSpaced]}>
-                Size:
+                Size :{''}{' '}
+                <Text style={styles.factValue}>{facts.size || 'Large'}</Text>
               </Text>
-              <Text style={styles.factValue}>{facts.size || 'Large'}</Text>
-
               <Text style={[styles.factTitle, styles.factTitleSpaced]}>
-                Shedding:
+                Shedding :
+                <Text style={styles.factValue}>
+                  {' '}
+                  {''}
+                  {facts.shedding || 'High'}
+                </Text>
               </Text>
-              <Text style={styles.factValue}>{facts.shedding || 'High'}</Text>
-
               <Text style={[styles.factTitle, styles.factTitleSpaced]}>
-                Coat:
-              </Text>
-              <Text style={styles.factValue}>
-                {facts.coat || 'Straight or wavy'}
+                Coat :
+                <Text style={styles.factValue}>
+                  {''} {facts.coat || 'Straight or wavy'}
+                </Text>{' '}
               </Text>
             </View>
           </View>
@@ -741,13 +744,13 @@ const makeStyles = tier => {
     },
 
     row: {
-      flexDirection: 'row',
+      flexDirection: 'column',
       paddingHorizontal: horizontalPad,
       marginTop: sz(10),
       gap: sz(10),
     },
     heroCard: {
-      flex: 1,
+      width: '100%',
       backgroundColor: '#EBEBEB',
       borderRadius: sz(14),
       padding: sz(8),
@@ -759,7 +762,7 @@ const makeStyles = tier => {
       borderWidth: 2,
       borderColor: '#6A6868',
       borderRadius: sz(12),
-      padding: sz(8),
+      paddingHorizontal: sz(8),
       alignItems: 'center',
       backgroundColor: '#bfbfbf',
     },
@@ -768,7 +771,8 @@ const makeStyles = tier => {
     },
     heroImage: {
       width: '100%',
-      height: isSmall ? 130 : isCompact ? 160 : 170,
+      height: isSmall ? 160 : isCompact ? 190 : 200,
+      resizeMode: 'contain',
     },
 
     heroDescription: {
@@ -778,22 +782,20 @@ const makeStyles = tier => {
       textAlign: 'left',
       width: '100%',
       fontFamily: 'Gotham-Rounded-Medium',
-      // removed bottom offset to avoid extra gap
     },
     readMoreButton: {
       paddingVertical: sz(4),
-      alignSelf: 'flex-start',
-      marginTop: sz(4),
-      // removed bottom offset
+      alignSelf: 'flex-end',
     },
     readMoreText: {
       color: '#0E79B2',
       fontFamily: 'Gotham-Rounded-Bold',
       fontSize: fs(12),
+      textAlign: 'right',
     },
 
     factsCard: {
-      flex: 1,
+      width: '100%',
       backgroundColor: '#E4F4FB',
       borderRadius: sz(14),
       padding: sz(8),
