@@ -52,20 +52,19 @@ const App = () => {
   }, []);
 
   const registerAndGetTokens = useCallback(async () => {
-    // Explicit registration (needed if auto-registration disabled; safe otherwise) [web:4]
     await messaging().registerDeviceForRemoteMessages();
 
     if (Platform.OS === 'ios') {
-      const apns = await getApnsTokenWithRetry(5, 1000); // brief retry to avoid intermittent nulls [web:4]
+      const apns = await getApnsTokenWithRetry(5, 1000);
       if (apns) {
         console.log('🍏 APNs Token (hex):', apns);
         await AsyncStorage.setItem('apnToken', apns);
       } else {
-        console.log('⚠️ APNs token not yet available after retries.'); // acceptable if timing-late [web:4]
+        console.log('⚠️ APNs token not yet available after retries.');
       }
     }
 
-    const fcm = await messaging().getToken(); // primary token used for FCM sends [web:4]
+    const fcm = await messaging().getToken();
     console.log('🔥 FCM Token:', fcm);
     await AsyncStorage.setItem('fcmToken', fcm);
 
@@ -76,7 +75,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const unsubOnMsg = messaging().onMessage(onMessageReceived); // foreground messages [web:17]
+    const unsubOnMsg = messaging().onMessage(onMessageReceived);
     const unsubOpened = messaging().onNotificationOpenedApp(remoteMessage => {
       console.log('🔁 Opened from BG:', remoteMessage?.data);
     });

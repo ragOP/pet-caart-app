@@ -46,6 +46,7 @@ const isSmallRaw = SW <= 375 || SH <= 667;
 const isSmallStrict = SW <= 384 || SH <= 684;
 const useVerySmall = isVerySmallRaw;
 const useSmall = isSmallRaw && isSmallStrict;
+const tablet = SW >= 768;
 
 const SELECTED_ADDRESS_KEY = '@selectedAddressId';
 
@@ -985,7 +986,7 @@ const CartScreen = () => {
           </ScrollView>
 
           <TouchableOpacity
-            style={[s.payNowButton, isPaying && { opacity: 0.6 }]}
+            style={[s.payNowButton, isPaying && { opacity: 0.9 }]}
             activeOpacity={0.9}
             onPress={handlePayNow}
             disabled={isPaying}
@@ -1524,7 +1525,7 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     },
     payNowButton: {
       position: 'absolute',
-      bottom: vsmall ? '15%' : small ? '12%' : '8.8%',
+      bottom: tablet ? '7.8%' : vsmall ? '15%' : small ? '12%' : '8.8%',
       left: 0,
       right: 0,
       backgroundColor: '#0888B1',

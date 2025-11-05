@@ -14,8 +14,11 @@ import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
 import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
+
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH <= 360 || SCREEN_HEIGHT <= 640;
+const isTablet = SCREEN_WIDTH >= 768;
+
 const banners = [
   {
     label: 'CATEGORIES',
@@ -32,15 +35,14 @@ const banners = [
     nav: 'Breed',
     image: require('../../assets/images/Breed.png'),
   },
-  // {
-  //   label: 'NEW LAUNCHES',
-  //   nav: 'LaunchesScreen',
-  //   image: require('../../assets/images/Newlaunch.png'),
-  // },
 ];
 
 const CollectionScreen = ({ navigation }) => {
-  const dynamicStyles = useMemo(() => makeStyles(isSmallDevice), []);
+  const dynamicStyles = useMemo(
+    () => makeStyles(isSmallDevice, isTablet),
+    [isSmallDevice, isTablet],
+  );
+
   return (
     <View style={dynamicStyles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -57,25 +59,22 @@ const CollectionScreen = ({ navigation }) => {
         </View>
       </View>
       <ScrollView contentContainerStyle={dynamicStyles.scrollContent}>
-        {banners.map(item => (
-          <TouchableOpacity
-            key={item.label}
-            style={dynamicStyles.banner}
-            onPress={() => navigation.navigate(item.nav)}
-            activeOpacity={1}
-          >
-            <Image
-              source={item.image}
-              style={dynamicStyles.bannerImg}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        ))}
-        {/* <EssentialSlider
-          headingIcon={require('../../assets/icons/paw2.png')}
-          headingTextOrange="Shop"
-          headingTextBlue="By Store"
-        /> */}
+        <View style={dynamicStyles.bannersContainer}>
+          {banners.map(item => (
+            <TouchableOpacity
+              key={item.label}
+              style={dynamicStyles.banner}
+              onPress={() => navigation.navigate(item.nav)}
+              activeOpacity={1}
+            >
+              <Image
+                source={item.image}
+                style={dynamicStyles.bannerImg}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -83,7 +82,7 @@ const CollectionScreen = ({ navigation }) => {
 
 export default CollectionScreen;
 
-const makeStyles = small =>
+const makeStyles = (small, tablet) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: '#FFFFFF' },
     headerWrapper: {
@@ -112,15 +111,21 @@ const makeStyles = small =>
     },
     scrollContent: {
       paddingVertical: small ? 6 : 10,
+      // paddingHorizontal: tablet ? '10%' : 0,
+    },
+    bannersContainer: {
+      width: '100%',
+      maxWidth: tablet ? '100%' : '100%',
+      alignSelf: 'center',
     },
     banner: {
       width: '100%',
-      height: small ? 80 : 110,
-      marginVertical: small ? 6 : 10,
+      height: small ? 80 : tablet ? 170 : 110,
+      marginVertical: small ? 6 : tablet ? 12 : 10,
       overflow: 'hidden',
       justifyContent: 'center',
       alignItems: 'center',
-      marginHorizontal: 0,
+      borderRadius: tablet ? 8 : 0,
     },
     bannerImg: {
       ...StyleSheet.absoluteFillObject,

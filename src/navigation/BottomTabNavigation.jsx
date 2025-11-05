@@ -25,8 +25,10 @@ import ProfileScreen from '../screens/ProfileScreen/ProfileScreen';
 import CollectionScreen from '../screens/CollectionScreen/CollectionScreen';
 import BreedScreen from '../screens/BreedScreen/BreedScreen';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const isTablet = width >= 768;
 const Tab = createBottomTabNavigator();
+
 const TABS = [
   { label: 'Home', icon: Home, route: 'Home' },
   { label: 'Breed Shop', icon: Dog, route: 'Breed' },
@@ -37,33 +39,56 @@ const TABS = [
 
 const CustomTabBar = ({ state, navigation }) => {
   const selectedIndex = state.index;
-  // const insets = useSafeAreaInsets();
-  // { paddingBottom: insets.bottom }
+  const tabWidth = isTablet ? (width - 160) / 4 : (width - 120) / 4;
+  const centerButtonSize = isTablet ? 65 : 55;
+  const tabBarHeight = isTablet ? 90 : 80;
+  const centerButtonBottom = isTablet ? 35 : 30;
+
   return (
-    <View style={[styles.wrapper]}>
+    <View
+      style={[
+        styles.wrapper,
+        { height: tabBarHeight + (Platform.OS === 'ios' ? 20 : 0) },
+      ]}
+    >
       <ImageBackground
         source={require('../assets/images/baar.png')}
-        style={styles.backgroundImage}
+        style={[styles.backgroundImage, { height: tabBarHeight }]}
       >
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, { height: tabBarHeight }]}>
           {TABS.map((tab, index) => {
             const Icon = tab.icon;
             const isSelected = selectedIndex === index;
+
             if (index === 2) {
               return (
                 <TouchableOpacity
                   key={index}
                   onPress={() => navigation.navigate(tab.route)}
-                  style={styles.centerButton}
+                  style={[
+                    styles.centerButton,
+                    {
+                      bottom: centerButtonBottom,
+                      left: width / 2 - centerButtonSize / 2,
+                    },
+                  ]}
                   activeOpacity={1}
                 >
                   <View
                     style={[
                       styles.centerCircle,
+                      {
+                        width: centerButtonSize,
+                        height: centerButtonSize,
+                        borderRadius: centerButtonSize / 2,
+                      },
                       isSelected && { backgroundColor: '#F59A11' },
                     ]}
                   >
-                    <Icon size={26} color={isSelected ? '#fff' : '#fff'} />
+                    <Icon
+                      size={isTablet ? 32 : 26}
+                      color={isSelected ? '#fff' : '#fff'}
+                    />
                   </View>
                 </TouchableOpacity>
               );
@@ -71,8 +96,9 @@ const CustomTabBar = ({ state, navigation }) => {
 
             const tabStyle = [
               styles.tab,
-              index === 1 && { marginRight: 40 },
-              index === 3 && { marginLeft: 40 },
+              { width: tabWidth },
+              index === 1 && { marginRight: isTablet ? 50 : 40 },
+              index === 3 && { marginLeft: isTablet ? 50 : 40 },
             ];
 
             return (
@@ -82,12 +108,10 @@ const CustomTabBar = ({ state, navigation }) => {
                 onPress={() => navigation.navigate(tab.route)}
                 activeOpacity={1}
               >
-                <Icon size={28} color={isSelected ? '#0888B1' : '#4B4B4B'} />
-                {/* <Text
-                  style={[styles.label, isSelected && { color: '#0888B1' }]}
-                >
-                  {tab.label}
-                </Text> */}
+                <Icon
+                  size={isTablet ? 32 : 28}
+                  color={isSelected ? '#0888B1' : '#4B4B4B'}
+                />
               </TouchableOpacity>
             );
           })}
@@ -122,14 +146,12 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     width: '100%',
-    height: 60,
     justifyContent: 'center',
   },
   tabBar: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    height: 80,
     zIndex: 2,
     paddingTop: 5,
     paddingBottom: 8,
@@ -137,7 +159,6 @@ const styles = StyleSheet.create({
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: (width - 120) / 4,
     marginTop: 2,
     paddingTop: 10,
   },
@@ -148,13 +169,9 @@ const styles = StyleSheet.create({
   },
   centerButton: {
     position: 'absolute',
-    bottom: 30,
-    left: width / 2 - 28,
     zIndex: 99,
   },
   centerCircle: {
-    width: 55,
-    height: 55,
     borderRadius: 30,
     backgroundColor: '#0888B1',
     alignItems: 'center',

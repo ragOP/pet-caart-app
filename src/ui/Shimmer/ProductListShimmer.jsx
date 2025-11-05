@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
+const isTablet = width >= 768;
 
 const ShimmerPlaceholder = ({ style }) => {
   const shimmerAnim = useRef(new Animated.Value(-1)).current;
@@ -109,11 +110,11 @@ const styles = StyleSheet.create({
   circleRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginVertical: 8,
+    marginVertical: isTablet ? 12 : 8,
   },
   circlePlaceholder: {
-    width: 80,
-    height: 80,
+    width: isTablet ? 110 : 80,
+    height: isTablet ? 110 : 80,
     borderRadius: 50,
   },
   cardRows: {
@@ -122,30 +123,38 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   card: {
-    width: '45%',
-    height: 280,
+    width: isTablet ? '48%' : '45%',
+    height: isTablet ? 350 : 280,
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginVertical: 12,
-    padding: 12,
+    borderRadius: isTablet ? 16 : 12,
+    marginVertical: isTablet ? 14 : 12,
+    padding: isTablet ? 16 : 12,
     elevation: 2,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   imagePlaceholder: {
-    width: 150,
-    height: 150,
+    width: isTablet ? 180 : 150,
+    height: isTablet ? 180 : 150,
     borderRadius: 12,
-    marginBottom: 10,
+    marginBottom: isTablet ? 14 : 10,
   },
   textLines: { width: '100%' },
-  line: { height: 16, marginBottom: 10, borderRadius: 10 },
-  lineShort: { width: '60%', height: 16, borderRadius: 10 },
+  line: {
+    height: isTablet ? 18 : 16,
+    marginBottom: isTablet ? 12 : 10,
+    borderRadius: 10,
+  },
+  lineShort: {
+    width: '60%',
+    height: isTablet ? 16 : 14,
+    borderRadius: 10,
+  },
   buttonPlaceholder: {
     width: '100%',
-    height: 42,
+    height: isTablet ? 48 : 42,
     borderRadius: 10,
-    marginTop: 10,
+    marginTop: isTablet ? 12 : 10,
   },
 });
 

@@ -7,7 +7,8 @@ import {
   ScrollView,
 } from 'react-native';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const isTablet = width >= 768;
 
 const Shimmer = ({ children, style }) => {
   const shimmerValue = useRef(new Animated.Value(0)).current;
@@ -50,96 +51,94 @@ const Shimmer = ({ children, style }) => {
 };
 
 const CartShimmer = () => {
+  const IMAGE_SIZE = isTablet ? 120 : 80;
+  const IMAGE_SIZE_SMALL = isTablet ? 90 : 60;
+  const PADDING = isTablet ? 20 : 15;
+  const MARGIN_LEFT = isTablet ? 20 : 15;
+
   return (
-    <ScrollView style={{ flex: 1, padding: 20, backgroundColor: '#fff' }}>
-      <View style={styles.card}>
-        <Shimmer style={styles.imageShimmer}>
-          <View style={styles.imagePlaceholder} />
-        </Shimmer>
-        <View style={styles.content}>
-          <Shimmer style={styles.textShimmer}>
-            <View style={styles.titlePlaceholder} />
+    <ScrollView style={[styles.scrollView, { padding: PADDING }]}>
+      {/* Large Cards - Main Products */}
+      {[1, 2, 3].map(i => (
+        <View key={`main-${i}`} style={styles.card}>
+          <Shimmer
+            style={[
+              styles.imageShimmer,
+              { width: IMAGE_SIZE, height: IMAGE_SIZE },
+            ]}
+          >
+            <View style={[styles.imagePlaceholder, { borderRadius: 6 }]} />
           </Shimmer>
-          <Shimmer style={styles.textShimmer}>
-            <View style={styles.pricePlaceholder} />
-          </Shimmer>
+          <View style={[styles.content, { marginLeft: MARGIN_LEFT }]}>
+            <Shimmer style={styles.textShimmer}>
+              <View style={styles.titlePlaceholder} />
+            </Shimmer>
+            <Shimmer style={styles.textShimmer}>
+              <View style={styles.pricePlaceholder} />
+            </Shimmer>
+          </View>
         </View>
-      </View>
-      <View style={styles.card}>
-        <Shimmer style={styles.imageShimmer}>
-          <View style={styles.imagePlaceholder} />
-        </Shimmer>
-        <View style={styles.content}>
-          <Shimmer style={styles.textShimmer}>
-            <View style={styles.titlePlaceholder} />
-          </Shimmer>
-          <Shimmer style={styles.textShimmer}>
-            <View style={styles.pricePlaceholder} />
-          </Shimmer>
-        </View>
-      </View>
-      <View style={styles.card}>
-        <Shimmer style={styles.imageShimmer}>
-          <View style={styles.imagePlaceholder} />
-        </Shimmer>
-        <View style={styles.content}>
-          <Shimmer style={styles.textShimmer}>
-            <View style={styles.titlePlaceholder} />
-          </Shimmer>
-          <Shimmer style={styles.textShimmer}>
-            <View style={styles.pricePlaceholder} />
-          </Shimmer>
-        </View>
-      </View>
-      <View style={{ marginTop: 30, marginBottom: 10 }}>
-        <Shimmer style={{ height: 25, borderRadius: 4 }}>
+      ))}
+
+      {/* Summary Section */}
+      <View style={{ marginTop: isTablet ? 40 : 30, marginBottom: 10 }}>
+        <Shimmer style={{ height: isTablet ? 30 : 25, borderRadius: 4 }}>
           <View
             style={{ flex: 1, backgroundColor: '#d0d0d0', borderRadius: 4 }}
           />
         </Shimmer>
       </View>
       <View style={{ marginBottom: 20 }}>
-        <Shimmer style={{ height: 15, width: '70%', borderRadius: 4 }}>
+        <Shimmer
+          style={{ height: isTablet ? 18 : 15, width: '70%', borderRadius: 4 }}
+        >
           <View
             style={{ flex: 1, backgroundColor: '#c0c0c0', borderRadius: 4 }}
           />
         </Shimmer>
       </View>
-      <View style={[styles.card, { marginTop: 10 }]}>
-        <Shimmer style={styles.imageShimmerSmall}>
-          <View style={styles.imagePlaceholderSmall} />
-        </Shimmer>
-        <View style={styles.content}>
-          <Shimmer style={styles.textShimmerSmall}>
-            <View style={styles.titlePlaceholderSmall} />
+
+      {/* Small Cards - Recommendations */}
+      {[1, 2].map(i => (
+        <View key={`small-${i}`} style={[styles.card, { marginTop: 10 }]}>
+          <Shimmer
+            style={[
+              styles.imageShimmerSmall,
+              { width: IMAGE_SIZE_SMALL, height: IMAGE_SIZE_SMALL },
+            ]}
+          >
+            <View style={[styles.imagePlaceholderSmall, { borderRadius: 6 }]} />
           </Shimmer>
-          <Shimmer style={styles.textShimmerSmall}>
-            <View style={styles.pricePlaceholderSmall} />
-          </Shimmer>
+          <View style={[styles.content, { marginLeft: MARGIN_LEFT }]}>
+            <Shimmer
+              style={[styles.textShimmerSmall, { height: isTablet ? 18 : 15 }]}
+            >
+              <View style={styles.titlePlaceholderSmall} />
+            </Shimmer>
+            <Shimmer
+              style={[
+                styles.textShimmerSmall,
+                { height: isTablet ? 16 : 15, marginBottom: isTablet ? 8 : 6 },
+              ]}
+            >
+              <View style={styles.pricePlaceholderSmall} />
+            </Shimmer>
+          </View>
         </View>
-      </View>
-      <View style={[styles.card, { marginTop: 10 }]}>
-        <Shimmer style={styles.imageShimmerSmall}>
-          <View style={styles.imagePlaceholderSmall} />
-        </Shimmer>
-        <View style={styles.content}>
-          <Shimmer style={styles.textShimmerSmall}>
-            <View style={styles.titlePlaceholderSmall} />
-          </Shimmer>
-          <Shimmer style={styles.textShimmerSmall}>
-            <View style={styles.pricePlaceholderSmall} />
-          </Shimmer>
-        </View>
-      </View>
-      <View style={{ marginTop: 30, marginBottom: 10 }}>
-        <Shimmer style={{ height: 25, borderRadius: 4 }}>
+      ))}
+
+      {/* Final Summary */}
+      <View style={{ marginTop: isTablet ? 40 : 30, marginBottom: 10 }}>
+        <Shimmer style={{ height: isTablet ? 30 : 25, borderRadius: 4 }}>
           <View
             style={{ flex: 1, backgroundColor: '#d0d0d0', borderRadius: 4 }}
           />
         </Shimmer>
       </View>
-      <View style={{ marginBottom: 20 }}>
-        <Shimmer style={{ height: 15, width: '70%', borderRadius: 4 }}>
+      <View style={{ marginBottom: isTablet ? 30 : 20 }}>
+        <Shimmer
+          style={{ height: isTablet ? 18 : 15, width: '70%', borderRadius: 4 }}
+        >
           <View
             style={{ flex: 1, backgroundColor: '#c0c0c0', borderRadius: 4 }}
           />
@@ -150,6 +149,10 @@ const CartShimmer = () => {
 };
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     overflow: 'hidden',
     backgroundColor: '#e0e0e0',
@@ -165,29 +168,25 @@ const styles = StyleSheet.create({
   },
   card: {
     flexDirection: 'row',
-    padding: 15,
+    padding: isTablet ? 20 : 15,
     borderBottomWidth: 1,
     borderColor: '#ddd',
     alignItems: 'center',
   },
   imageShimmer: {
-    width: 80,
-    height: 80,
     borderRadius: 6,
   },
   imagePlaceholder: {
     flex: 1,
     backgroundColor: '#d0d0d0',
-    borderRadius: 6,
   },
   content: {
     flex: 1,
-    marginLeft: 15,
   },
   textShimmer: {
-    height: 20,
+    height: isTablet ? 22 : 20,
     borderRadius: 4,
-    marginBottom: 10,
+    marginBottom: isTablet ? 12 : 10,
   },
   titlePlaceholder: {
     flex: 1,
@@ -200,19 +199,15 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   imageShimmerSmall: {
-    width: 60,
-    height: 60,
     borderRadius: 6,
   },
   imagePlaceholderSmall: {
     flex: 1,
     backgroundColor: '#c0c0c0',
-    borderRadius: 6,
   },
   textShimmerSmall: {
-    height: 15,
     borderRadius: 2,
-    marginBottom: 6,
+    marginBottom: isTablet ? 8 : 6,
   },
   titlePlaceholderSmall: {
     flex: 1,

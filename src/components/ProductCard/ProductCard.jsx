@@ -37,11 +37,13 @@ const getBP = (w, h) => {
     sm: short >= 360 && short < 400,
     md: short >= 400 && short < 480,
     lg: short >= 480,
+    tablet: w >= 768,
   };
 };
 
-const getCardHeight = (w, h) => {
+const getCardHeight = (w, h, tablet) => {
   const { xs, sm, md, lg } = getBP(w, h);
+  if (tablet) return Math.round(h * 0.33);
   if (xs) return Math.round(h * 0.37);
   if (sm) return Math.round(h * 0.38);
   if (md) return Math.round(h * 0.44);
@@ -85,9 +87,13 @@ const ProductCard = ({
   const isLoggedIn = useSelector(s => !!s.auth.user);
   const { width: W, height: H } = useScreenSize();
   const BP = useMemo(() => getBP(W, H), [W, H]);
-  const CARD_HEIGHT = useMemo(() => getCardHeight(W, H), [W, H]);
+  const CARD_HEIGHT = useMemo(
+    () => getCardHeight(W, H, BP.tablet),
+    [W, H, BP.tablet],
+  );
 
   const computedCardWidth = useMemo(() => {
+    if (BP.tablet && W >= 820) return Math.round(W * 0.22);
     if (BP.lg && W >= 820) return Math.round(W * 0.28);
     if (BP.md && W >= 700) return Math.round(W * 0.32);
     return Math.round(W * 0.46);
@@ -96,23 +102,24 @@ const ProductCard = ({
   const widthToUse = cardWidth ?? computedCardWidth;
 
   const imageH = useMemo(() => {
+    if (BP.tablet) return pct(0.48, CARD_HEIGHT);
     if (BP.xs) return pct(0.4, CARD_HEIGHT);
     if (BP.sm) return pct(0.45, CARD_HEIGHT);
     return pct(0.5, CARD_HEIGHT);
   }, [BP, CARD_HEIGHT]);
 
-  const stepperH = BP.xs ? 30 : BP.sm ? 32 : 36;
-  const reserveBottom = stepperH + (BP.xs ? 10 : 14);
+  const stepperH = BP.tablet ? 40 : BP.xs ? 30 : BP.sm ? 32 : 36;
+  const reserveBottom = stepperH + (BP.tablet ? 12 : BP.xs ? 10 : 14);
 
-  const VAR_CARD_H = BP.xs ? 32 : BP.sm ? 40 : 44;
-  const VAR_GAP = BP.xs ? 4 : 6;
+  const VAR_CARD_H = BP.tablet ? 50 : BP.xs ? 32 : BP.sm ? 40 : 44;
+  const VAR_GAP = BP.tablet ? 8 : BP.xs ? 4 : 6;
 
   const fs = {
-    title: BP.xs ? 12.5 : BP.sm ? 13 : 14,
-    titleLH: BP.xs ? 15.5 : BP.sm ? 16.5 : 18,
-    price: BP.xs ? 13.5 : BP.sm ? 14 : 15,
-    brand: BP.xs ? 11.5 : BP.sm ? 12 : 13,
-    badge: BP.xs ? 10 : 11,
+    title: BP.tablet ? 15 : BP.xs ? 12.5 : BP.sm ? 13 : 14,
+    titleLH: BP.tablet ? 19 : BP.xs ? 15.5 : BP.sm ? 16.5 : 18,
+    price: BP.tablet ? 16 : BP.xs ? 13.5 : BP.sm ? 14 : 15,
+    brand: BP.tablet ? 14 : BP.xs ? 11.5 : BP.sm ? 12 : 13,
+    badge: BP.tablet ? 11 : BP.xs ? 10 : 11,
   };
 
   const [loading, setLoading] = useState(false);
@@ -227,7 +234,7 @@ const ProductCard = ({
             styles.imageSection,
             {
               height: imageH,
-              paddingVertical: 3,
+              paddingVertical: BP.tablet ? 5 : 3,
               paddingHorizontal: 0,
             },
           ]}
@@ -235,7 +242,10 @@ const ProductCard = ({
           {isBestSeller && (
             <LinearGradient
               colors={['#1C83A8', '#48BDE6', '#2F90B3', '#13789DE6']}
-              style={[styles.bestsellerContainer, { height: BP.xs ? 20 : 22 }]}
+              style={[
+                styles.bestsellerContainer,
+                { height: BP.tablet ? 24 : BP.xs ? 20 : 22 },
+              ]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
@@ -273,7 +283,7 @@ const ProductCard = ({
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={[
               styles.vRow,
-              { paddingVertical: BP.xs ? 2 : 4 },
+              { paddingVertical: BP.tablet ? 6 : BP.xs ? 2 : 4 },
             ]}
             snapToAlignment="start"
             decelerationRate="fast"
@@ -290,26 +300,48 @@ const ProductCard = ({
                   },
                 ]}
               >
-                <View style={[styles.vHead, { height: BP.xs ? 10 : 11 }]}>
+                <View
+                  style={[
+                    styles.vHead,
+                    { height: BP.tablet ? 13 : BP.xs ? 10 : 11 },
+                  ]}
+                >
                   <Text
-                    style={[styles.vHeadTxt, { fontSize: BP.xs ? 7.5 : 8 }]}
+                    style={[
+                      styles.vHeadTxt,
+                      { fontSize: BP.tablet ? 9 : BP.xs ? 7.5 : 8 },
+                    ]}
                   >
                     {v.variantName}
                   </Text>
                 </View>
-                <View style={[styles.vBody, { paddingBottom: BP.xs ? 4 : 6 }]}>
+                <View
+                  style={[
+                    styles.vBody,
+                    { paddingBottom: BP.tablet ? 8 : BP.xs ? 4 : 6 },
+                  ]}
+                >
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text
-                      style={[styles.vSale, { fontSize: BP.xs ? 9 : 10 }]}
+                      style={[
+                        styles.vSale,
+                        { fontSize: BP.tablet ? 11 : BP.xs ? 9 : 10 },
+                      ]}
                     >{`₹${v.salePrice}`}</Text>
                     {v.mrpPrice > v.salePrice && (
                       <Text
-                        style={[styles.vMrp, { fontSize: BP.xs ? 7 : 8 }]}
+                        style={[
+                          styles.vMrp,
+                          { fontSize: BP.tablet ? 9 : BP.xs ? 7 : 8 },
+                        ]}
                       >{`MRP ₹${v.mrpPrice}`}</Text>
                     )}
                   </View>
                   <Text
-                    style={[styles.vOff, { fontSize: BP.xs ? 8 : 9 }]}
+                    style={[
+                      styles.vOff,
+                      { fontSize: BP.tablet ? 10 : BP.xs ? 8 : 9 },
+                    ]}
                   >{`${v.discountPercentage}% OFF`}</Text>
                 </View>
               </Pressable>
@@ -317,14 +349,28 @@ const ProductCard = ({
           </ScrollView>
         )}
 
-        <View style={[styles.priceDiscountRow, { marginTop: BP.xs ? 2 : 3 }]}>
+        <View
+          style={[
+            styles.priceDiscountRow,
+            { marginTop: BP.tablet ? 5 : BP.xs ? 2 : 3 },
+          ]}
+        >
           <Text
             style={[styles.priceValue, { fontSize: fs.price }]}
           >{`₹${discountedPrice}`}</Text>
           {isVeg && (
-            <View style={[styles.vegMark, { marginLeft: BP.xs ? 96 : 111 }]}>
-              <View style={styles.vegBox}>
-                <View style={styles.vegDot} />
+            <View
+              style={[
+                styles.vegMark,
+                { marginLeft: BP.tablet ? 130 : BP.xs ? 96 : 111 },
+              ]}
+            >
+              <View
+                style={[styles.vegBox, BP.tablet && { width: 18, height: 18 }]}
+              >
+                <View
+                  style={[styles.vegDot, BP.tablet && { width: 9, height: 9 }]}
+                />
               </View>
             </View>
           )}
@@ -336,7 +382,12 @@ const ProductCard = ({
           </Text>
         ) : null}
 
-        <View style={[styles.titleRow, { marginTop: BP.xs ? 2 : 3 }]}>
+        <View
+          style={[
+            styles.titleRow,
+            { marginTop: BP.tablet ? 5 : BP.xs ? 2 : 3 },
+          ]}
+        >
           <Text
             style={[
               styles.titleText,
@@ -358,13 +409,23 @@ const ProductCard = ({
             currentQty > 0 ? (
               <View style={[styles.stepperFullWidth, { height: stepperH }]}>
                 <TouchableOpacity
-                  style={[styles.stepperSide, { width: BP.xs ? 50 : 60 }]}
+                  style={[
+                    styles.stepperSide,
+                    { width: BP.tablet ? 70 : BP.xs ? 50 : 60 },
+                  ]}
                   onPress={handleDecrement}
                   disabled={loading}
                   activeOpacity={1}
                 >
                   {!loading ? (
-                    <Text style={styles.stepperSymbol}>−</Text>
+                    <Text
+                      style={[
+                        styles.stepperSymbol,
+                        BP.tablet && { fontSize: 20 },
+                      ]}
+                    >
+                      −
+                    </Text>
                   ) : null}
                 </TouchableOpacity>
                 <View style={styles.stepperMiddle}>
@@ -373,20 +434,40 @@ const ProductCard = ({
                       source={require('../../lottie/loading.json')}
                       autoPlay
                       loop
-                      style={{ width: 22, height: 22 }}
+                      style={{
+                        width: BP.tablet ? 28 : 22,
+                        height: BP.tablet ? 28 : 22,
+                      }}
                     />
                   ) : (
-                    <Text style={styles.stepperQtyText}>{currentQty}</Text>
+                    <Text
+                      style={[
+                        styles.stepperQtyText,
+                        BP.tablet && { fontSize: 16 },
+                      ]}
+                    >
+                      {currentQty}
+                    </Text>
                   )}
                 </View>
                 <TouchableOpacity
-                  style={[styles.stepperSide, { width: BP.xs ? 50 : 60 }]}
+                  style={[
+                    styles.stepperSide,
+                    { width: BP.tablet ? 70 : BP.xs ? 50 : 60 },
+                  ]}
                   onPress={handleIncrement}
                   disabled={loading}
                   activeOpacity={1}
                 >
                   {!loading ? (
-                    <Text style={styles.stepperSymbol}>+</Text>
+                    <Text
+                      style={[
+                        styles.stepperSymbol,
+                        BP.tablet && { fontSize: 20 },
+                      ]}
+                    >
+                      +
+                    </Text>
                   ) : null}
                 </TouchableOpacity>
               </View>
@@ -402,16 +483,33 @@ const ProductCard = ({
                     source={require('../../lottie/loading.json')}
                     autoPlay
                     loop
-                    style={{ width: 24, height: 24 }}
+                    style={{
+                      width: BP.tablet ? 28 : 24,
+                      height: BP.tablet ? 28 : 24,
+                    }}
                   />
                 ) : (
-                  <Text style={styles.cartButtonText}>ADD TO CART</Text>
+                  <Text
+                    style={[
+                      styles.cartButtonText,
+                      BP.tablet && { fontSize: 14 },
+                    ]}
+                  >
+                    ADD TO CART
+                  </Text>
                 )}
               </TouchableOpacity>
             )
           ) : (
             <View style={[styles.outOfStockButton, { height: stepperH }]}>
-              <Text style={styles.outOfStockButtonText}>OUT OF STOCK</Text>
+              <Text
+                style={[
+                  styles.outOfStockButtonText,
+                  BP.tablet && { fontSize: 14 },
+                ]}
+              >
+                OUT OF STOCK
+              </Text>
             </View>
           )}
         </View>
@@ -555,7 +653,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Gotham-Rounded-Bold',
   },
-  vegMark: { alignItems: 'center', marginLeft: 111 },
+  vegMark: { alignItems: 'center' },
   vegBox: {
     width: 15,
     height: 15,

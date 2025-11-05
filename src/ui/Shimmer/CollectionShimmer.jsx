@@ -41,7 +41,7 @@ export default function CollectionShimmer() {
 
   return (
     <View style={styles.listContainer}>
-      {[...Array(6)].map((_, i) => (
+      {[...Array(10)].map((_, i) => (
         <Animated.View key={i} style={[styles.card, { opacity: pulseAnim }]}>
           <View style={styles.textContainer}>
             <Animated.View
