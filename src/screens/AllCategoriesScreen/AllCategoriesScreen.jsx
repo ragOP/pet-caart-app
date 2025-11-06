@@ -38,7 +38,6 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
     onToggle(category._id);
   };
 
-  // Word count check karo
   const words = category.name.trim().split(/\s+/);
   const shouldSplit = words.length >= 3;
 
@@ -91,10 +90,18 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
 }
 
 function FoodCard({ label, image }) {
+  const displayLabel = useMemo(() => {
+    const words = label.trim().split(/\s+/);
+    if (words.length >= 3) {
+      return words.slice(1).join(' ');
+    }
+    return label;
+  }, [label]);
+
   return (
     <View style={styles.foodCardOuter}>
       <Image source={{ uri: image }} style={styles.foodImg} />
-      <Text style={styles.cardLabel}>{label}</Text>
+      <Text style={styles.cardLabel}>{displayLabel}</Text>
     </View>
   );
 }

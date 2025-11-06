@@ -1,6 +1,6 @@
 // screens/ProductCollectionScreen.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -50,10 +50,20 @@ export default function ProductCollectionScreen({ route, navigation }) {
   const [selectedProductType, setSelectedProductType] = useState([]);
   const [selectedBreedSize, setSelectedBreedSize] = useState([]);
   const [isVeg, setIsVeg] = useState(false);
-  const [sortOrder, setSortOrder] = useState(null);
+  const [sortOrder, setSortOrder] = useState('lowToHigh');
+  const displayCollectionName = useMemo(() => {
+    if (!collectionName) return '';
+    const words = collectionName.trim().split(/\s+/);
+    if (words.length >= 3) {
+      return words.slice(1).join(' ');
+    }
+    return collectionName;
+  }, [collectionName]);
+
   useEffect(() => {
     fetchCollections();
   }, []);
+
   useEffect(() => {
     fetchProducts();
   }, [
@@ -68,6 +78,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
     sortOrder,
     isVeg,
   ]);
+
   const fetchCollections = async () => {
     try {
       setLoadingCollections(true);
@@ -81,6 +92,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
       setLoadingCollections(false);
     }
   };
+
   const filteredCollections = collections
     .filter(coll => coll.subCategoryId === subcategoryId)
     .sort((a, b) => {
@@ -88,6 +100,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
       if (b.slug === collectionSlug) return 1;
       return 0;
     });
+
   const norm = v =>
     String(v || '')
       .trim()
@@ -111,7 +124,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
       let filtered = fetchedProducts;
       if (isVeg) {
         filtered = filtered.filter(product => product.isVeg === true);
-        // console.log('Filtered products (veg):', filtered);
       }
       if (searchQuery && String(searchQuery).trim() !== '') {
         const searchTerm = norm(searchQuery);
@@ -225,6 +237,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
       setLoading(false);
     }
   };
+
   const handleSearchChange = query => {
     navigation.setParams({ ...route.params, searchQuery: query });
   };
@@ -283,7 +296,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
           setSelectedBreedSize={handleBreedSizeChange}
           isVeg={isVeg}
           setIsVeg={setIsVeg}
-          collectionName={collectionName}
+          collectionName={displayCollectionName}
           sortOrder={sortOrder}
           onChangeSort={setSortOrder}
         />
@@ -299,7 +312,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
           ) : (
             <View
               style={{
-                height: 115,
+                height: 135,
                 backgroundColor: '#fff',
                 justifyContent: 'center',
               }}
@@ -316,6 +329,10 @@ export default function ProductCollectionScreen({ route, navigation }) {
                 }}
                 renderItem={({ item }) => {
                   const selected = item.slug === collectionSlug;
+                  const words = item.name.trim().split(/\s+/);
+                  const displayName =
+                    words.length >= 3 ? words.slice(1).join(' ') : item.name;
+
                   return (
                     <TouchableOpacity
                       activeOpacity={1}
@@ -332,6 +349,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
                         navigation.setParams({
                           ...route.params,
                           collectionSlug: item.slug,
+                          collectionName: item.name,
                         })
                       }
                     >
@@ -352,7 +370,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
                       <Text
                         style={[styles.label, selected && styles.labelSelected]}
                       >
-                        {item.name}
+                        {displayName}
                       </Text>
                       {selected && <View style={styles.underline} />}
                     </TouchableOpacity>
@@ -446,7 +464,7 @@ const styles = StyleSheet.create({
   },
   circleSelected: { borderColor: '#F17521' },
   image: { width: 52, height: 52, borderRadius: 8 },
-  label: { fontSize: 13, color: '#888', textAlign: 'center' },
+  label: { fontSize: 13, color: '#888', textAlign: 'center', lineHeight: 18 },
   labelSelected: { color: '#F17521', fontFamily: 'Gotham-Rounded-Bold' },
   underline: {
     position: 'absolute',
