@@ -120,7 +120,7 @@ const makeStyles = (small, tablet) =>
     },
     banner: {
       width: '100%',
-      height: small ? 80 : tablet ? 170 : 110,
+      height: small ? 80 : tablet ? 200 : 110,
       marginVertical: small ? 6 : tablet ? 12 : 10,
       overflow: 'hidden',
       justifyContent: 'center',

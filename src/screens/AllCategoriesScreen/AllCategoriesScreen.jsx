@@ -38,6 +38,10 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
     onToggle(category._id);
   };
 
+  // Word count check karo
+  const words = category.name.trim().split(/\s+/);
+  const shouldSplit = words.length >= 3;
+
   return (
     <View style={styles.accordionRoot}>
       <View style={styles.accordionBorder}>
@@ -48,7 +52,18 @@ function AccordionSection({ category, children, isOpen, onToggle }) {
           >
             <View style={styles.headerTextWrapper}>
               <View style={styles.rowWithChevron}>
-                <Text style={styles.accordionTitle}>{category.name}</Text>
+                {shouldSplit ? (
+                  <View style={styles.titleContainer}>
+                    <Text style={styles.accordionTitleFirstLine}>
+                      {words[0]}
+                    </Text>
+                    <Text style={styles.accordionTitleSecondLine}>
+                      {words.slice(1).join(' ')}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.accordionTitle}>{category.name}</Text>
+                )}
                 {isOpen ? (
                   <ChevronUp
                     size={24}
@@ -332,6 +347,22 @@ const styles = StyleSheet.create({
   },
   headerTextWrapper: { flex: 1 },
   rowWithChevron: { flexDirection: 'row', alignItems: 'center' },
+  titleContainer: {
+    flexDirection: 'column',
+    marginRight: 10,
+  },
+  accordionTitleFirstLine: {
+    fontSize: 20,
+    fontFamily: 'Gotham-Rounded-Medium',
+    color: '#181818',
+    marginTop: 5,
+  },
+  accordionTitleSecondLine: {
+    fontSize: 20,
+    fontFamily: 'Gotham-Rounded-Medium',
+    color: '#181818',
+    marginTop: 2,
+  },
   accordionTitle: {
     fontSize: 20,
     fontFamily: 'Gotham-Rounded-Medium',
@@ -356,7 +387,7 @@ const styles = StyleSheet.create({
   foodCardsHorizontal: {
     flexDirection: 'row',
     paddingVertical: 8,
-    gap: 10, // spacing between cards
+    gap: 10,
   },
   foodCardContainer: {
     width: 130,
@@ -366,7 +397,7 @@ const styles = StyleSheet.create({
   foodCardOuter: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-between', // image और text को spread करता है
+    justifyContent: 'space-between',
     backgroundColor: '#FFF',
     borderRadius: 8,
     padding: 10,
@@ -386,7 +417,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 15,
   },
-
   tabRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

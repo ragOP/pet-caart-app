@@ -303,7 +303,7 @@ const ProductCard = ({
                 <View
                   style={[
                     styles.vHead,
-                    { height: BP.tablet ? 13 : BP.xs ? 10 : 11 },
+                    { height: BP.tablet ? 13.5 : BP.xs ? 11 : 12.5 },
                   ]}
                 >
                   <Text

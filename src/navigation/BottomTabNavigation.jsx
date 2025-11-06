@@ -45,12 +45,7 @@ const CustomTabBar = ({ state, navigation }) => {
   const centerButtonBottom = isTablet ? 35 : 30;
 
   return (
-    <View
-      style={[
-        styles.wrapper,
-        { height: tabBarHeight + (Platform.OS === 'ios' ? 20 : 0) },
-      ]}
-    >
+    <View style={[styles.wrapper, { height: tabBarHeight }]}>
       <ImageBackground
         source={require('../assets/images/baar.png')}
         style={[styles.backgroundImage, { height: tabBarHeight }]}
