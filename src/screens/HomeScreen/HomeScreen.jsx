@@ -32,7 +32,7 @@ const staticComponents = {
   grid: CustomGridLayout,
   best_sellers: BestSeller,
   day_in_cats_life: CatLifeScreen,
-  product_banner_ads: BakedProduct,
+  // product_banner_ads: BakedProduct,
 };
 
 const sectionProps = {

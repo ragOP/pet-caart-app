@@ -3,13 +3,16 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { Platform, Alert, PermissionsAndroid } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
+import notifee, { AndroidImportance, EventType } from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { store, persistor } from './src/redux/store';
 import NavigationPage from './src/navigation/NavigationPage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 const queryClient = new QueryClient();
 const sleep = ms => new Promise(res => setTimeout(res, ms));
+
 async function getApnsTokenWithRetry(maxAttempts = 5, intervalMs = 1000) {
   if (Platform.OS !== 'ios') return null;
   for (let i = 0; i < maxAttempts; i++) {
@@ -20,6 +23,15 @@ async function getApnsTokenWithRetry(maxAttempts = 5, intervalMs = 1000) {
     await sleep(intervalMs);
   }
   return null;
+}
+
+async function createNotificationChannel() {
+  await notifee.createChannel({
+    id: 'default',
+    name: 'Default Channel',
+    importance: AndroidImportance.HIGH,
+    sound: 'default',
+  });
 }
 
 const App = () => {
@@ -44,11 +56,27 @@ const App = () => {
 
   const onMessageReceived = useCallback(async message => {
     console.log('📨 FG message:', message);
-    const title = message?.notification?.title ?? 'New message';
-    const body =
-      message?.notification?.body ??
-      (message?.data ? JSON.stringify(message.data) : '');
-    Alert.alert(title, body);
+    await notifee.displayNotification({
+      title: message?.notification?.title ?? 'New message',
+      body: message?.notification?.body ?? 'You have a new message',
+      android: {
+        channelId: 'default',
+        smallIcon: 'ic_launcher',
+        importance: AndroidImportance.HIGH,
+        pressAction: {
+          id: 'default',
+        },
+      },
+      ios: {
+        foregroundPresentationOptions: {
+          badge: true,
+          sound: true,
+          banner: true,
+          list: true,
+        },
+      },
+      data: message?.data,
+    });
   }, []);
 
   const registerAndGetTokens = useCallback(async () => {
@@ -75,10 +103,14 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    if (Platform.OS === 'android') {
+      createNotificationChannel();
+    }
     const unsubOnMsg = messaging().onMessage(onMessageReceived);
     const unsubOpened = messaging().onNotificationOpenedApp(remoteMessage => {
       console.log('🔁 Opened from BG:', remoteMessage?.data);
     });
+
     messaging()
       .getInitialNotification()
       .then(remoteMessage => {
@@ -86,9 +118,18 @@ const App = () => {
           console.log('🚀 Opened from quit:', remoteMessage?.data);
         }
       });
+    const unsubNotifee = notifee.onForegroundEvent(({ type, detail }) => {
+      console.log('Notifee FG event:', type, detail);
+
+      if (type === EventType.PRESS) {
+        console.log('User pressed notification:', detail?.notification);
+      }
+    });
+
     return () => {
       unsubOnMsg();
       unsubOpened();
+      unsubNotifee();
     };
   }, [onMessageReceived]);
 

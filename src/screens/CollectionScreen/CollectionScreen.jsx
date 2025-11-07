@@ -14,6 +14,7 @@ import { ArrowLeft } from 'lucide-react-native';
 import SearchBar from '../../components/SearchBar/SearchBar';
 import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
 import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
+import ShopByAge from '../../components/ShopByAge/ShopByAge';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH <= 360 || SCREEN_HEIGHT <= 640;
@@ -75,6 +76,7 @@ const CollectionScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+        <ShopByAge />
       </ScrollView>
     </View>
   );

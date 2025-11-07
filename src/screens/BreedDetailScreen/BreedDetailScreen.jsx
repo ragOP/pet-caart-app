@@ -398,10 +398,10 @@ export default function BreedDetailScreen({ route, navigation }) {
             </View>
           </View>
 
-          <Text style={styles.traitsNote}>
+          {/* <Text style={styles.traitsNote}>
             <Text style={styles.traitsNoteRed}>Note:</Text>{' '}
             {breed.traits?.bottomNote}
-          </Text>
+          </Text> */}
         </View>
 
         {/* Diet */}
