@@ -102,6 +102,8 @@ const OrderDetailsScreen = ({ navigation }) => {
     const discountOnMRP = totalMRP > 0 ? totalMRP - rawPrice : 0;
     const walletDiscount = Number(order?.walletDiscount ?? 0);
     const shippingCharge = Number(order?.shippingCharge ?? 0);
+    const platformFee = Number(order?.platformFee ?? 0);
+
     const grand = Number(order?.totalAmount ?? 0);
 
     return {
@@ -110,6 +112,7 @@ const OrderDetailsScreen = ({ navigation }) => {
       walletDiscount,
       shippingCharge,
       grand,
+      platformFee,
     };
   }, [order]);
 
@@ -300,6 +303,7 @@ const OrderDetailsScreen = ({ navigation }) => {
             }
             isDiscount={bill.walletDiscount > 0}
           />
+          <BillRow label="Platform Fee" value={currency(bill.platformFee)} />
           <BillRow
             label="Delivery Charges"
             value={currency(bill.shippingCharge)}

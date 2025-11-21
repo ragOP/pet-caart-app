@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 5,
     position: 'relative',
-    backgroundColor: '#F6F6F6',
+    backgroundColor: '#fff',
     borderRadius: 6,
     borderColor: '#F59A11',
     borderWidth: 1,

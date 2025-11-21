@@ -205,8 +205,8 @@ const DOG_BREEDS = [
     gridLabel: 'Doberman',
     slug: 'doberman',
     name: 'Doberman',
-    img: 'https://images.unsplash.com/photo-1649571068605-844f3be0faa1?auto=format&fit=crop&q=80&w=774',
-    hero: require('../../assets/images/german.png'),
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608619/2_xoutja.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608619/2_xoutja.png',
     short:
       'The Doberman is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Dobermans excel in family environments, working roles, and active lifestyles.',
 
@@ -222,7 +222,7 @@ const DOG_BREEDS = [
     adaptability: {
       title: 'ADAPTABILITY',
       leadingEmoji: require('../../assets/icons/paw2.png'),
-      img: require('../../assets/images/german2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608619/1_sdegkv.png',
       description:
         'Dobermans adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
       hot: {
@@ -241,7 +241,8 @@ const DOG_BREEDS = [
       },
     },
     traits: {
-      image: require('../../assets/images/germantraits.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608619/3_bmeoff.png',
       title: 'TRAITS',
       desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
       bottomNote:
@@ -251,7 +252,8 @@ const DOG_BREEDS = [
       title: 'DIET',
       subtitle: 'Consider following tips when choosing food for your Doberman.',
       icon: require('../../assets/icons/paw2.png'),
-      image: require('../../assets/images/germandiet.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608618/4_earnzn.png',
       descBlocks: [
         { text: 'Dobermans', style: 'italicBlue' },
         { text: ' thrive on a ', style: '' },
@@ -315,7 +317,8 @@ const DOG_BREEDS = [
     training: {
       title: 'TRAINING',
       icon: require('../../assets/icons/paw2.png'),
-      image: require('../../assets/images/germantraining.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608618/6_ka1aym.png',
       descBlocks: [
         { text: 'Dobermans', style: 'italicBlue' },
         { text: ' require ', style: '' },
@@ -355,7 +358,8 @@ const DOG_BREEDS = [
     grooming: {
       title: 'GROOMING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/doberman-grooming.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608623/7_uxsepu.png',
       descBlocks: [
         { text: 'Dobermans', style: 'italicBlue' },
         { text: ' have relatively ', style: '' },
@@ -393,8 +397,8 @@ const DOG_BREEDS = [
     gridLabel: 'Golden Retriever',
     slug: 'golden-retriever',
     name: 'Golden Retriever',
-    img: 'https://images.unsplash.com/photo-1649571068605-844f3be0faa1?auto=format&fit=crop&q=80&w=774',
-    hero: require('../../assets/images/german.png'),
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613210/1_chrnnl.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613210/1_chrnnl.png',
     short:
       'The Golden Retriever is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Golden Retrievers excel in family environments, working roles, and active lifestyles.',
     category: 'dogs',
@@ -410,7 +414,7 @@ const DOG_BREEDS = [
     adaptability: {
       title: 'ADAPTABILITY',
       leadingEmoji: require('../../assets/icons/paw2.png'),
-      img: require('../../assets/images/german2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613210/2_rsuvpp.png',
       description:
         'Golden Retrievers adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
       hot: {
@@ -429,7 +433,8 @@ const DOG_BREEDS = [
       },
     },
     traits: {
-      image: require('../../assets/images/germantraits.png'), // traits dog cutout, circle bg
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613209/3_xqorlz.png',
       title: 'TRAITS',
       desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
       bottomNote:
@@ -438,7 +443,8 @@ const DOG_BREEDS = [
     diet: {
       title: 'DIET',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldendiet.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613209/4_dxn8kl.png',
       descBlocks: [
         { text: 'Golden Retrievers', style: 'italicBlue' },
         {
@@ -499,7 +505,8 @@ const DOG_BREEDS = [
     training: {
       title: 'TRAINING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldentraining.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613208/5_kq445j.png',
       descBlocks: [
         { text: 'Golden Retrievers', style: 'italicBlue' },
         { text: ' require ', style: '' },
@@ -539,7 +546,8 @@ const DOG_BREEDS = [
     grooming: {
       title: 'GROOMING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/groominggolden.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613208/6_yclflk.png',
       descBlocks: [
         { text: 'Golden Retrievers', style: 'italicBlue' },
         { text: ' have relatively ', style: '' },
@@ -577,8 +585,8 @@ const DOG_BREEDS = [
     gridLabel: 'Boxer',
     slug: 'boxer',
     name: 'Boxer',
-    img: 'https://images.unsplash.com/photo-1649571068605-844f3be0faa1?auto=format&fit=crop&q=80&w=774',
-    hero: require('../../assets/images/german.png'),
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608329/1_li3y1f.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608329/1_li3y1f.png',
     short:
       'The Boxer is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Boxers excel in family environments, working roles, and active lifestyles.',
     category: 'dogs',
@@ -594,7 +602,7 @@ const DOG_BREEDS = [
     adaptability: {
       title: 'ADAPTABILITY',
       leadingEmoji: require('../../assets/icons/paw2.png'),
-      img: require('../../assets/images/german2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608328/2_ahmoml.png',
       description:
         'Boxers adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
       hot: {
@@ -613,7 +621,8 @@ const DOG_BREEDS = [
       },
     },
     traits: {
-      image: require('../../assets/images/germantraits.png'), // traits dog cutout, circle bg
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608329/3_rmxk7n.png', // traits dog cutout, circle bg
       title: 'TRAITS',
       desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
       bottomNote:
@@ -621,8 +630,9 @@ const DOG_BREEDS = [
     },
     diet: {
       title: 'DIET',
-      icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldendiet.png'),
+      icon: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608331/4_ttexps.png',
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608331/4_ttexps.png',
       descBlocks: [
         { text: 'Boxers', style: 'italicBlue' },
         { text: ' thrive on a ', style: '' },
@@ -644,7 +654,7 @@ const DOG_BREEDS = [
           title: 'Choose a protein-rich diet',
           desc: 'Boxers benefit from 22–28% protein, heart-supportive nutrients (taurine, Omega-3s) and joint support to match their activity.',
           boxColor: '#E4F4FB',
-          // foodImage: require('../../assets/images/gold-3.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Chicken Formula',
           orientation: 'right',
         },
@@ -653,7 +663,7 @@ const DOG_BREEDS = [
           title: 'Avoid fillers & additives',
           desc: 'Boxers should avoid foods with heavy fillers such as wheat and soy that may be difficult to digest or trigger sensitivities.',
           boxColor: '#DFF1FB',
-          // foodImage: require('../../assets/images/gold-3.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Joint Care Supplement',
           orientation: 'left',
         },
@@ -662,7 +672,7 @@ const DOG_BREEDS = [
           title: 'Add Essential Fatty Acids"',
           desc: 'Look for foods containing Omega-3 and Omega-6 fatty acids to support skin, coat, and joint comfort.',
           boxColor: '#DFF1FB',
-          // foodImage: require('../../assets/images/gold-3.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Weight Control Food',
           orientation: 'right',
         },
@@ -671,7 +681,7 @@ const DOG_BREEDS = [
           title: 'Consider their age',
           desc: 'Choose an appropriate diet according to your Golden Retriever age—puppies need more protein and fat for growth, while adult and senior dogs may require lower levels for weight maintenance.',
           boxColor: '#DFF1FB',
-          // foodImage: require('../../assets/images/gold-3.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Puppy Starter Food',
           orientation: 'left',
         },
@@ -686,7 +696,8 @@ const DOG_BREEDS = [
     training: {
       title: 'TRAINING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldentraining.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608328/6_ke1zlc.png',
       descBlocks: [
         { text: 'Boxers', style: 'italicBlue' },
         { text: ' require ', style: '' },
@@ -708,7 +719,7 @@ const DOG_BREEDS = [
           title: 'Physical training and exercises',
           desc: 'Include activities such as running, playing fetch, swimming, agility training, or hiking in their routine.',
           boxColor: '#E4F4FB',
-          // foodImage: require('../../assets/images/gold-4.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Floating Fetch Toy',
           orientation: 'right',
         },
@@ -717,7 +728,7 @@ const DOG_BREEDS = [
           title: 'Interactive play',
           desc: 'Use scent-retention games and puzzle toys to provide mental stimulation and keep them engaged.',
           boxColor: '#DFF1FB',
-          // foodImage: require('../../assets/images/gold-4.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Puzzle Feeder',
           orientation: 'left',
         },
@@ -726,7 +737,8 @@ const DOG_BREEDS = [
     grooming: {
       title: 'GROOMING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/groominggolden.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762608329/7_jd7cv8.png',
       descBlocks: [
         { text: 'Boxers', style: 'italicBlue' },
         { text: ' have relatively ', style: '' },
@@ -743,7 +755,7 @@ const DOG_BREEDS = [
           title: 'Brush and bath',
           desc: 'Brush regularly to remove loose hair and distribute natural oils. Occasional bathing keeps them clean and fresh.',
           boxColor: '#E4F4FB',
-          // foodImage: require('../../assets/images/gold-3.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Slicker Brush',
           orientation: 'right',
         },
@@ -752,7 +764,7 @@ const DOG_BREEDS = [
           title: 'Keep their ears clean',
           desc: 'Check ears regularly and clean when required with a cotton ball and a mild ear-cleaning solution.',
           boxColor: '#DFF1FB',
-          // foodImage: require('../../assets/images/gold-3.png'),
+          foodImage: require('../../assets/images/dummyfood.png'),
           foodLabel: 'Mild Dog Shampoo',
           orientation: 'left',
         },
@@ -764,8 +776,8 @@ const DOG_BREEDS = [
     gridLabel: 'Pomeranian',
     slug: 'pomeranian',
     name: 'Pomeranian',
-    img: 'https://images.unsplash.com/photo-1649571068605-844f3be0faa1?auto=format&fit=crop&q=80&w=774',
-    hero: require('../../assets/images/german.png'),
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612125/1_mizvdl.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612125/1_mizvdl.png',
     short:
       'The Pomeranian is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Pomeranians excel in family environments, working roles, and active lifestyles.',
     category: 'dogs',
@@ -781,7 +793,7 @@ const DOG_BREEDS = [
     adaptability: {
       title: 'ADAPTABILITY',
       leadingEmoji: require('../../assets/icons/paw2.png'),
-      img: require('../../assets/images/german2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612124/2_obeumi.png',
       description:
         'Pomeranians adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
       hot: {
@@ -800,7 +812,8 @@ const DOG_BREEDS = [
       },
     },
     traits: {
-      image: require('../../assets/images/germantraits.png'), // traits dog cutout, circle bg
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612124/3_ck7iow.png',
       title: 'TRAITS',
       desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
       bottomNote:
@@ -809,7 +822,8 @@ const DOG_BREEDS = [
     diet: {
       title: 'DIET',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldendiet.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612124/4_th3epe.png',
       descBlocks: [
         { text: 'Pomeranians', style: 'italicBlue' },
         { text: ' thrive on a ', style: '' },
@@ -873,7 +887,8 @@ const DOG_BREEDS = [
     training: {
       title: 'TRAINING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldentraining.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612124/6_pkouhr.png',
       descBlocks: [
         { text: 'Pomeranians', style: 'italicBlue' },
         { text: ' require ', style: '' },
@@ -913,7 +928,8 @@ const DOG_BREEDS = [
     grooming: {
       title: 'GROOMING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/groominggolden.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612124/7_o5yr6i.png',
       descBlocks: [
         { text: 'Pomeranians', style: 'italicBlue' },
         { text: ' have relatively ', style: '' },
@@ -951,8 +967,8 @@ const DOG_BREEDS = [
     gridLabel: 'Pug',
     slug: 'pug',
     name: 'Pug',
-    img: 'https://images.unsplash.com/photo-1649571068605-844f3be0faa1?auto=format&fit=crop&q=80&w=774',
-    hero: require('../../assets/images/german.png'),
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612260/1_smqhpr.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612260/1_smqhpr.png',
     short:
       'The Pug is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Pugs excel in family environments, working roles, and active lifestyles.',
     category: 'dogs',
@@ -968,7 +984,7 @@ const DOG_BREEDS = [
     adaptability: {
       title: 'ADAPTABILITY',
       leadingEmoji: require('../../assets/icons/paw2.png'),
-      img: require('../../assets/images/german2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612260/2_f2gkdj.png',
       description:
         'Pomeranians adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
       hot: {
@@ -987,7 +1003,8 @@ const DOG_BREEDS = [
       },
     },
     traits: {
-      image: require('../../assets/images/germantraits.png'), // traits dog cutout, circle bg
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612259/3_ikpxht.png',
       title: 'TRAITS',
       desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
       bottomNote:
@@ -996,7 +1013,8 @@ const DOG_BREEDS = [
     diet: {
       title: 'DIET',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldendiet.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612259/4_n6f3o4.png',
       descBlocks: [
         { text: 'Pomeranians', style: 'italicBlue' },
         { text: ' thrive on a ', style: '' },
@@ -1060,7 +1078,8 @@ const DOG_BREEDS = [
     training: {
       title: 'TRAINING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/goldentraining.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612260/6_arla5n.png',
       descBlocks: [
         { text: 'Pomeranians', style: 'italicBlue' },
         { text: ' require ', style: '' },
@@ -1100,7 +1119,8 @@ const DOG_BREEDS = [
     grooming: {
       title: 'GROOMING',
       icon: require('../../assets/icons/paw2.png'),
-      // image: require('../../assets/images/groominggolden.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612258/7_s0om8l.png',
       descBlocks: [
         { text: 'Pomeranians', style: 'italicBlue' },
         { text: ' have relatively ', style: '' },
@@ -1110,6 +1130,1146 @@ const DOG_BREEDS = [
           style: '',
         },
         { text: 'shine.', style: 'bold' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Brush and bath',
+          desc: 'Brush regularly to remove loose hair and distribute natural oils. Occasional bathing keeps them clean and fresh.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Slicker Brush',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Keep their ears clean',
+          desc: 'Check ears regularly and clean when required with a cotton ball and a mild ear-cleaning solution.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Mild Dog Shampoo',
+          orientation: 'left',
+        },
+      ],
+    },
+  },
+  {
+    key: 'rottweiler',
+    gridLabel: 'Rottweiler',
+    slug: 'rottweiler',
+    name: 'Rottweiler',
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612610/1_jifxgq.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612610/1_jifxgq.png',
+    short:
+      'The Rottweiler is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Rottweilers excel in family environments, working roles, and active lifestyles.',
+    category: 'dogs',
+    facts: {
+      life: '9-10 years',
+      size: 'Large',
+      shedding: 'High',
+      coat: 'Short, dense double coat',
+    },
+    colors: ['Black & Tan'],
+    weight: { male: '45-60 kg', female: '35-48kg' },
+    height: { male: '61-69 cm', female: '56-63 cm' },
+    adaptability: {
+      title: 'ADAPTABILITY',
+      leadingEmoji: require('../../assets/icons/paw2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612611/2_e2yamf.png',
+      description:
+        'Pomeranians adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
+      hot: {
+        icon: require('../../assets/icons/hot.png'),
+        label: 'Hot weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '"28°C",',
+        gradient: ['#FFC773', '#F3A64B'],
+      },
+      cold: {
+        icon: require('../../assets/icons/cold.png'),
+        label: 'Cold weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '0°C',
+        gradient: ['#6EC1DC', '#4AA3DA'],
+      },
+    },
+    traits: {
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612610/3_vaxacr.png',
+      title: 'TRAITS',
+      desc: 'Rottweilers thrive on a high-protein, balanced diet rich in animal-based proteins, healthy fats, and essential vitamins to support their active lifestyle and joint health.',
+      bottomNote:
+        'German Shepherd Need Experienced Handling, Consistent Training And Early Socialization Which Can Pose Challenges For Inexperienced Owners',
+    },
+    diet: {
+      title: 'DIET',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612610/4_slizal.png',
+      descBlocks: [
+        { text: 'Rottweilers', style: 'italicBlue' },
+        { text: ' thrive on a ', style: '' },
+        { text: 'high-protein, balanced diet rich in ', style: 'normal' },
+        { text: 'animal-based proteins', style: 'bold' },
+        { text: ', ', style: 'normal' },
+        { text: 'healthy fats', style: 'bold' },
+        { text: ', and essential vitamins to support their ', style: 'normal' },
+        { text: 'active lifestyle', style: 'bold' },
+        { text: ' and ', style: 'normal' },
+        { text: 'joint health', style: 'bold' },
+        { text: '.', style: 'normal' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Choose a protein-rich diet',
+          desc: 'Rottweilers benefit from lean, protein-rich diets (22–28%) with joint-supporting nutrients for their large, muscular build.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Chicken Formula',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Avoid fillers & additives',
+          desc: 'Rottweilers should avoid foods with heavy fillers such as wheat and soy that may be difficult to digest or trigger sensitivities.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Joint Care Supplement',
+          orientation: 'left',
+        },
+        {
+          step: 3,
+          title: 'Add Essential Fatty Acids"',
+          desc: 'Look for foods containing Omega-3 and Omega-6 fatty acids to support skin, coat, and joint comfort.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Weight Control Food',
+          orientation: 'right',
+        },
+        {
+          step: 4,
+          title: 'Consider their age',
+          desc: "Choose an appropriate diet according to your Rottweiler's age—puppies need more protein and fat for growth, while adult and senior dogs may require lower levels for weight maintenance.",
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Puppy Starter Food',
+          orientation: 'left',
+        },
+      ],
+      homecooked: {
+        title: 'Home‑cooked food must contain:',
+        leftNote:
+          'Preparing home‑cooked meals may be time consuming and nutritionally incomplete, consider adding food toppers or supplements to make up for the lack of nutrients.',
+        // wheelCenterImage: require('../../assets/images/wheelgerman.png'),
+      },
+    },
+    training: {
+      title: 'TRAINING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612609/6_s8wks9.png',
+      descBlocks: [
+        { text: 'Rottweilers', style: 'italicBlue' },
+        { text: ' require regular ', style: '' },
+        { text: 'exercise', style: 'bold' },
+        { text: ', proper ', style: '' },
+        { text: 'grooming', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'socialization', style: 'bold' },
+        { text: ', and consistent ', style: '' },
+        { text: 'training', style: 'bold' },
+        {
+          text: ' to maintain their physical health and mental well-being.',
+          style: '',
+        },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Physical training and exercises',
+          desc: 'Include activities such as running, playing fetch, swimming, agility training, or hiking in their routine.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Floating Fetch Toy',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Interactive play',
+          desc: 'Use scent-retention games and puzzle toys to provide mental stimulation and keep them engaged.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Puzzle Feeder',
+          orientation: 'left',
+        },
+      ],
+    },
+    grooming: {
+      title: 'GROOMING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612609/7_mns7id.png',
+      descBlocks: [
+        { text: 'Rottweilers', style: 'italicBlue' },
+        { text: ' have relatively low ', style: '' },
+        { text: 'grooming needs', style: 'bold' },
+        {
+          text: ' despite their coat type. Here are some essential tips to ensure they ',
+          style: '',
+        },
+        { text: 'shine', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Brush and bath',
+          desc: 'Brush regularly to remove loose hair and distribute natural oils. Occasional bathing keeps them clean and fresh.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Slicker Brush',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Keep their ears clean',
+          desc: 'Check ears regularly and clean when required with a cotton ball and a mild ear-cleaning solution.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Mild Dog Shampoo',
+          orientation: 'left',
+        },
+      ],
+    },
+  },
+  {
+    key: 'beagle',
+    gridLabel: 'Beagle',
+    slug: 'beagle',
+    name: 'Beagle',
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612759/1_jaix4f.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612759/1_jaix4f.png',
+    short:
+      'The Beagle is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Beagles excel in family environments, working roles, and active lifestyles.',
+    category: 'dogs',
+    facts: {
+      life: '12-15 years',
+      size: 'Small to Medium',
+      shedding: 'High',
+      coat: 'Short, Dense coat',
+    },
+    colors: ['Black & Tan'],
+    weight: { male: '10-14 kg', female: '9-13 kg' },
+    height: { male: '36-41 cm', female: '33-38 cm' },
+    adaptability: {
+      title: 'ADAPTABILITY',
+      leadingEmoji: require('../../assets/icons/paw2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612758/2_dqkgls.png',
+      description:
+        'Beagles adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
+      hot: {
+        icon: require('../../assets/icons/hot.png'),
+        label: 'Hot weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '"30°C",',
+        gradient: ['#FFC773', '#F3A64B'],
+      },
+      cold: {
+        icon: require('../../assets/icons/cold.png'),
+        label: 'Cold weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '5°C',
+        gradient: ['#6EC1DC', '#4AA3DA'],
+      },
+    },
+    traits: {
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612758/3_xsld2a.png',
+      title: 'TRAITS',
+      desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
+      bottomNote:
+        'German Shepherd Need Experienced Handling, Consistent Training And Early Socialization Which Can Pose Challenges For Inexperienced Owners',
+    },
+    diet: {
+      title: 'DIET',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612759/4_mimtes.png',
+      descBlocks: [
+        { text: 'Beagles', style: 'italicBlue' },
+        { text: ' thrive on a ', style: '' },
+        { text: 'high-protein, balanced diet rich in ', style: '' },
+        { text: 'animal-based proteins', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'healthy fats', style: 'bold' },
+        { text: ', and essential vitamins to support their ', style: '' },
+        { text: 'active lifestyle', style: 'bold' },
+        { text: ' and ', style: '' },
+        { text: 'joint health', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Choose a protein-rich diet',
+          desc: 'Beagles are prone to overeating—use measured portions with 18–25% protein and moderate calories to maintain ideal weight.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Chicken Formula',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Avoid fillers & additives',
+          desc: 'Beagles should avoid foods with heavy fillers such as wheat and soy that may be difficult to digest or trigger sensitivities.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Joint Care Supplement',
+          orientation: 'left',
+        },
+        {
+          step: 3,
+          title: 'Add Essential Fatty Acids"',
+          desc: 'Look for foods containing Omega-3 and Omega-6 fatty acids to support skin, coat, and joint comfort.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Weight Control Food',
+          orientation: 'right',
+        },
+        {
+          step: 4,
+          title: 'Consider their age',
+          desc: "Choose an appropriate diet according to your Rottweiler's age—puppies need more protein and fat for growth, while adult and senior dogs may require lower levels for weight maintenance.",
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Puppy Starter Food',
+          orientation: 'left',
+        },
+      ],
+      homecooked: {
+        title: 'Home‑cooked food must contain:',
+        leftNote:
+          'Preparing home‑cooked meals may be time consuming and nutritionally incomplete, consider adding food toppers or supplements to make up for the lack of nutrients.',
+        // wheelCenterImage: require('../../assets/images/wheelgerman.png'),
+      },
+    },
+    training: {
+      title: 'TRAINING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612757/6_sgshvg.png',
+      descBlocks: [
+        { text: 'Beagles', style: 'italicBlue' },
+        { text: ' require regular ', style: '' },
+        { text: 'exercise', style: 'bold' },
+        { text: ', proper ', style: '' },
+        { text: 'grooming', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'socialization', style: 'bold' },
+        { text: ', and consistent ', style: '' },
+        { text: 'training', style: 'bold' },
+        {
+          text: ' to maintain their physical health and mental well-being.',
+          style: '',
+        },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Physical training and exercises',
+          desc: 'Include activities such as running, playing fetch, swimming, agility training, or hiking in their routine.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Floating Fetch Toy',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Interactive play',
+          desc: 'Use scent-retention games and puzzle toys to provide mental stimulation and keep them engaged.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Puzzle Feeder',
+          orientation: 'left',
+        },
+      ],
+    },
+    grooming: {
+      title: 'GROOMING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762612759/7_llhizn.png',
+      descBlocks: [
+        { text: 'Beagles', style: 'italicBlue' },
+        { text: ' have relatively low ', style: '' },
+        { text: 'grooming needs', style: 'bold' },
+        {
+          text: ' despite their coat type. Here are some essential tips to ensure they ',
+          style: '',
+        },
+        { text: 'shine', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Brush and bath',
+          desc: 'Brush regularly to remove loose hair and distribute natural oils. Occasional bathing keeps them clean and fresh.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Slicker Brush',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Keep their ears clean',
+          desc: 'Check ears regularly and clean when required with a cotton ball and a mild ear-cleaning solution.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Mild Dog Shampoo',
+          orientation: 'left',
+        },
+      ],
+    },
+  },
+  {
+    key: 'great-dane',
+    gridLabel: 'Great Dane',
+    slug: 'great-dane',
+    name: 'Great Dane',
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613293/2_a9edol.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613293/2_a9edol.png',
+    short:
+      'The Great Dane is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Great Danes excel in family environments, working roles, and active lifestyles.',
+    category: 'dogs',
+    facts: {
+      life: '8-10 years',
+      size: 'Giant',
+      shedding: 'High',
+      coat: 'Short, Smooth coat',
+    },
+    colors: ['Fawn', 'Brindle', 'Harlequin', 'Blue', 'Black'],
+    weight: { male: '63-80 kg', female: '50-66 kg' },
+    height: { male: '76-86  cm', female: '71-81 cm' },
+    adaptability: {
+      title: 'ADAPTABILITY',
+      leadingEmoji: require('../../assets/icons/paw2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613296/1_syzop5.png',
+      description:
+        'Great Danes adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
+      hot: {
+        icon: require('../../assets/icons/hot.png'),
+        label: 'Hot weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '"28°C",',
+        gradient: ['#FFC773', '#F3A64B'],
+      },
+      cold: {
+        icon: require('../../assets/icons/cold.png'),
+        label: 'Cold weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '5°C',
+        gradient: ['#6EC1DC', '#4AA3DA'],
+      },
+    },
+    traits: {
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613292/3_s1apwo.png',
+      title: 'TRAITS',
+      desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
+      bottomNote:
+        'German Shepherd Need Experienced Handling, Consistent Training And Early Socialization Which Can Pose Challenges For Inexperienced Owners',
+    },
+    diet: {
+      title: 'DIET',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613291/4_kdhvdy.png',
+      descBlocks: [
+        { text: 'Great Danes', style: 'italicBlue' },
+        { text: ' thrive on a ', style: '' },
+        { text: 'high-protein, balanced diet rich in ', style: '' },
+        { text: 'animal-based proteins', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'healthy fats', style: 'bold' },
+        { text: ', and essential vitamins to support their ', style: '' },
+        { text: 'active lifestyle', style: 'bold' },
+        { text: ' and ', style: '' },
+        { text: 'joint health', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Choose a protein-rich diet',
+          desc: 'Great Danes require controlled large-breed nutrition with balanced calcium and multiple small meals to help prevent bloating.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Chicken Formula',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Avoid fillers & additives',
+          desc: 'Great Danes should avoid foods with heavy fillers such as wheat and soy that may be difficult to digest or trigger sensitivities.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Joint Care Supplement',
+          orientation: 'left',
+        },
+        {
+          step: 3,
+          title: 'Add Essential Fatty Acids"',
+          desc: 'Look for foods containing Omega-3 and Omega-6 fatty acids to support skin, coat, and joint comfort.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Weight Control Food',
+          orientation: 'right',
+        },
+        {
+          step: 4,
+          title: 'Consider their age',
+          desc: "Choose an appropriate diet according to your Great Dane's age—puppies need more protein and fat for growth, while adult and senior dogs may require lower levels for weight maintenance.",
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Puppy Starter Food',
+          orientation: 'left',
+        },
+      ],
+      homecooked: {
+        title: 'Home‑cooked food must contain:',
+        leftNote:
+          'Preparing home‑cooked meals may be time consuming and nutritionally incomplete, consider adding food toppers or supplements to make up for the lack of nutrients.',
+        // wheelCenterImage: require('../../assets/images/wheelgerman.png'),
+      },
+    },
+    training: {
+      title: 'TRAINING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613292/6_nc8twn.png',
+      descBlocks: [
+        { text: 'Great Danes', style: 'italicBlue' },
+        { text: ' require regular ', style: '' },
+        { text: 'exercise', style: 'bold' },
+        { text: ', proper ', style: '' },
+        { text: 'grooming', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'socialization', style: 'bold' },
+        { text: ', and consistent ', style: '' },
+        { text: 'training', style: 'bold' },
+        {
+          text: ' to maintain their physical health and mental well-being.',
+          style: '',
+        },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Physical training and exercises',
+          desc: 'Include activities such as running, playing fetch, swimming, agility training, or hiking in their routine.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Floating Fetch Toy',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Interactive play',
+          desc: 'Use scent-retention games and puzzle toys to provide mental stimulation and keep them engaged.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Puzzle Feeder',
+          orientation: 'left',
+        },
+      ],
+    },
+    grooming: {
+      title: 'GROOMING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762613290/7_opf4ej.png',
+      descBlocks: [
+        { text: 'Great Danes', style: 'italicBlue' },
+        { text: ' have relatively low ', style: '' },
+        { text: 'grooming needs', style: 'bold' },
+        {
+          text: ' despite their coat type. Here are some essential tips to ensure they ',
+          style: '',
+        },
+        { text: 'shine', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Brush and bath',
+          desc: 'Brush regularly to remove loose hair and distribute natural oils. Occasional bathing keeps them clean and fresh.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Slicker Brush',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Keep their ears clean',
+          desc: 'Check ears regularly and clean when required with a cotton ball and a mild ear-cleaning solution.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Mild Dog Shampoo',
+          orientation: 'left',
+        },
+      ],
+    },
+  },
+  {
+    key: 'labrador-retriever',
+    gridLabel: 'Labrador Retriever',
+    slug: 'labrador-retriever',
+    name: 'Labrador Retriever',
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615185/2_s7s5gd.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615185/2_s7s5gd.png',
+    short:
+      'The Labrador Retriever is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Labrador Retrievers excel in family environments, working roles, and active lifestyles.',
+    category: 'dogs',
+    facts: {
+      life: '10-14 years',
+      size: 'Medium to Large',
+      shedding: 'High',
+      coat: 'Short, dense double coat, water-resistant',
+    },
+    colors: ['Black', 'Yellow', 'Chocolate'],
+    weight: { male: '29-36 kg', female: '25-32 kg' },
+    height: { male: '57-62  cm', female: '55-60 cm' },
+    adaptability: {
+      title: 'ADAPTABILITY',
+      leadingEmoji: require('../../assets/icons/paw2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615185/1_vtfzpb.png',
+      description:
+        'Labrador Retrievers adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
+      hot: {
+        icon: require('../../assets/icons/hot.png'),
+        label: 'Hot weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '"30°C",',
+        gradient: ['#FFC773', '#F3A64B'],
+      },
+      cold: {
+        icon: require('../../assets/icons/cold.png'),
+        label: 'Cold weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '5°C',
+        gradient: ['#6EC1DC', '#4AA3DA'],
+      },
+    },
+    traits: {
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615184/3_pcm7uj.png',
+      title: 'TRAITS',
+      desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
+      bottomNote:
+        'German Shepherd Need Experienced Handling, Consistent Training And Early Socialization Which Can Pose Challenges For Inexperienced Owners',
+    },
+    diet: {
+      title: 'DIET',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615184/4_t1xr83.png',
+      descBlocks: [
+        { text: 'Labrador Retrievers', style: 'italicBlue' },
+        { text: ' thrive on a ', style: '' },
+        { text: 'high-protein, balanced diet rich in ', style: '' },
+        { text: 'animal-based proteins', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'healthy fats', style: 'bold' },
+        { text: ', and essential vitamins to support their ', style: '' },
+        { text: 'active lifestyle', style: 'bold' },
+        { text: ' and ', style: '' },
+        { text: 'joint health', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Choose a protein-rich diet',
+          desc: 'Labrador Retrievers love food; choose portion-controlled meals with 18–25% protein to maintain energy and prevent excess weight.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Chicken Formula',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Avoid fillers & additives',
+          desc: 'Labrador Retrievers should avoid foods with heavy fillers such as wheat and soy that may be difficult to digest or trigger sensitivities.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Joint Care Supplement',
+          orientation: 'left',
+        },
+        {
+          step: 3,
+          title: 'Add Essential Fatty Acids"',
+          desc: 'Look for foods containing Omega-3 and Omega-6 fatty acids to support skin, coat, and joint comfort.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Weight Control Food',
+          orientation: 'right',
+        },
+        {
+          step: 4,
+          title: 'Consider their age',
+          desc: "Choose an appropriate diet according to your Great Dane's age—puppies need more protein and fat for growth, while adult and senior dogs may require lower levels for weight maintenance.",
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Puppy Starter Food',
+          orientation: 'left',
+        },
+      ],
+      homecooked: {
+        title: 'Home‑cooked food must contain:',
+        leftNote:
+          'Preparing home‑cooked meals may be time consuming and nutritionally incomplete, consider adding food toppers or supplements to make up for the lack of nutrients.',
+        // wheelCenterImage: require('../../assets/images/wheelgerman.png'),
+      },
+    },
+    training: {
+      title: 'TRAINING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615183/6_wvkwvg.png',
+      descBlocks: [
+        { text: 'Labrador Retrievers', style: 'italicBlue' },
+        { text: ' require regular ', style: '' },
+        { text: 'exercise', style: 'bold' },
+        { text: ', proper ', style: '' },
+        { text: 'grooming', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'socialization', style: 'bold' },
+        { text: ', and consistent ', style: '' },
+        { text: 'training', style: 'bold' },
+        {
+          text: ' to maintain their physical health and mental well-being.',
+          style: '',
+        },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Physical training and exercises',
+          desc: 'Include activities such as running, playing fetch, swimming, agility training, or hiking in their routine.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Floating Fetch Toy',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Interactive play',
+          desc: 'Use scent-retention games and puzzle toys to provide mental stimulation and keep them engaged.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Puzzle Feeder',
+          orientation: 'left',
+        },
+      ],
+    },
+    grooming: {
+      title: 'GROOMING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615183/7_ntbpsv.png',
+      descBlocks: [
+        { text: 'Labrador Retrievers', style: 'italicBlue' },
+        { text: ' have relatively low ', style: '' },
+        { text: 'grooming needs', style: 'bold' },
+        {
+          text: ' despite their coat type. Here are some essential tips to ensure they ',
+          style: '',
+        },
+        { text: 'shine', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Brush and bath',
+          desc: 'Brush regularly to remove loose hair and distribute natural oils. Occasional bathing keeps them clean and fresh.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Slicker Brush',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Keep their ears clean',
+          desc: 'Check ears regularly and clean when required with a cotton ball and a mild ear-cleaning solution.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Mild Dog Shampoo',
+          orientation: 'left',
+        },
+      ],
+    },
+  },
+  {
+    key: 'shih-tzu',
+    gridLabel: 'Shih Tzu',
+    slug: 'shih-tzu',
+    name: 'Shih Tzu',
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615278/2_fcwnjg.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615278/2_fcwnjg.png',
+    short:
+      'The Shih Tzu is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Labrador Retrievers excel in family environments, working roles, and active lifestyles.',
+    category: 'dogs',
+    facts: {
+      life: '10-16 years',
+      size: 'Small',
+      shedding: 'High',
+      coat: 'Long, flowing double coat',
+    },
+    colors: ['Gold & White', 'Black & White', 'Solid Black', 'Solid Gold'],
+    weight: { male: '5-7.5 kg', female: '4-6.5 kg' },
+    height: { male: '23-27  cm', female: '20-24 cm' },
+    adaptability: {
+      title: 'ADAPTABILITY',
+      leadingEmoji: require('../../assets/icons/paw2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615281/1_miqxlm.png',
+      description:
+        'Shih Tzus adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
+      hot: {
+        icon: require('../../assets/icons/hot.png'),
+        label: 'Hot weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '"32°C",',
+        gradient: ['#FFC773', '#F3A64B'],
+      },
+      cold: {
+        icon: require('../../assets/icons/cold.png'),
+        label: 'Cold weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '10°C',
+        gradient: ['#6EC1DC', '#4AA3DA'],
+      },
+    },
+    traits: {
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615275/3_upzagz.png',
+      title: 'TRAITS',
+      desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
+      bottomNote:
+        'German Shepherd Need Experienced Handling, Consistent Training And Early Socialization Which Can Pose Challenges For Inexperienced Owners',
+    },
+    diet: {
+      title: 'DIET',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615275/4_q32mip.png',
+      descBlocks: [
+        { text: 'Shih Tzus', style: 'italicBlue' },
+        { text: ' thrive on a ', style: '' },
+        { text: 'high-protein, balanced diet rich in ', style: '' },
+        { text: 'animal-based proteins', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'healthy fats', style: 'bold' },
+        { text: ', and essential vitamins to support their ', style: '' },
+        { text: 'active lifestyle', style: 'bold' },
+        { text: ' and ', style: '' },
+        { text: 'joint health', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Choose a protein-rich diet',
+          desc: 'Shih Tzus do best with small-bite kibble (20–25% protein) and Omega-rich foods to support coat health.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Chicken Formula',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Avoid fillers & additives',
+          desc: 'Shih Tzus should avoid foods with heavy fillers such as wheat and soy that may be difficult to digest or trigger sensitivities.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Joint Care Supplement',
+          orientation: 'left',
+        },
+        {
+          step: 3,
+          title: 'Add Essential Fatty Acids"',
+          desc: 'Look for foods containing Omega-3 and Omega-6 fatty acids to support skin, coat, and joint comfort.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Weight Control Food',
+          orientation: 'right',
+        },
+        {
+          step: 4,
+          title: 'Consider their age',
+          desc: "Choose an appropriate diet according to your Great Dane's age—puppies need more protein and fat for growth, while adult and senior dogs may require lower levels for weight maintenance.",
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Puppy Starter Food',
+          orientation: 'left',
+        },
+      ],
+      homecooked: {
+        title: 'Home‑cooked food must contain:',
+        leftNote:
+          'Preparing home‑cooked meals may be time consuming and nutritionally incomplete, consider adding food toppers or supplements to make up for the lack of nutrients.',
+        // wheelCenterImage: require('../../assets/images/wheelgerman.png'),
+      },
+    },
+    training: {
+      title: 'TRAINING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615274/6_ob833h.png',
+      descBlocks: [
+        { text: 'Shih Tzus', style: 'italicBlue' },
+        { text: ' require regular ', style: '' },
+        { text: 'exercise', style: 'bold' },
+        { text: ', proper ', style: '' },
+        { text: 'grooming', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'socialization', style: 'bold' },
+        { text: ', and consistent ', style: '' },
+        { text: 'training', style: 'bold' },
+        {
+          text: ' to maintain their physical health and mental well-being.',
+          style: '',
+        },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Physical training and exercises',
+          desc: 'Include activities such as running, playing fetch, swimming, agility training, or hiking in their routine.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Floating Fetch Toy',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Interactive play',
+          desc: 'Use scent-retention games and puzzle toys to provide mental stimulation and keep them engaged.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Puzzle Feeder',
+          orientation: 'left',
+        },
+      ],
+    },
+    grooming: {
+      title: 'GROOMING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762615275/7_dugtfj.png',
+      descBlocks: [
+        { text: 'Shih Tzus', style: 'italicBlue' },
+        { text: ' have relatively low ', style: '' },
+        { text: 'grooming needs', style: 'bold' },
+        {
+          text: ' despite their coat type. Here are some essential tips to ensure they ',
+          style: '',
+        },
+        { text: 'shine', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Brush and bath',
+          desc: 'Brush regularly to remove loose hair and distribute natural oils. Occasional bathing keeps them clean and fresh.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Slicker Brush',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Keep their ears clean',
+          desc: 'Check ears regularly and clean when required with a cotton ball and a mild ear-cleaning solution.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Mild Dog Shampoo',
+          orientation: 'left',
+        },
+      ],
+    },
+  },
+  {
+    key: 'siberian-husky',
+    gridLabel: 'Siberian Husky',
+    slug: 'siberian-husky',
+    name: 'Siberian Husky',
+    img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762459345/2_iotewa.png',
+    hero: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762459345/2_iotewa.png',
+    short:
+      'The Siberian Husky is known for its signature traits—loyalty, intelligence, and trainability. Recognized for their confidence and affectionate nature, Labrador Retrievers excel in family environments, working roles, and active lifestyles.',
+    category: 'dogs',
+    facts: {
+      life: '12-15 years',
+      size: 'Medium to Large',
+      shedding: 'High',
+      coat: 'Thick double coat',
+    },
+    colors: ['Black & White', 'Gray & White', 'Red & White', 'Agouti'],
+    weight: { male: '20-27 kg', female: '16-23 kg' },
+    height: { male: '54-60  cm', female: '50-56 cm' },
+    adaptability: {
+      title: 'ADAPTABILITY',
+      leadingEmoji: require('../../assets/icons/paw2.png'),
+      img: 'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762459348/1_s4cmub.png',
+      description:
+        'Siberian Huskies adapt well to both hot and cold climates, thanks to their coat and overall resilience.',
+      hot: {
+        icon: require('../../assets/icons/hot.png'),
+        label: 'Hot weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '28°C',
+        gradient: ['#FFC773', '#F3A64B'],
+      },
+      cold: {
+        icon: require('../../assets/icons/cold.png'),
+        label: 'Cold weather tolerance:',
+        valuePrefix: 'up to ',
+        value: '-15°C',
+        gradient: ['#6EC1DC', '#4AA3DA'],
+      },
+    },
+    traits: {
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762459345/3_sutmqz.png',
+      title: 'TRAITS',
+      desc: 'These attributes have been rated by dog trainers, expert vets and pet behaviorists. Remember that all dogs are individuals with their own personalities.',
+      bottomNote:
+        'German Shepherd Need Experienced Handling, Consistent Training And Early Socialization Which Can Pose Challenges For Inexperienced Owners',
+    },
+    diet: {
+      title: 'DIET',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762459345/4_uhnqqm.png',
+      descBlocks: [
+        { text: 'Siberian Huskies', style: 'italicBlue' },
+        { text: ' thrive on a ', style: '' },
+        { text: 'high-protein, balanced diet rich in ', style: '' },
+        { text: 'animal-based proteins', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'healthy fats', style: 'bold' },
+        { text: ', and essential vitamins to support their ', style: '' },
+        { text: 'active lifestyle', style: 'bold' },
+        { text: ' and ', style: '' },
+        { text: 'joint health', style: 'bold' },
+        { text: '.', style: '' },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Choose a protein-rich diet',
+          desc: 'Siberian Huskies need 25–30% protein and healthy fats; they self-regulate portions, so serve moderate meals and ensure hydration.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Chicken Formula',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Avoid fillers & additives',
+          desc: 'Siberian Huskys should avoid foods with heavy fillers such as wheat and soy that may be difficult to digest or trigger sensitivities.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Joint Care Supplement',
+          orientation: 'left',
+        },
+        {
+          step: 3,
+          title: 'Add Essential Fatty Acids"',
+          desc: 'Look for foods containing Omega-3 and Omega-6 fatty acids to support skin, coat, and joint comfort.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Weight Control Food',
+          orientation: 'right',
+        },
+        {
+          step: 4,
+          title: 'Consider their age',
+          desc: "Choose an appropriate diet according to your Great Dane's age—puppies need more protein and fat for growth, while adult and senior dogs may require lower levels for weight maintenance.",
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-3.png'),
+          foodLabel: 'Puppy Starter Food',
+          orientation: 'left',
+        },
+      ],
+      homecooked: {
+        title: 'Home‑cooked food must contain:',
+        leftNote:
+          'Preparing home‑cooked meals may be time consuming and nutritionally incomplete, consider adding food toppers or supplements to make up for the lack of nutrients.',
+        // wheelCenterImage: require('../../assets/images/wheelgerman.png'),
+      },
+    },
+    training: {
+      title: 'TRAINING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762459345/6_xsdwue.png',
+      descBlocks: [
+        { text: 'Siberian Huskies', style: 'italicBlue' },
+        { text: ' require regular ', style: '' },
+        { text: 'exercise', style: 'bold' },
+        { text: ', proper ', style: '' },
+        { text: 'grooming', style: 'bold' },
+        { text: ', ', style: '' },
+        { text: 'socialization', style: 'bold' },
+        { text: ', and consistent ', style: '' },
+        { text: 'training', style: 'bold' },
+        {
+          text: ' to maintain their physical health and mental well-being.',
+          style: '',
+        },
+      ],
+      tips: [
+        {
+          step: 1,
+          title: 'Physical training and exercises',
+          desc: 'Include activities such as running, playing fetch, swimming, agility training, or hiking in their routine.',
+          boxColor: '#E4F4FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Floating Fetch Toy',
+          orientation: 'right',
+        },
+        {
+          step: 2,
+          title: 'Interactive play',
+          desc: 'Use scent-retention games and puzzle toys to provide mental stimulation and keep them engaged.',
+          boxColor: '#DFF1FB',
+          // foodImage: require('../../assets/images/gold-4.png'),
+          foodLabel: 'Puzzle Feeder',
+          orientation: 'left',
+        },
+      ],
+    },
+    grooming: {
+      title: 'GROOMING',
+      icon: require('../../assets/icons/paw2.png'),
+      image:
+        'https://res.cloudinary.com/dtypwgdpn/image/upload/v1762459345/7_rjntcg.png',
+      descBlocks: [
+        { text: 'Siberian Huskies', style: 'italicBlue' },
+        { text: ' have relatively low ', style: '' },
+        { text: 'grooming needs', style: 'bold' },
+        {
+          text: ' despite their coat type. Here are some essential tips to ensure they ',
+          style: '',
+        },
+        { text: 'shine', style: 'bold' },
+        { text: '.', style: '' },
       ],
       tips: [
         {

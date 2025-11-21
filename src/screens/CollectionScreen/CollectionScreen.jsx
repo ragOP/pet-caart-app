@@ -24,17 +24,17 @@ const banners = [
   {
     label: 'CATEGORIES',
     nav: 'AllCategoriesScreen',
-    image: require('../../assets/images/Category.png'),
+    image: require('../../assets/images/cban1.png'),
   },
   {
     label: 'BRANDS',
     nav: 'BrandScreen',
-    image: require('../../assets/images/Brand.png'),
+    image: require('../../assets/images/cban3.png'),
   },
   {
-    label: 'SHOP BY BREED',
-    nav: 'Breed',
-    image: require('../../assets/images/Breed.png'),
+    label: 'SHOP BY STORE',
+    nav: 'ProductListScreen',
+    image: require('../../assets/images/cban2.png'),
   },
 ];
 

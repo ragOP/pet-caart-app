@@ -77,7 +77,7 @@ const CustomTabBar = ({ state, navigation }) => {
                         height: centerButtonSize,
                         borderRadius: centerButtonSize / 2,
                       },
-                      isSelected && { backgroundColor: '#F59A11' },
+                      isSelected && { backgroundColor: '#0888B1' },
                     ]}
                   >
                     <Icon
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width,
     zIndex: 10,
-    backgroundColor: 'transparent',
+    backgroundColor: '#FFFFFF',
   },
   backgroundImage: {
     width: '100%',
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   centerCircle: {
     borderRadius: 30,
-    backgroundColor: '#0888B1',
+    backgroundColor: '#F59A11',
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({

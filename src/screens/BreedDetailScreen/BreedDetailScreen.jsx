@@ -60,23 +60,26 @@ export default function BreedDetailScreen({ route, navigation }) {
       setIsReady(true);
     }
   };
+
   const COLOR_MAP = (label, index) => {
     const isBlackOnly = /black/i.test(label) && !/tan/i.test(label);
     const isWhite = /white/i.test(label);
     const isBlackTan = /black/i.test(label) && /tan/i.test(label);
 
     if (isBlackTan || index === 0) {
-      return { base: '#d29f5d', shine: 'rgba(255, 230, 170, 0.28)' }; // gold shine
+      return { base: '#d29f5d', shine: 'rgba(255, 230, 170, 0.28)' };
     }
     if (isBlackOnly) {
-      return { base: '#242726', shine: 'rgba(200, 200, 200, 0.22)' }; // silver shine
+      return { base: '#242726', shine: 'rgba(200, 200, 200, 0.22)' };
     }
     if (isWhite) {
-      return { base: '#e5e5e5', shine: 'rgba(255, 255, 255, 0.45)' }; // soft highlight
+      return { base: '#e5e5e5', shine: 'rgba(255, 255, 255, 0.45)' };
     }
     return { base: '#e5e5e5', shine: 'rgba(255, 255, 255, 0.35)' };
   };
+
   const displayText = short || 'A loyal and intelligent companion.';
+
   function TempCard({ colors, start = [0, 0], end = [1, 1], style, children }) {
     return (
       <Svg height={style.height} width="100%" style={style}>
@@ -109,6 +112,7 @@ export default function BreedDetailScreen({ route, navigation }) {
       </Svg>
     );
   }
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -135,6 +139,7 @@ export default function BreedDetailScreen({ route, navigation }) {
             </View>
           ))}
         </View>
+
         <View style={styles.headingRow}>
           <Image
             source={require('../../assets/icons/paw2.png')}
@@ -327,13 +332,24 @@ export default function BreedDetailScreen({ route, navigation }) {
               style={styles.tempCard}
             >
               <Image
-                source={require('../../assets/icons/hot.png')}
+                source={
+                  typeof breed.adaptability?.hot?.icon === 'number'
+                    ? breed.adaptability.hot.icon
+                    : breed.adaptability?.hot?.icon
+                    ? { uri: breed.adaptability.hot.icon }
+                    : require('../../assets/icons/hot.png')
+                }
                 style={styles.tempIcon}
               />
               <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.tempTitle}>Hot weather tolerance:</Text>
+                <Text style={styles.tempTitle}>
+                  {breed.adaptability?.hot?.label || 'Hot weather tolerance:'}
+                </Text>
                 <Text style={styles.tempValue}>
-                  up to <Text style={styles.tempValueEm}>28°C</Text>
+                  {breed.adaptability?.hot?.valuePrefix || 'up to '}
+                  <Text style={styles.tempValueEm}>
+                    {breed.adaptability?.hot?.value || '28°C'}
+                  </Text>
                 </Text>
               </View>
             </LinearGradient>
@@ -345,13 +361,24 @@ export default function BreedDetailScreen({ route, navigation }) {
               style={[styles.tempCard, { marginTop: styles.tempCardGap }]}
             >
               <Image
-                source={require('../../assets/icons/cold.png')}
+                source={
+                  typeof breed.adaptability?.cold?.icon === 'number'
+                    ? breed.adaptability.cold.icon
+                    : breed.adaptability?.cold?.icon
+                    ? { uri: breed.adaptability.cold.icon }
+                    : require('../../assets/icons/cold.png')
+                }
                 style={styles.tempIcon}
               />
               <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.tempTitle}>Cold weather tolerance:</Text>
+                <Text style={styles.tempTitle}>
+                  {breed.adaptability?.cold?.label || 'Cold weather tolerance:'}
+                </Text>
                 <Text style={styles.tempValue}>
-                  up to <Text style={styles.tempValueEm}>8°C</Text>
+                  {breed.adaptability?.cold?.valuePrefix || 'up to '}
+                  <Text style={styles.tempValueEm}>
+                    {breed.adaptability?.cold?.value || '8°C'}
+                  </Text>
                 </Text>
               </View>
             </LinearGradient>
@@ -360,8 +387,10 @@ export default function BreedDetailScreen({ route, navigation }) {
           <View style={styles.adaptRight}>
             <Image
               source={
-                breed.adaptability?.img
+                typeof breed.adaptability?.img === 'number'
                   ? breed.adaptability.img
+                  : breed.adaptability?.img
+                  ? { uri: breed.adaptability.img }
                   : require('../../assets/images/german.png')
               }
               style={styles.dogImg}
@@ -389,19 +418,17 @@ export default function BreedDetailScreen({ route, navigation }) {
             <View style={styles.traitsImageCircleWrap}>
               <Image
                 source={
-                  breed.traits?.image ||
-                  require('../../assets/images/german.png')
+                  typeof breed.traits?.image === 'number'
+                    ? breed.traits.image
+                    : breed.traits?.image
+                    ? { uri: breed.traits.image }
+                    : require('../../assets/images/german.png')
                 }
                 style={styles.traitsDogImage}
                 resizeMode="contain"
               />
             </View>
           </View>
-
-          {/* <Text style={styles.traitsNote}>
-            <Text style={styles.traitsNoteRed}>Note:</Text>{' '}
-            {breed.traits?.bottomNote}
-          </Text> */}
         </View>
 
         {/* Diet */}
@@ -418,7 +445,11 @@ export default function BreedDetailScreen({ route, navigation }) {
             <View style={styles.dietOutline}>
               <Image
                 source={
-                  breed.diet?.image || require('../../assets/images/german.png')
+                  typeof breed.diet?.image === 'number'
+                    ? breed.diet.image
+                    : breed.diet?.image
+                    ? { uri: breed.diet.image }
+                    : require('../../assets/images/german.png')
                 }
                 style={styles.dietDogImg}
                 resizeMode="contain"
@@ -470,7 +501,16 @@ export default function BreedDetailScreen({ route, navigation }) {
               </View>
 
               <View style={styles.tipFoodCol}>
-                <Image source={tip.foodImage} style={styles.tipFoodImg} />
+                <Image
+                  source={
+                    typeof tip.foodImage === 'number'
+                      ? tip.foodImage
+                      : tip.foodImage
+                      ? { uri: tip.foodImage }
+                      : require('../../assets/images/dummyfood.png')
+                  }
+                  style={styles.tipFoodImg}
+                />
               </View>
             </View>
           );
@@ -492,7 +532,7 @@ export default function BreedDetailScreen({ route, navigation }) {
           <View style={styles.homeCookedRow}>
             <View style={styles.homeCookedLeft}>
               <Text style={styles.homeCookedNote}>
-                {breed.diet?.leftNote ??
+                {breed.diet?.homecooked?.leftNote ??
                   'Preparing home‑cooked meals may be time consuming and nutritionally incomplete, consider adding food toppers or supplements to make up for the lack of nutrients.'}
               </Text>
             </View>
@@ -504,8 +544,11 @@ export default function BreedDetailScreen({ route, navigation }) {
                 <View style={styles.wheelBox}>
                   <Image
                     source={
-                      breed.diet?.wheelCenterImage ||
-                      require('../../assets/images/wheelgerman.png')
+                      typeof breed.diet?.wheelCenterImage === 'number'
+                        ? breed.diet.wheelCenterImage
+                        : breed.diet?.wheelCenterImage
+                        ? { uri: breed.diet.wheelCenterImage }
+                        : require('../../assets/images/wheelgerman.png')
                     }
                     style={styles.wheelImage}
                   />
@@ -531,8 +574,11 @@ export default function BreedDetailScreen({ route, navigation }) {
             <View style={styles.dietOutline}>
               <Image
                 source={
-                  breed.training?.image ||
-                  require('../../assets/images/german.png')
+                  typeof breed.training?.image === 'number'
+                    ? breed.training.image
+                    : breed.training?.image
+                    ? { uri: breed.training.image }
+                    : require('../../assets/images/german.png')
                 }
                 style={styles.dietDogImg}
                 resizeMode="contain"
@@ -583,7 +629,16 @@ export default function BreedDetailScreen({ route, navigation }) {
               </View>
 
               <View style={styles.tipFoodCol}>
-                <Image source={tip.foodImage} style={styles.tipFoodImg} />
+                <Image
+                  source={
+                    typeof tip.foodImage === 'number'
+                      ? tip.foodImage
+                      : tip.foodImage
+                      ? { uri: tip.foodImage }
+                      : require('../../assets/images/dummyfood.png')
+                  }
+                  style={styles.tipFoodImg}
+                />
               </View>
             </View>
           );
@@ -607,8 +662,11 @@ export default function BreedDetailScreen({ route, navigation }) {
             <View style={styles.dietOutline}>
               <Image
                 source={
-                  breed.grooming?.image ||
-                  require('../../assets/images/german.png')
+                  typeof breed.grooming?.image === 'number'
+                    ? breed.grooming.image
+                    : breed.grooming?.image
+                    ? { uri: breed.grooming.image }
+                    : require('../../assets/images/dummyfood.png')
                 }
                 style={styles.dietDogImg}
                 resizeMode="contain"
@@ -659,7 +717,16 @@ export default function BreedDetailScreen({ route, navigation }) {
               </View>
 
               <View style={styles.tipFoodCol}>
-                <Image source={tip.foodImage} style={styles.tipFoodImg} />
+                <Image
+                  source={
+                    typeof tip.foodImage === 'number'
+                      ? tip.foodImage
+                      : tip.foodImage
+                      ? { uri: tip.foodImage }
+                      : require('../../assets/images/dummyfood.png')
+                  }
+                  style={styles.tipFoodImg}
+                />
               </View>
             </View>
           );
@@ -1022,7 +1089,7 @@ const makeStyles = tier => {
     tempValueEm: { color: '#0E79B2', fontFamily: 'Gotham-Rounded-Bold' },
     tempCardGap: sz(10),
 
-    dogImg: { width: '100%', height: isSmall ? 160 : isCompact ? 200 : 240 },
+    dogImg: { width: '100%', height: isSmall ? 160 : isCompact ? 180 : 200 },
 
     traitsWrap: {
       marginTop: sz(22),

@@ -16,7 +16,6 @@ import { addItemToCart } from '../../redux/cartSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 
-// 4–5" tiers; 5.1"+ same UI
 const { width: SW, height: SH } = Dimensions.get('window');
 const isVerySmallRaw = SW <= 340 || SH <= 600; // ~4–4.7"
 const isSmallRaw = SW <= 375 || SH <= 667; // up to ~5.0"
@@ -145,7 +144,6 @@ const SpecialDeals = () => {
     setLoadingMap(prev => ({ ...prev, [deal.id]: true }));
 
     try {
-      // optimistic update
       dispatch(
         addItemToCart({
           productId: deal.productId,

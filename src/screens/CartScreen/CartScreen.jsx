@@ -18,7 +18,7 @@ import {
 
 import { Trash2, MapPinHouse, Wallet, Check, Info } from 'lucide-react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Svg, { Path, Rect } from 'react-native-svg';
+import Svg, { Defs, Pattern, Rect, Line, Path } from 'react-native-svg';
 
 import { getCart } from '../../apis/getCart';
 import { getCoupons } from '../../apis/getCoupons';
@@ -73,7 +73,8 @@ const CartScreen = () => {
   const [checkoutNote, setCheckoutNote] = useState('');
   const [showSuccessAnim, setShowSuccessAnim] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-
+  const [showPlatformFeeTooltip, setShowPlatformFeeTooltip] = useState(false);
+  const [platformFee, setPlatformFee] = useState(0);
   const [walletBalance, setWalletBalance] = useState(0);
   const [showWallet, setShowWallet] = useState(false);
   const [useWallet, setUseWallet] = useState(false);
@@ -203,6 +204,8 @@ const CartScreen = () => {
         setCartWalletDiscount(
           Number.isFinite(apiWalletDiscount) ? apiWalletDiscount : 0,
         );
+        const apiPlatformFee = Number(data?.platformFee || 0);
+        setPlatformFee(Number.isFinite(apiPlatformFee) ? apiPlatformFee : 0);
       } else {
         dispatch(setCart([]));
         setShippingCost(0);
@@ -361,7 +364,15 @@ const CartScreen = () => {
     }
   }
   const subTotalBeforeWallet =
-    totalMRP + cgst + sgst + cess + igst - couponDiscount + shippingCost;
+    totalMRP +
+    cgst +
+    sgst +
+    cess +
+    igst -
+    couponDiscount +
+    shippingCost +
+    platformFee;
+
   const walletDeduction = useWallet
     ? Math.max(
         0,
@@ -646,9 +657,45 @@ const CartScreen = () => {
               <View style={s.progressContainer}>
                 <View style={s.progressBarBackground}>
                   <View
-                    style={[s.progressBarFill, { width: `${progress * 100}%` }]}
-                  />
+                    style={[
+                      s.progressBarFill,
+                      { width: `${progress * 100}%`, overflow: 'hidden' },
+                    ]}
+                  >
+                    <Svg
+                      height="100%"
+                      width="100%"
+                      style={{ position: 'absolute' }}
+                    >
+                      <Defs>
+                        <Pattern
+                          id="diagonalStripes"
+                          patternUnits="userSpaceOnUse"
+                          width="16"
+                          height="16"
+                          patternTransform="rotate(45)"
+                        >
+                          <Line
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="16"
+                            stroke="#F59A11"
+                            strokeWidth="12"
+                          />
+                        </Pattern>
+                      </Defs>
+                      <Rect
+                        x="0"
+                        y="0"
+                        width="100%"
+                        height="100%"
+                        fill="url(#diagonalStripes)"
+                      />
+                    </Svg>
+                  </View>
                 </View>
+
                 {showDog && (
                   <Lottie
                     style={[
@@ -871,7 +918,6 @@ const CartScreen = () => {
                     .toFixed(2)}
                 </Text>
               </View>
-
               {(() => {
                 const totalOriginalMRP = cartItems.reduce((sum, item) => {
                   const itemMRP =
@@ -895,9 +941,42 @@ const CartScreen = () => {
               {appliedCoupon ? (
                 <View style={s.priceRow}>
                   <Text style={s.freeText}>Coupon Discount</Text>
-                  <Text style={s.freeText}>- {couponDiscount.toFixed(2)}</Text>
+                  <Text style={s.freeText}>- ₹{couponDiscount.toFixed(2)}</Text>
                 </View>
               ) : null}
+              <View style={s.priceRow}>
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                >
+                  <Text style={s.label}>Platform Fee</Text>
+                  <Pressable
+                    onPress={() => setShowPlatformFeeTooltip(prev => !prev)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Info size={14} color="#0B99C6" strokeWidth={2} />
+                  </Pressable>
+                </View>
+                <Text style={s.value}>₹{platformFee.toFixed(2)}</Text>
+              </View>
+              {showPlatformFeeTooltip && (
+                <Pressable
+                  style={s.platformFeeTooltipOverlay}
+                  onPress={() => setShowPlatformFeeTooltip(false)}
+                >
+                  <View style={s.tooltipContainer}>
+                    <View style={s.tooltipArrow} />
+                    <View style={s.tooltipContent}>
+                      <Text style={s.tooltipText}>
+                        This small fee helps us maintain safe, reliable, and
+                        pet-friendly payment systems so your checkout stays
+                        smooth and protected 🐶.
+                      </Text>
+                    </View>
+                  </View>
+                </Pressable>
+              )}
+
+              {/* Shipping Charges */}
               <View style={s.priceRow}>
                 <View>
                   <Text style={s.label}>Shipping Charges</Text>
@@ -909,6 +988,8 @@ const CartScreen = () => {
                 </View>
                 <Text style={s.value}>₹{shippingCost.toFixed(2)}</Text>
               </View>
+
+              {/* Wallet Section */}
               {showWallet && (
                 <View style={s.walletRow}>
                   <View style={{ flex: 1 }}>
@@ -920,7 +1001,6 @@ const CartScreen = () => {
                       }}
                     >
                       <Wallet size={18} color="#F59A11" strokeWidth={2} />
-
                       <Text style={s.walletTitle}>Use Wallet Balance</Text>
                       <Pressable
                         onPress={() => setShowTooltip(prev => !prev)}
@@ -961,6 +1041,7 @@ const CartScreen = () => {
                 </View>
               )}
 
+              {/* Wallet Discount */}
               {useWallet && walletDeduction > 0 && (
                 <View style={s.priceRow}>
                   <Text style={s.freeText}>Wallet Discount</Text>
@@ -969,6 +1050,8 @@ const CartScreen = () => {
                   </Text>
                 </View>
               )}
+
+              {/* Cashback Banner */}
               <View style={s.cashbackBanner}>
                 <Text style={s.cashbackText}>
                   💰 You'll get 5% cashback in wallet for this order{' '}
@@ -977,7 +1060,11 @@ const CartScreen = () => {
                   </Text>
                 </Text>
               </View>
+
+              {/* Dashed Line */}
               <View style={s.dashedLine} />
+
+              {/* Total Payable */}
               <View style={s.priceRow}>
                 <Text style={s.totalPay}>To Pay</Text>
                 <Text style={s.totalPayAmount}>₹{totalPayable.toFixed(2)}</Text>
@@ -1143,9 +1230,11 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     },
     progressBarFill: {
       height: '100%',
-      backgroundColor: '#FFA500',
+      backgroundColor: '#EEAC49',
       borderRadius: 20,
+      position: 'relative',
     },
+
     dogImage: {
       width: vsmall ? 44 : small ? 52 : 60,
       height: vsmall ? 66 : small ? 78 : 90,
@@ -1666,6 +1755,12 @@ const makeStyles = ({ isSmall: small, isVerySmall: vsmall }) =>
     successLottie: {
       width: SW * 0.5,
       height: SW * 0.5,
+    },
+    platformFeeTooltipOverlay: {
+      position: 'absolute',
+      top: 35,
+      right: 80,
+      zIndex: 1000,
     },
   });
 

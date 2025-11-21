@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Linking,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getHomeGridConfig } from '../../apis/getHomeGridConfig';
 
 const splitTitle = title => {
   if (!title || typeof title !== 'string') return { first: '', second: '' };
@@ -22,9 +23,29 @@ const splitTitle = title => {
   };
 };
 
-const CustomGridLayout = ({ gridData, onItemPress }) => {
+const ShopByStoreLayout = ({ onItemPress }) => {
   const navigation = useNavigation();
+  const [gridData, setGridData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchGridConfig = async () => {
+      try {
+        const data = await getHomeGridConfig({
+          params: { keyword: 'category' },
+        });
+        setGridData(data);
+      } catch (error) {
+        console.error('Error fetching Shop by Store grid config:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGridConfig();
+  }, []);
+
+  if (loading) return null;
   if (!gridData) return null;
 
   const {
@@ -35,6 +56,7 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
     bannerImage,
     isTitleShow,
   } = gridData;
+
   const { mobileColumns } = grid || {};
   const GAP = 8;
   const screenWidth = Dimensions.get('window').width;
@@ -55,9 +77,6 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
       return navigation.navigate('ProductListScreen', { id: item.itemId._id });
     }
 
-    // if (item.categoryId?._id) {
-    //   return navigation.navigate('ProductListScreen', { categoryId: item.categoryId._id });
-    // }
     if (item.categoryId?.slug) {
       return navigation.navigate('ProductListScreen', {
         categorySlug: item.categoryId.slug,
@@ -69,11 +88,13 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
         subCategorySlug: item.subCategoryId.slug,
       });
     }
+
     if (item.brandId?.slug) {
       return navigation.navigate('ProductListScreen', {
         brandSlug: item.brandId.slug,
       });
     }
+
     if (item.slug) {
       return navigation.navigate('ProductListScreen', {
         collectionSlug: item.slug,
@@ -168,7 +189,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionContainer: {
-    // marginBottom: 100,
     width: '100%',
     marginBottom: 15,
   },
@@ -203,4 +223,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomGridLayout;
+export default ShopByStoreLayout;

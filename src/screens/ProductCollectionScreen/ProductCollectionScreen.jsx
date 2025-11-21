@@ -312,7 +312,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
           ) : (
             <View
               style={{
-                height: 135,
+                height: 125,
                 backgroundColor: '#fff',
                 justifyContent: 'center',
               }}
@@ -324,7 +324,6 @@ export default function ProductCollectionScreen({ route, navigation }) {
                 keyExtractor={item => item._id}
                 contentContainerStyle={{
                   paddingLeft: 12,
-                  paddingTop: 5,
                   alignItems: 'center',
                 }}
                 renderItem={({ item }) => {
@@ -336,15 +335,7 @@ export default function ProductCollectionScreen({ route, navigation }) {
                   return (
                     <TouchableOpacity
                       activeOpacity={1}
-                      style={[
-                        styles.touchable,
-                        {
-                          marginRight: 18,
-                          width: 90,
-                          position: 'relative',
-                          alignItems: 'center',
-                        },
-                      ]}
+                      style={styles.touchableContainer}
                       onPress={() =>
                         navigation.setParams({
                           ...route.params,
@@ -452,24 +443,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 15,
   },
+  touchableContainer: {
+    width: 95,
+    alignItems: 'center',
+    marginRight: 12,
+  },
   circle: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#F6F6F6',
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1.5,
-    marginBottom: 5,
+    marginBottom: 6,
   },
   circleSelected: { borderColor: '#F17521' },
   image: { width: 52, height: 52, borderRadius: 8 },
-  label: { fontSize: 13, color: '#888', textAlign: 'center', lineHeight: 18 },
-  labelSelected: { color: '#F17521', fontFamily: 'Gotham-Rounded-Bold' },
+  label: {
+    fontSize: 12,
+    color: '#888',
+    textAlign: 'center',
+    lineHeight: 16,
+    paddingHorizontal: 2,
+  },
+  labelSelected: { color: '#F17521', fontSize: 12 },
   underline: {
-    position: 'absolute',
-    bottom: -8,
-    width: 100,
+    marginTop: 6,
+    width: '100%',
     height: 3,
     backgroundColor: '#F17521',
     borderRadius: 4,

@@ -48,7 +48,7 @@ export const endpoints = {
   address: 'api/address',
   // product banner
   productBanner: 'api/product-banner',
-
+  gridConfig: 'api/home-config/get-all-grid',
   // cart
   cart: 'api/cart',
   reorderCart: 'api/cart/previous-order',

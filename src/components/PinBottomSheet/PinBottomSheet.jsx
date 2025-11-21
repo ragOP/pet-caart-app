@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   Modal,
   ActivityIndicator,
   StyleSheet,
-  KeyboardAvoidingView,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { MapPin, X } from 'lucide-react-native';
@@ -117,7 +116,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 16,
     paddingHorizontal: 12,
-    paddingVertical: 12,
   },
   pinIcon: {
     marginRight: 8,
@@ -126,6 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
+    height: 48,
   },
   resultContainer: {
     backgroundColor: '#f8fafc',

@@ -23,32 +23,22 @@ const BORDER_WIDTH = isTablet ? 4 : 3;
 const ageCategories = [
   {
     id: '1',
-    label: '0-6 months',
+    label: '0-3 months',
     image: require('../../assets/images/age.png'),
   },
   {
     id: '2',
-    label: '6-24 months',
+    label: '3-6 months',
     image: require('../../assets/images/age.png'),
   },
   {
     id: '3',
-    label: '2-3 years',
+    label: '6-9 months',
     image: require('../../assets/images/age.png'),
   },
   {
     id: '4',
-    label: '3+ years',
-    image: require('../../assets/images/age.png'),
-  },
-  {
-    id: '5',
-    label: 'Senior',
-    image: require('../../assets/images/age.png'),
-  },
-  {
-    id: '6',
-    label: 'All Ages',
+    label: '1+ years',
     image: require('../../assets/images/age.png'),
   },
 ];
@@ -76,6 +66,14 @@ const ShopByAge = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.titleContainer}>
+        <Image
+          source={require('../../assets/icons/paw2.png')}
+          style={styles.titleIcon}
+          resizeMode="contain"
+        />
+        <Text style={styles.titleText}>Shop By Age</Text>
+      </View>
       <FlatList
         data={ageCategories}
         renderItem={renderCard}
@@ -92,14 +90,26 @@ const ShopByAge = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#FFF8F0',
-    paddingVertical: 16,
+  container: {},
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    marginBottom: 12,
   },
-
+  titleIcon: {
+    width: 38,
+    height: 38,
+    marginRight: 8,
+  },
+  titleText: {
+    fontSize: isTablet ? 22 : isSmallScreen ? 16 : 18,
+    fontFamily: 'Gotham-Rounded-Bold',
+    color: '#333',
+    color: '#026AA7',
+  },
   listContainer: {
-    paddingHorizontal: HORIZONTAL_PADDING,
-    paddingVertical: isTablet ? 12 : 8,
+    paddingHorizontal: 10,
   },
   cardContainer: {
     width: CARD_WIDTH,
