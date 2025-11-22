@@ -57,6 +57,7 @@ const SpecialDealCard = ({ deal, cardWidth, onClaim, isInCart, loading }) => (
         <Text style={styles.discount}> ({deal.discount})</Text>
       </View>
       <TouchableOpacity
+        activeOpacity={0.9}
         style={[styles.claimBtn, isInCart && styles.goToCartBtn]}
         onPress={onClaim}
         disabled={loading}
@@ -97,18 +98,12 @@ const SpecialDeals = () => {
               ? ` | ${item.brandId.name}`
               : '';
             const badge = formattedWeight + brandName;
-
-            // Handle variants properly - null if no variants exist
             const hasVariants = item.variants && item.variants.length > 0;
             const variantId = hasVariants ? item.variants[0]._id : null;
-
-            // Calculate price and mrp with fallback
             const salePrice = item.salePrice || item.price || 0;
             const originalPrice = item.price || 0;
             const finalPrice = Math.round(salePrice);
             const finalMrp = Math.round(originalPrice);
-
-            // Calculate discount percentage
             let discountText = '0%';
             if (originalPrice > salePrice && salePrice > 0) {
               const discountPercentage = Math.round(
@@ -171,10 +166,7 @@ const SpecialDeals = () => {
         discount: deal.discount,
         total: deal.price,
       };
-
-      console.log('Cart Item Payload:', cartItemPayload);
       dispatch(addItemToCart(cartItemPayload));
-      console.log('Dispatched to Redux');
       const apiPayload = {
         productId: deal.productId,
         quantity: 1,
@@ -184,14 +176,10 @@ const SpecialDeals = () => {
       }
 
       console.log('API Payload:', apiPayload);
-
       await addProductToCart(apiPayload);
-
-      console.log('Product added to cart successfully via API');
     } catch (error) {
       console.error('Failed to add to cart:', error);
       console.error('Error message:', error.message);
-      // Optionally: dispatch action to remove from cart if API fails
     } finally {
       setLoadingMap(prev => ({ ...prev, [deal.id]: false }));
     }
@@ -203,11 +191,9 @@ const SpecialDeals = () => {
         item => item.productId === productId && item.variantId === variantId,
       );
     } else {
-      // If no variantId, just check productId
       return cartItems.some(item => item.productId === productId);
     }
   };
-
   if (bestSellerData.length === 0) return null;
 
   return (

@@ -103,10 +103,10 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   titleText: {
-    fontSize: isTablet ? 22 : isSmallScreen ? 16 : 18,
+    fontSize: isTablet ? 22 : isSmallScreen ? 20 : 20,
     fontFamily: 'Gotham-Rounded-Bold',
     color: '#333',
-    color: '#026AA7',
+    color: '#3498db',
   },
   listContainer: {
     paddingHorizontal: 10,

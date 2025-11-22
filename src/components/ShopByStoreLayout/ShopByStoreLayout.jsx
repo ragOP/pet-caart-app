@@ -47,43 +47,35 @@ const CustomGridLayout = ({ gridData, onItemPress }) => {
 
   const handleItemClick = item => {
     console.log('Clicked item:', item);
-
-    // Single product: check itemId._id
     if (item.itemId?._id) {
       console.log('This is a product with itemId._id:', item.itemId._id);
       return navigation.navigate('SingleProductScreen', {
         productId: item.itemId._id,
       });
     }
-    // API se link mila /product/{id} toh sirf id extract kro
     if (item.link && item.link.startsWith('/product/')) {
       const productId = item.link.replace('/product/', '');
       console.log('This is a product with link:', productId);
       return navigation.navigate('SingleProductScreen', { productId });
     }
-    // External link (http)
     if (item.link && item.link.startsWith('http')) {
       return Linking.openURL(item.link);
     }
-    // Category
     if (item.categoryId?.slug) {
       return navigation.navigate('ProductListScreen', {
         categorySlug: item.categoryId.slug,
       });
     }
-    // Subcategory
     if (item.subCategoryId?.slug) {
       return navigation.navigate('ProductListScreen', {
         subCategorySlug: item.subCategoryId.slug,
       });
     }
-    // Brand
     if (item.brandId?.slug) {
       return navigation.navigate('ProductListScreen', {
         brandSlug: item.brandId.slug,
       });
     }
-    // Collection
     if (item.slug) {
       return navigation.navigate('ProductListScreen', {
         collectionSlug: item.slug,
