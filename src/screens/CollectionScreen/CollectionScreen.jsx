@@ -15,6 +15,7 @@ import SearchBar from '../../components/SearchBar/SearchBar';
 import EssentialSlider from '../../components/EssentialSlider/EssentialSlider';
 import CustomGridLayout from '../../components/CustomGridLayout/CustomGridLayout';
 import ShopByAge from '../../components/ShopByAge/ShopByAge';
+import ShopByStoreLayout from '../../components/ShopByStoreLayout/ShopByStoreLayout';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const isSmallDevice = SCREEN_WIDTH <= 360 || SCREEN_HEIGHT <= 640;
@@ -59,7 +60,9 @@ const CollectionScreen = ({ navigation }) => {
           <SearchBar style={dynamicStyles.searchBar} />
         </View>
       </View>
+
       <ScrollView contentContainerStyle={dynamicStyles.scrollContent}>
+        {/* Top Banners */}
         <View style={dynamicStyles.bannersContainer}>
           {banners.map(item => (
             <TouchableOpacity
@@ -76,8 +79,12 @@ const CollectionScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+
         <ShopByAge />
+
+        <ShopByStoreLayout />
       </ScrollView>
+      <View style={dynamicStyles.bottomSpacer} />
     </View>
   );
 };
@@ -113,7 +120,6 @@ const makeStyles = (small, tablet) =>
     },
     scrollContent: {
       paddingVertical: small ? 6 : 10,
-      // paddingHorizontal: tablet ? '10%' : 0,
     },
     bannersContainer: {
       width: '100%',
@@ -133,5 +139,8 @@ const makeStyles = (small, tablet) =>
       ...StyleSheet.absoluteFillObject,
       width: '100%',
       height: '100%',
+    },
+    bottomSpacer: {
+      height: small ? 40 : 60,
     },
   });

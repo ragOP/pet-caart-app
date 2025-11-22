@@ -8,7 +8,7 @@ export const endpoints = {
   checkUserWallet: 'api/users/check-user-wallet',
   // products
   products: 'api/product',
-
+  specialProducts: 'api/product/special-offers',
   // blogs
   blogs: 'api/blogs',
 
@@ -48,7 +48,7 @@ export const endpoints = {
   address: 'api/address',
   // product banner
   productBanner: 'api/product-banner',
-  gridConfig: 'api/home-config/get-all-grid',
+  gridConfig: 'api/home-config/get-all-grid?keyword=category',
   // cart
   cart: 'api/cart',
   reorderCart: 'api/cart/previous-order',

@@ -10,16 +10,16 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { getProducts } from '../../apis/getProducts';
 import { addProductToCart } from '../../apis/addProductToCart';
 import { addItemToCart } from '../../redux/cartSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
+import { getSpecialProducts } from '../../apis/getSpecialProducts';
 
 const { width: SW, height: SH } = Dimensions.get('window');
-const isVerySmallRaw = SW <= 340 || SH <= 600; // ~4–4.7"
-const isSmallRaw = SW <= 375 || SH <= 667; // up to ~5.0"
-const isSmallStrict = SW <= 384 || SH <= 684; // avoid 5.1"+
+const isVerySmallRaw = SW <= 340 || SH <= 600;
+const isSmallRaw = SW <= 375 || SH <= 667;
+const isSmallStrict = SW <= 384 || SH <= 684;
 const useVerySmall = isVerySmallRaw;
 const useSmall = isSmallRaw && isSmallStrict;
 
@@ -73,7 +73,6 @@ const SpecialDeals = () => {
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(width * 0.9, 360);
   const cardSpacing = (width - cardWidth - 32) / 6;
-
   const [bestSellerData, setBestSellerData] = useState([]);
   const [loadingMap, setLoadingMap] = useState({});
   const dispatch = useDispatch();
@@ -83,50 +82,67 @@ const SpecialDeals = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await getProducts();
-        const allProducts = response?.data?.data;
+        const response = await getSpecialProducts();
+        const allProducts = response?.data;
+        console.log('API Response:', response);
+        console.log('Products Data:', response?.data);
 
-        if (Array.isArray(allProducts)) {
-          const bestSellers = allProducts
-            .filter(item => item.isBestSeller && item.salePrice < 599)
-            .map(item => {
-              const weight = item.weight || 0;
-              const formattedWeight =
-                weight >= 1000
-                  ? `${(weight / 1000).toFixed(1)}kg`
-                  : `${weight}g`;
+        if (Array.isArray(allProducts) && allProducts.length > 0) {
+          const specialDeals = allProducts.map(item => {
+            const weight = item.weight || 0;
+            const formattedWeight =
+              weight >= 1000 ? `${(weight / 1000).toFixed(1)}kg` : `${weight}g`;
 
-              const brandName = item.brandId?.name
-                ? ` | ${item.brandId.name}`
-                : '';
-              const badge = formattedWeight + brandName;
+            const brandName = item.brandId?.name
+              ? ` | ${item.brandId.name}`
+              : '';
+            const badge = formattedWeight + brandName;
 
-              return {
-                id: item._id,
-                image: item.images?.[0] || '',
-                title: item.title,
-                badge,
-                price: Math.round(item.salePrice || item.price),
-                mrp: Math.round(item.price),
-                discount:
-                  item.salePrice && item.price > item.salePrice
-                    ? `${Math.round(
-                        ((item.price - item.salePrice) / item.price) * 100,
-                      )}%`
-                    : '0%',
-                veg: item.isVeg,
-                productId: item._id,
-                variantId: item.variants?.[0]?._id || 'default',
-                stock: item.stock || 1,
-              };
-            });
+            // Handle variants properly - null if no variants exist
+            const hasVariants = item.variants && item.variants.length > 0;
+            const variantId = hasVariants ? item.variants[0]._id : null;
 
-          setBestSellerData(bestSellers);
+            // Calculate price and mrp with fallback
+            const salePrice = item.salePrice || item.price || 0;
+            const originalPrice = item.price || 0;
+            const finalPrice = Math.round(salePrice);
+            const finalMrp = Math.round(originalPrice);
+
+            // Calculate discount percentage
+            let discountText = '0%';
+            if (originalPrice > salePrice && salePrice > 0) {
+              const discountPercentage = Math.round(
+                ((originalPrice - salePrice) / originalPrice) * 100,
+              );
+              discountText = `${discountPercentage}%`;
+            }
+
+            const dealObj = {
+              id: item._id,
+              image: item.images?.[0] || '',
+              title: item.title || 'Unknown Product',
+              badge,
+              price: finalPrice,
+              mrp: finalMrp,
+              discount: discountText,
+              veg: item.isVeg || false,
+              productId: item._id,
+              variantId: variantId,
+              stock: item.stock || 1,
+            };
+
+            console.log('Deal Object Created:', dealObj);
+            return dealObj;
+          });
+
+          console.log('All Special Deals:', specialDeals);
+          setBestSellerData(specialDeals);
         } else {
+          console.log('No special products available');
           setBestSellerData([]);
         }
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching special products:', error);
         setBestSellerData([]);
       }
     };
@@ -144,34 +160,53 @@ const SpecialDeals = () => {
     setLoadingMap(prev => ({ ...prev, [deal.id]: true }));
 
     try {
-      dispatch(
-        addItemToCart({
-          productId: deal.productId,
-          variantId: deal.variantId,
-          quantity: 1,
-          title: deal.title,
-          price: deal.price,
-          image: deal.image,
-          discount: deal.discount,
-        }),
-      );
-
-      await addProductToCart({
+      const cartItemPayload = {
         productId: deal.productId,
         variantId: deal.variantId,
         quantity: 1,
-      });
+        title: deal.title,
+        price: deal.mrp,
+        salePrice: deal.price,
+        image: deal.image,
+        discount: deal.discount,
+        total: deal.price,
+      };
+
+      console.log('Cart Item Payload:', cartItemPayload);
+      dispatch(addItemToCart(cartItemPayload));
+      console.log('Dispatched to Redux');
+      const apiPayload = {
+        productId: deal.productId,
+        quantity: 1,
+      };
+      if (deal.variantId) {
+        apiPayload.variantId = deal.variantId;
+      }
+
+      console.log('API Payload:', apiPayload);
+
+      await addProductToCart(apiPayload);
+
+      console.log('Product added to cart successfully via API');
     } catch (error) {
-      console.warn('Failed to add to cart:', error.message);
+      console.error('Failed to add to cart:', error);
+      console.error('Error message:', error.message);
+      // Optionally: dispatch action to remove from cart if API fails
     } finally {
       setLoadingMap(prev => ({ ...prev, [deal.id]: false }));
     }
   };
 
-  const isProductInCart = (productId, variantId) =>
-    cartItems.some(
-      item => item.productId === productId && item.variantId === variantId,
-    );
+  const isProductInCart = (productId, variantId) => {
+    if (variantId) {
+      return cartItems.some(
+        item => item.productId === productId && item.variantId === variantId,
+      );
+    } else {
+      // If no variantId, just check productId
+      return cartItems.some(item => item.productId === productId);
+    }
+  };
 
   if (bestSellerData.length === 0) return null;
 
@@ -185,6 +220,7 @@ const SpecialDeals = () => {
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={item => item.id}
+        extraData={cartItems}
         renderItem={({ item }) => (
           <View style={{ marginHorizontal: 5 }}>
             <SpecialDealCard
@@ -334,7 +370,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 10,
     backgroundColor: '#ffa930',
-    minWidth: 88,
     paddingVertical: 11,
     borderRadius: 10,
     alignItems: 'center',
@@ -350,14 +385,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Gotham-Rounded-Medium',
     color: '#fff',
     letterSpacing: 1,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    width: '100%',
-    marginTop: 10,
-    fontFamily: 'Gotham-Rounded-Medium',
   },
 });
 

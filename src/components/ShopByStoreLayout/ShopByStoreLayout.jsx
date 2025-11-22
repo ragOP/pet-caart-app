@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   Image,
   Dimensions,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
 import { getHomeGridConfig } from '../../apis/getHomeGridConfig';
 
 const splitTitle = title => {
@@ -23,29 +25,9 @@ const splitTitle = title => {
   };
 };
 
-const ShopByStoreLayout = ({ onItemPress }) => {
+const CustomGridLayout = ({ gridData, onItemPress }) => {
   const navigation = useNavigation();
-  const [gridData, setGridData] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchGridConfig = async () => {
-      try {
-        const data = await getHomeGridConfig({
-          params: { keyword: 'category' },
-        });
-        setGridData(data);
-      } catch (error) {
-        console.error('Error fetching Shop by Store grid config:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGridConfig();
-  }, []);
-
-  if (loading) return null;
   if (!gridData) return null;
 
   const {
@@ -56,7 +38,6 @@ const ShopByStoreLayout = ({ onItemPress }) => {
     bannerImage,
     isTitleShow,
   } = gridData;
-
   const { mobileColumns } = grid || {};
   const GAP = 8;
   const screenWidth = Dimensions.get('window').width;
@@ -65,43 +46,48 @@ const ShopByStoreLayout = ({ onItemPress }) => {
   const itemHeight = itemWidth * 1.15;
 
   const handleItemClick = item => {
-    if (onItemPress) return onItemPress(item);
+    console.log('Clicked item:', item);
 
-    if (item.link) {
-      return item.link.startsWith('http')
-        ? Linking.openURL(item.link)
-        : navigation.navigate(item.link);
-    }
-
+    // Single product: check itemId._id
     if (item.itemId?._id) {
-      return navigation.navigate('ProductListScreen', { id: item.itemId._id });
+      console.log('This is a product with itemId._id:', item.itemId._id);
+      return navigation.navigate('SingleProductScreen', {
+        productId: item.itemId._id,
+      });
     }
-
+    // API se link mila /product/{id} toh sirf id extract kro
+    if (item.link && item.link.startsWith('/product/')) {
+      const productId = item.link.replace('/product/', '');
+      console.log('This is a product with link:', productId);
+      return navigation.navigate('SingleProductScreen', { productId });
+    }
+    // External link (http)
+    if (item.link && item.link.startsWith('http')) {
+      return Linking.openURL(item.link);
+    }
+    // Category
     if (item.categoryId?.slug) {
       return navigation.navigate('ProductListScreen', {
         categorySlug: item.categoryId.slug,
       });
     }
-
+    // Subcategory
     if (item.subCategoryId?.slug) {
       return navigation.navigate('ProductListScreen', {
         subCategorySlug: item.subCategoryId.slug,
       });
     }
-
+    // Brand
     if (item.brandId?.slug) {
       return navigation.navigate('ProductListScreen', {
         brandSlug: item.brandId.slug,
       });
     }
-
+    // Collection
     if (item.slug) {
       return navigation.navigate('ProductListScreen', {
         collectionSlug: item.slug,
       });
-    }
-    if (item.itemId?._id) {
-      return navigation.navigate('ProductListScreen', { id: item.itemId._id });
     }
   };
 
@@ -183,10 +169,76 @@ const ShopByStoreLayout = ({ onItemPress }) => {
   );
 };
 
+const ShopByStoreLayout = ({ params = {} }) => {
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['homeGridConfig', params],
+    queryFn: () => getHomeGridConfig({ params }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (isLoading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#f39c12" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>
+          Error: {error?.message || 'Something went wrong'}
+        </Text>
+      </View>
+    );
+  }
+
+  if (!data?.data || data.data.length === 0) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>No data available</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.mainContainer}>
+      {data.data.map((gridItem, index) => (
+        <CustomGridLayout key={gridItem._id || index} gridData={gridItem} />
+      ))}
+    </ScrollView>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '100%',
+  },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+    fontFamily: 'Gotham-Rounded-Bold',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#e74c3c',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    fontFamily: 'Gotham-Rounded-Bold',
   },
   sectionContainer: {
     width: '100%',
