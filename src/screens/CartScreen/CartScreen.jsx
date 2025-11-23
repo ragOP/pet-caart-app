@@ -455,7 +455,7 @@ const CartScreen = () => {
       }
 
       const options = {
-        key: key || 'rzp_test_RLrG9B2ZmQbDW4',
+        key: key || 'rzp_live_Rit6pjmNnIVlH9',
         amount: String(amount),
         currency,
         name: 'Pet Caart',
